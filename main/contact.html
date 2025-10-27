@@ -39,6 +39,18 @@
             transform: translateY(100%) !important;
             pointer-events: none;
         }
+        .dropdown-menu {
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.2s ease-out;
+        }
+
+        .dropdown-menu.visible {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
     </style>
 </head>
 <body class="min-h-screen flex flex-col items-center">
@@ -204,4 +216,5 @@
     </script>
 </body>
 </html>
+
 
