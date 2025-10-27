@@ -1,19 +1,17 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-    <!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-J4PE57KXDN"></script>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-J4PE57KXDN"></script>
 <script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
 
-  gtag('config', 'G-J4PE57KXDN');
+    gtag('config', 'G-J4PE57KXDN');
 </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bobby Reichert | Bio</title>
-    <!-- Load Tailwind CSS from CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         /* Set the Inter font globally and ensure a smooth background */
@@ -39,19 +37,29 @@
             transform: translateY(100%) !important;
             pointer-events: none;
         }
+        /* 🔴 NEW: Custom styles for dropdown visibility and transition 🔴 */
+        .dropdown-menu {
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.2s ease-out;
+        }
+
+        .dropdown-menu.visible {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
     </style>
 </head>
 <body class="min-h-screen flex flex-col items-center">
 
-    <!-- 1. Header (Navigation) - Sticky to stay at the top -->
     <nav class="w-full bg-white shadow-lg sticky top-0 z-20">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16">
-                <!-- Logo/Name -->
                 <div class="flex-shrink-0">
                     <span class="text-xl font-bold text-indigo-600">Bobby Reichert</span>
                 </div>
-                <!-- Links -->
                 <div class="flex space-x-3 md:space-x-4 text-sm md:text-base">
                     <a href="home.html" class="text-gray-600 hover:text-indigo-600 font-medium p-2 rounded-md transition duration-150">Home</a>
                     <a href="#" class="text-gray-900 font-bold p-2 rounded-md bg-indigo-100">Bio</a>
@@ -74,19 +82,16 @@
                             </div>
                         </div>
                     </div>
+                    
                 </div>
             </div>
         </div>
     </nav>
 
-    <!-- Main Content Area -->
     <main class="flex-grow flex items-center justify-center w-full p-4 md:p-8">
-        <!-- Main Bio Card (Responsive and Modern) -->
         <div class="w-full max-w-3xl bg-white shadow-xl rounded-2xl p-8 md:p-12 transform hover:scale-[1.01] transition duration-300 ease-in-out">
 
-            <!-- Header Section: Profile Image and Title -->
             <header class="text-center mb-10">
-                <!-- Profile Image -->
                 <img
                     src="https://placehold.co/128x128/4f46e5/ffffff?text=BR"
                     onerror="this.src='https://placehold.co/128x128/4f46e5/ffffff?text=BR';"
@@ -94,7 +99,6 @@
                     class="w-32 h-32 rounded-full mx-auto mb-4 object-cover border-4 border-indigo-500 shadow-xl"
                 >
 
-                <!-- Name and Tagline -->
                 <h1 class="text-3xl font-extrabold text-gray-900 tracking-tight">
                     Bobby Reichert
                 </h1>
@@ -103,7 +107,6 @@
                 </h2>
             </header>
 
-            <!-- Bio Section -->
             <section class="mb-10 text-gray-600">
                 <p class="mb-4 leading-relaxed">
                     I'm just an uninteresting kid in 8th grade. I have an interest in computers/programming and I recently started having an interest in the medical field. This year I am taking AP Physics 1, USACO, and ACSL intermediate level. I'm not particularly athletic but I am on a swim team and I ski pretty well. I have done FTC robotics for three years, starting on exFTC team 24175 Ducky Duckies, then switching to FTC team 11138 Robo Eclipse. In my free time, I also mentor FLL team 71225. I have an interest in planes too (mostly commercial airliners, and I prefer Boeing over Airbus).
@@ -113,27 +116,13 @@
                 </p>
             </section>
 
-            <!-- Social Links/Contact Section -->
-            <!--
-            <section>
-                <h3 class="text-lg font-semibold text-gray-800 mb-4 border-b pb-2">Connect With Me</h3>
-                <div class="grid grid-cols-2 gap-4">
-                    
-                    <a href="mailto:idiotsandinnovation@gmail.com" class="col-span-2 flex items-center justify-center px-4 py-3 bg-emerald-500 text-white font-semibold rounded-lg shadow-md hover:bg-emerald-600 transition duration-150 ease-in-out mt-2">
-                        <span class="mr-2">✉️</span> Email
-                    </a>
-                </div>
-            </section>
--->
-        </div>
+            </div>
     </main>
 
-    <!-- 2. Footer -->
     <footer class="w-full bg-gray-100 text-gray-500 text-center text-sm py-4 border-t">
         <p>Last Updated: 10/26/2025</p>
     </footer>
 
-    <!-- 3. Cookie Consent Banner (Fixed Position) -->
     <div id="cookie-banner" class="fixed bottom-0 left-0 right-0 p-4 md:p-6 bg-gray-800 text-white shadow-2xl transition-all duration-500 transform translate-y-0 z-50 opacity-100">
         <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between">
             <p class="text-sm mb-3 md:mb-0 md:mr-6">
@@ -145,7 +134,6 @@
         </div>
     </div>
 
-    <!-- JavaScript for Cookie Consent Logic -->
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const banner = document.getElementById('cookie-banner');
@@ -185,6 +173,7 @@
             }
         });
     </script>
+    
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const dropdown = document.getElementById('more-dropdown');
@@ -225,7 +214,6 @@
             });
         });
     </script>
+    
 </body>
 </html>
-
-
