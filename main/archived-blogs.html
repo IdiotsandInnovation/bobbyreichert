@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-J4PE57KXDN"></script>
+<script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'G-J4PE57KXDN');
+</script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bobby Reichert | Blog Archives</title>
+    <!-- Load Tailwind CSS from CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Set the Inter font globally and ensure a smooth background */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f7f9fc; /* Very light grey/blue background */
+        }
+        /* Custom scrollbar for a cleaner look */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #d1d5db; /* Gray-400 */
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f7f9fc;
+        }
+        /* Custom styles for the fixed cookie banner transition (used by JS to hide it smoothly) */
+        .fade-out {
+            opacity: 0 !important;
+            transform: translateY(100%) !important;
+            pointer-events: none;
+        }
+        /* Custom styles for dropdown visibility and transition */
+        .dropdown-menu {
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.2s ease-out;
+        }
+
+        .dropdown-menu.visible {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        /* 🔴 ARCHIVE ACCORDION STYLES 🔴 */
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s ease-in-out, padding 0.4s ease-in-out;
+            padding: 0 1.5rem; /* Initial zero padding */
+        }
+
+        .accordion-content.active {
+            max-height: 1000px; /* Large enough to show content */
+            padding-top: 1rem;
+            padding-bottom: 1.5rem;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center">
+
+    <!-- 1. Header (Navigation) - Sticky to stay at the top -->
+    <nav class="w-full bg-white shadow-lg sticky top-0 z-20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <!-- Logo/Name -->
+                <div class="flex-shrink-0">
+                    <span class="text-xl font-bold text-indigo-600">Bobby Reichert</span>
+                </div>
+                <!-- Links -->
+                <div class="flex space-x-3 md:space-x-4 text-sm md:text-base">
+                    <a href="home.html" class="text-gray-600 hover:text-indigo-600 font-medium p-2 rounded-md transition duration-150">Home</a>
+                    <a href="about.html" class="text-gray-600 hover:text-indigo-600 font-medium p-2 rounded-md transition duration-150">Bio</a>
+                    <a href="blog.html" class="text-gray-600 hover:text-indigo-600 font-medium p-2 rounded-md transition duration-150">Blog</a>
+                    <a href="contact.html" class="text-gray-600 hover:text-indigo-600 font-medium p-2 rounded-md transition duration-150">Contact</a>
+                    
+                    <!-- DROPDOWN MENU - 'More' is now highlighted as the active page section -->
+                    <div id="more-dropdown" class="relative group">
+                        <button type="button" class="text-gray-900 font-bold p-2 rounded-md bg-indigo-100 flex items-center" aria-expanded="false" aria-controls="more-menu-items">
+                            More
+                            <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                        </button>
+                        
+                        <!-- Dropdown Content -->
+                        <div id="more-menu-items" class="dropdown-menu absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-30">
+                            <div class="py-1" role="menu" aria-orientation="vertical" aria-labelledby="more-dropdown">
+                                <a href="#" class="block px-4 py-2 text-sm text-indigo-700 bg-indigo-50 hover:bg-gray-100 transition duration-150 font-semibold" role="menuitem">
+                                    Archived Blogs
+                                </a>
+                                <a href="changelog.html" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-indigo-600 transition duration-150" role="menuitem">
+                                    Changelog
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content Area: Blog Archives -->
+    <main class="w-full max-w-3xl flex-grow p-4 md:p-8">
+        <div class="bg-white shadow-xl rounded-2xl p-6 md:p-10 w-full">
+
+            <h1 class="text-3xl font-extrabold text-gray-900 tracking-tight mb-2 text-center">
+                Blog Archives
+            </h1>
+            <p class="text-lg font-light text-indigo-600 mb-8 text-center">
+                Blogs older than a year, organized by month.
+            </p>
+
+            <!-- 🔴 START: ACCORDION ARCHIVE CONTAINER 🔴 -->
+            <div id="archive-container" class="space-y-6">
+
+                <!-- New: Year Header for structure and scalability -->
+                <h2 class="text-2xl font-bold text-gray-800 border-b-2 border-indigo-200 pb-2 mb-4">2025 Archive</h2>
+                
+                <!-- October 2025 Archive (Starts open) -->
+                <div class="archive-month bg-gray-50 rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                    <button class="accordion-header flex justify-between items-center w-full p-4 md:p-5 text-left text-lg font-semibold text-gray-800 hover:bg-gray-100 transition duration-150 active-toggle" aria-expanded="true" aria-controls="october-2025-content">
+                        <span>October 2025</span>
+                        <!-- Down Arrow SVG -->
+                        <svg class="w-5 h-5 transition-transform duration-300 transform rotate-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 9l-7 7-7-7"></path></svg>
+                    </button>
+                    <div id="october-2025-content" class="accordion-content active">
+                        <div class="border-t border-gray-200 pt-4 px-2 space-y-4 text-sm text-gray-600">
+                            <!-- Post 1 -->
+                            <div class="border-b pb-3">
+                                <span class="font-bold text-gray-800">10/26/2025:</span> Website migration and Vince stuff.
+                                <p class="italic text-xs mt-1">Moved site, science test review, and the dodgeball incident.</p>
+                            </div>
+                            <!-- Post 2 -->
+                            <div>
+                                <span class="font-bold text-gray-800">10/25/2025:</span> The very first post.
+                                <p class="italic text-xs mt-1">Website creation, busy semester, and prep for academic competitions (FTC, SAT, USACO).</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- September 2025 Archive -->
+                <div class="archive-month bg-gray-50 rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                    <button class="accordion-header flex justify-between items-center w-full p-4 md:p-5 text-left text-lg font-semibold text-gray-800 hover:bg-gray-100 transition duration-150" aria-expanded="false" aria-controls="september-2025-content">
+                        <span>November 2025</span>
+                        <!-- Down Arrow SVG -->
+                        <svg class="w-5 h-5 transition-transform duration-300 transform -rotate-90" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 9l-7 7-7-7"></path></svg>
+                    </button>
+                    <div id="november-2025-content" class="accordion-content">
+                        <div class="border-t border-gray-200 pt-4 px-2 space-y-4 text-sm text-gray-600">
+                            <!-- Post 1 -->
+                            <div class="border-b pb-3">
+                                <span class="font-bold text-gray-800">09/15/2025:</span> Gatsby's green light.
+                                <p class="italic text-xs mt-1">Thoughts on finishing 'The Great Gatsby' for English class.</p>
+                            </div>
+                            <!-- Post 2 -->
+                            <div>
+                                <span class="font-bold text-gray-800">09/01/2025:</span> Fresh starts.
+                                <p class="italic text-xs mt-1">First day of the new school year reflections and setting goals.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- December 2025 Archive -->
+                <div class="archive-month bg-gray-50 rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                    <button class="accordion-header flex justify-between items-center w-full p-4 md:p-5 text-left text-lg font-semibold text-gray-800 hover:bg-gray-100 transition duration-150" aria-expanded="false" aria-controls="august-2025-content">
+                        <span>December 2025</span>
+                        <!-- Down Arrow SVG -->
+                        <svg class="w-5 h-5 transition-transform duration-300 transform -rotate-90" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 9l-7 7-7-7"></path></svg>
+                    </button>
+                    <div id="december-2025-content" class="accordion-content">
+                        <div class="border-t border-gray-200 pt-4 px-2 space-y-4 text-sm text-gray-600">
+                            <!-- Post 1 -->
+                            <div class="border-b pb-3">
+                                <span class="font-bold text-gray-800">08/20/2025:</span> Summer wrap-up.
+                                <p class="italic text-xs mt-1">Summary of my family vacation and plans for the Fall coding projects.</p>
+                            </div>
+                            <!-- Post 2 -->
+                            <div>
+                                <span class="font-bold text-gray-800">08/05/2025:</span> PC Build complete!
+                                <p class="italic text-xs mt-1">Detailed documentation of building a custom gaming/coding rig.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <!-- 🔴 END: ACCORDION ARCHIVE CONTAINER 🔴 -->
+
+        </div>
+    </main>
+
+    <!-- 2. Footer -->
+    <footer class="w-full bg-gray-100 text-gray-500 text-center text-sm py-4 border-t mt-auto">
+        <p>Last Updated: 10/27/2025</p>
+    </footer>
+
+    <!-- 3. Cookie Consent Banner (Fixed Position) -->
+    <div id="cookie-banner" class="fixed bottom-0 left-0 right-0 p-4 md:p-6 bg-gray-800 text-white shadow-2xl transition-all duration-500 transform translate-y-0 z-50 opacity-100">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between">
+            <p class="text-sm mb-3 md:mb-0 md:mr-6">
+                This website uses cookies to ensure you get the best experience. By continuing to use this site, you agree to our use of cookies.
+            </p>
+            <button id="accept-cookies" class="w-full md:w-auto px-6 py-2 bg-indigo-500 hover:bg-indigo-600 text-white font-semibold rounded-lg shadow-md transition duration-300 text-sm">
+                Got it!
+            </button>
+        </div>
+    </div>
+
+    <!-- JavaScript for Cookie Consent and Dropdown Logic -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- Cookie Consent Logic ---
+            const banner = document.getElementById('cookie-banner');
+            const acceptButton = document.getElementById('accept-cookies');
+            const storageKey = 'cookiesAccepted';
+
+            const accepted = localStorage.getItem(storageKey);
+
+            if (accepted === 'true') {
+                if (banner) {
+                    banner.style.display = 'none';
+                }
+            } else {
+                if (banner) {
+                    banner.style.display = 'block';
+                }
+
+                if (acceptButton) {
+                    acceptButton.addEventListener('click', () => {
+                        localStorage.setItem(storageKey, 'true');
+                        if (banner) {
+                            banner.classList.add('fade-out');
+                            setTimeout(() => {
+                                banner.style.display = 'none';
+                            }, 500);
+                        }
+                    });
+                }
+            }
+
+            // --- Dropdown Toggle Logic (More Menu) ---
+            const dropdown = document.getElementById('more-dropdown');
+            const dropdownButton = dropdown.querySelector('button');
+            const menu = document.getElementById('more-menu-items');
+
+            const toggleMenu = () => {
+                menu.classList.toggle('visible');
+                const isExpanded = menu.classList.contains('visible');
+                dropdownButton.setAttribute('aria-expanded', isExpanded);
+            };
+
+            const showMenu = () => {
+                menu.classList.add('visible');
+                dropdownButton.setAttribute('aria-expanded', 'true');
+            };
+
+            const hideMenu = () => {
+                menu.classList.remove('visible');
+                dropdownButton.setAttribute('aria-expanded', 'false');
+            };
+
+            dropdownButton.addEventListener('click', toggleMenu);
+            dropdown.addEventListener('mouseenter', showMenu);
+            dropdown.addEventListener('mouseleave', hideMenu);
+
+            document.addEventListener('click', (event) => {
+                if (!dropdown.contains(event.target) && menu.classList.contains('visible')) {
+                    hideMenu();
+                }
+            });
+
+            // --- 🔴 Accordion Logic (Monthly Archives) 🔴 ---
+            const headers = document.querySelectorAll('.accordion-header');
+
+            headers.forEach(header => {
+                const content = header.nextElementSibling;
+                const icon = header.querySelector('svg');
+
+                // Set initial state based on 'active-toggle' class
+                if (header.classList.contains('active-toggle')) {
+                    content.classList.add('active');
+                    icon.classList.remove('-rotate-90');
+                    icon.classList.add('rotate-0');
+                    header.setAttribute('aria-expanded', 'true');
+                } else {
+                    content.classList.remove('active');
+                    icon.classList.remove('rotate-0');
+                    icon.classList.add('-rotate-90');
+                    header.setAttribute('aria-expanded', 'false');
+                }
+
+                header.addEventListener('click', () => {
+                    // Toggle the active state of the content and the header
+                    content.classList.toggle('active');
+                    header.classList.toggle('active-toggle');
+
+                    const isActive = content.classList.contains('active');
+                    header.setAttribute('aria-expanded', isActive);
+
+                    // Toggle the rotation of the SVG arrow
+                    if (isActive) {
+                        icon.classList.remove('-rotate-90');
+                        icon.classList.add('rotate-0');
+                    } else {
+                        icon.classList.remove('rotate-0');
+                        icon.classList.add('-rotate-90');
+                    }
+                });
+            });
+        });
+    </script>
+
+</body>
+</html>
