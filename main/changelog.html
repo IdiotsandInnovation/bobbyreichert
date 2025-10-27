@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-J4PE57KXDN"></script>
+<script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'G-J4PE57KXDN');
+</script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bobby Reichert | Changelog</title>
+    <!-- Load Tailwind CSS from CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Set the Inter font globally and ensure a smooth background */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f7f9fc; /* Very light grey/blue background */
+        }
+        /* Custom scrollbar for a cleaner look */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #d1d5db; /* Gray-400 */
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f7f9fc;
+        }
+        /* Custom styles for the fixed cookie banner transition (used by JS to hide it smoothly) */
+        .fade-out {
+            opacity: 0 !important;
+            transform: translateY(100%) !important;
+            pointer-events: none;
+        }
+        /* Custom styles for dropdown visibility and transition */
+        .dropdown-menu {
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.2s ease-out;
+        }
+
+        .dropdown-menu.visible {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        /* 🔴 CHANGELOG TIMELINE STYLES 🔴 */
+        .timeline {
+            position: relative;
+            padding: 1rem 0;
+            margin-left: 2rem;
+        }
+
+        /* Vertical line */
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 0.25rem;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background-color: #e5e7eb; /* Gray-200 */
+            border-radius: 9999px;
+        }
+
+        .timeline-item {
+            position: relative;
+            margin-bottom: 2rem;
+            padding-left: 2rem;
+        }
+
+        /* Colored dot */
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0.25rem; /* Adjust to align with text */
+            width: 1rem;
+            height: 1rem;
+            background-color: #4f46e5; /* Indigo-600 */
+            border: 3px solid #f7f9fc; /* Light background color for contrast */
+            border-radius: 50%;
+            z-index: 10;
+        }
+
+        /* Specific color for major version */
+        .timeline-item.major::before {
+            background-color: #10b981; /* Emerald-500 */
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center">
+
+    <!-- 1. Header (Navigation) - Sticky to stay at the top -->
+    <nav class="w-full bg-white shadow-lg sticky top-0 z-20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <!-- Logo/Name -->
+                <div class="flex-shrink-0">
+                    <span class="text-xl font-bold text-indigo-600">Bobby Reichert</span>
+                </div>
+                <!-- Links -->
+                <div class="flex space-x-3 md:space-x-4 text-sm md:text-base">
+                    <a href="home.html" class="text-gray-600 hover:text-indigo-600 font-medium p-2 rounded-md transition duration-150">Home</a>
+                    <a href="about.html" class="text-gray-600 hover:text-indigo-600 font-medium p-2 rounded-md transition duration-150">Bio</a>
+                    <a href="blog.html" class="text-gray-600 hover:text-indigo-600 font-medium p-2 rounded-md transition duration-150">Blog</a>
+                    <a href="contact.html" class="text-gray-600 hover:text-indigo-600 font-medium p-2 rounded-md transition duration-150">Contact</a>
+                    
+                    <!-- DROPDOWN MENU - 'More' is highlighted as the active page section -->
+                    <div id="more-dropdown" class="relative group">
+                        <button type="button" class="text-gray-900 font-bold p-2 rounded-md bg-indigo-100 flex items-center" aria-expanded="false" aria-controls="more-menu-items">
+                            More
+                            <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                        </button>
+                        
+                        <!-- Dropdown Content -->
+                        <div id="more-menu-items" class="dropdown-menu absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-30">
+                            <div class="py-1" role="menu" aria-orientation="vertical" aria-labelledby="more-dropdown">
+                                <a href="archived-blogs.html" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-indigo-600 transition duration-150" role="menuitem">
+                                    Archived Blogs
+                                </a>
+                                <!-- Highlighted item since we are on the Changelog page -->
+                                <a href="#" class="block px-4 py-2 text-sm text-indigo-700 bg-indigo-50 hover:bg-gray-100 transition duration-150 font-semibold" role="menuitem">
+                                    Changelog
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content Area: Changelog -->
+    <main class="w-full max-w-3xl flex-grow p-4 md:p-8">
+        <div class="bg-white shadow-xl rounded-2xl p-6 md:p-10 w-full">
+
+            <h1 class="text-3xl font-extrabold text-gray-900 tracking-tight mb-2 text-center">
+                Changelog
+            </h1>
+            <p class="text-lg font-light text-indigo-600 mb-8 text-center">
+                A history of website updates and improvements.
+            </p>
+
+            <!-- 🔴 START: TIMELINE CONTAINER 🔴 -->
+            <div class="timeline">
+
+                <!-- Timeline Item: Version 1.2 -->
+                <div class="timeline-item">
+                    <div class="bg-indigo-50 p-4 rounded-lg shadow-md border-t-4 border-indigo-600">
+                        <p class="text-xs font-medium text-indigo-600 mb-1">October 27, 2025</p>
+                        <h3 class="text-xl font-bold text-gray-800 mb-2">Version 1.2: Changelog Launch</h3>
+                        <ul class="list-disc ml-5 space-y-1 text-sm text-gray-700">
+                            <li>**New Page:** Launched the dedicated **Changelog** page to track updates.</li>
+                            <li>**UI Update:** Ensured the navigation bar correctly highlights the active page within the `More` dropdown.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Timeline Item: Version 1.1 -->
+                <div class="timeline-item">
+                    <div class="bg-indigo-50 p-4 rounded-lg shadow-md border-t-4 border-indigo-600">
+                        <p class="text-xs font-medium text-indigo-600 mb-1">October 26, 2025</p>
+                        <h3 class="text-xl font-bold text-gray-800 mb-2">Version 1.1: Archive Feature</h3>
+                        <ul class="list-disc ml-5 space-y-1 text-sm text-gray-700">
+                            <li>**New Feature:** Added the **Blog Archives** page with month-by-month collapsible drop-downs.</li>
+                            <li>**Design:** Added Year Header (`2025 Archive`) to the Archive page for future scalability.</li>
+                            <li>**Performance:** Optimized the accordion transition for smoother opening and closing.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Timeline Item: Version 1.0 (Major Launch) -->
+                <div class="timeline-item major">
+                    <div class="bg-emerald-50 p-4 rounded-lg shadow-md border-t-4 border-emerald-600">
+                        <p class="text-xs font-medium text-emerald-600 mb-1">October 25, 2025</p>
+                        <h3 class="text-xl font-bold text-gray-800 mb-2">Version 1.0: Initial Website Launch</h3>
+                        <ul class="list-disc ml-5 space-y-1 text-sm text-gray-700">
+                            <li>**Initial Content:** Launched core pages: Home, Bio, Blog, and Contact.</li>
+                            <li>**Infrastructure:** Implemented the universal cookie consent banner.</li>
+                            <li>**Foundation:** Established core design using Tailwind CSS and the Inter font family.</li>
+                        </ul>
+                    </div>
+                </div>
+
+            </div>
+            <!-- 🔴 END: TIMELINE CONTAINER 🔴 -->
+
+        </div>
+    </main>
+
+    <!-- 2. Footer -->
+    <footer class="w-full bg-gray-100 text-gray-500 text-center text-sm py-4 border-t mt-auto">
+        <p>Last Updated: 10/27/2025</p>
+    </footer>
+
+    <!-- 3. Cookie Consent Banner (Fixed Position) -->
+    <div id="cookie-banner" class="fixed bottom-0 left-0 right-0 p-4 md:p-6 bg-gray-800 text-white shadow-2xl transition-all duration-500 transform translate-y-0 z-50 opacity-100">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between">
+            <p class="text-sm mb-3 md:mb-0 md:mr-6">
+                This website uses cookies to ensure you get the best experience. By continuing to use this site, you agree to our use of cookies.
+            </p>
+            <button id="accept-cookies" class="w-full md:w-auto px-6 py-2 bg-indigo-500 hover:bg-indigo-600 text-white font-semibold rounded-lg shadow-md transition duration-300 text-sm">
+                Got it!
+            </button>
+        </div>
+    </div>
+
+    <!-- JavaScript for Cookie Consent and Dropdown Logic -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- Cookie Consent Logic ---
+            const banner = document.getElementById('cookie-banner');
+            const acceptButton = document.getElementById('accept-cookies');
+            const storageKey = 'cookiesAccepted';
+
+            const accepted = localStorage.getItem(storageKey);
+
+            if (accepted === 'true') {
+                if (banner) {
+                    banner.style.display = 'none';
+                }
+            } else {
+                if (banner) {
+                    banner.style.display = 'block';
+                }
+
+                if (acceptButton) {
+                    acceptButton.addEventListener('click', () => {
+                        localStorage.setItem(storageKey, 'true');
+                        if (banner) {
+                            banner.classList.add('fade-out');
+                            setTimeout(() => {
+                                banner.style.display = 'none';
+                            }, 500);
+                        }
+                    });
+                }
+            }
+
+            // --- Dropdown Toggle Logic (More Menu) ---
+            const dropdown = document.getElementById('more-dropdown');
+            const dropdownButton = dropdown.querySelector('button');
+            const menu = document.getElementById('more-menu-items');
+
+            const toggleMenu = () => {
+                menu.classList.toggle('visible');
+                const isExpanded = menu.classList.contains('visible');
+                dropdownButton.setAttribute('aria-expanded', isExpanded);
+            };
+
+            const showMenu = () => {
+                menu.classList.add('visible');
+                dropdownButton.setAttribute('aria-expanded', 'true');
+            };
+
+            const hideMenu = () => {
+                menu.classList.remove('visible');
+                dropdownButton.setAttribute('aria-expanded', 'false');
+            };
+
+            dropdownButton.addEventListener('click', toggleMenu);
+            dropdown.addEventListener('mouseenter', showMenu);
+            dropdown.addEventListener('mouseleave', hideMenu);
+
+            document.addEventListener('click', (event) => {
+                if (!dropdown.contains(event.target) && menu.classList.contains('visible')) {
+                    hideMenu();
+                }
+            });
+        });
+    </script>
+
+</body>
+</html>
