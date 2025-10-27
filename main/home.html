@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <!-- Google Analytics Tag -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-J4PE57KXDN"></script>
     <script>
         window.dataLayer = window.dataLayer || [];
@@ -11,7 +10,6 @@
     </script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bobby Reichert | Homepage</title>
-    <!-- Load Tailwind CSS from CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         /* Set the Inter font globally and ensure a smooth background */
@@ -37,6 +35,19 @@
             transform: translateY(100%) !important;
             pointer-events: none;
         }
+        /* New CSS to hide the dropdown by default and manage transitions */
+        .dropdown-menu {
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.2s ease-out;
+        }
+
+        .dropdown-menu.visible {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
     </style>
 
     
@@ -44,27 +55,40 @@
 </head>
 <body class="min-h-screen flex flex-col items-center">
 
-    <!-- 1. Header (Navigation) - Sticky to stay at the top -->
     <nav class="w-full bg-white shadow-lg sticky top-0 z-20">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16">
-                <!-- Logo/Name -->
                 <div class="flex-shrink-0">
                     <span class="text-xl font-bold text-indigo-600">Bobby Reichert</span>
                 </div>
-                <!-- Links -->
                 <div class="flex space-x-3 md:space-x-4 text-sm md:text-base">
-                    <!-- Home is active and points to home_page.html -->
                     <a href="#" class="text-gray-900 font-bold p-2 rounded-md bg-indigo-100">Home</a>
                     <a href="about.html" class="text-gray-600 hover:text-indigo-600 font-medium p-2 rounded-md transition duration-150">Bio</a>
                     <a href="blog.html" class="text-gray-600 hover:text-indigo-600 font-medium p-2 rounded-md transition duration-150">Blog</a>
+
+                    <div id="more-dropdown" class="relative group">
+                        <button type="button" class="text-gray-600 hover:text-indigo-600 font-medium p-2 rounded-md transition duration-150 flex items-center" aria-expanded="false" aria-controls="more-menu-items">
+                            More
+                            <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                        </button>
+                        
+                        <div id="more-menu-items" class="dropdown-menu absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-30">
+                            <div class="py-1" role="menu" aria-orientation="vertical" aria-labelledby="more-dropdown">
+                                <a href="archived-blogs.html" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-indigo-600 transition duration-150" role="menuitem">
+                                    Archived Blogs
+                                </a>
+                                <a href="changelog.html" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-indigo-600 transition duration-150" role="menuitem">
+                                    Changelog
+                                </a>
+                            </div>
+                        </div>
+                    </div>
                     <a href="contact.html" class="text-gray-600 hover:text-indigo-600 font-medium p-2 rounded-md transition duration-150">Contact</a>
                 </div>
             </div>
         </div>
     </nav>
 
-    <!-- Main Content Area -->
     <main class="flex-grow flex items-center justify-center w-full p-4 md:p-8">
         
         <div class="w-full max-w-3xl bg-white shadow-xl rounded-2xl p-10 md:p-16 text-center transform hover:scale-[1.01] transition duration-300 ease-in-out">
@@ -86,12 +110,10 @@
         </div>
     </main>
 
-    <!-- Footer -->
     <footer class="w-full bg-gray-100 text-gray-500 text-center text-sm py-4 border-t">
         <p>Last Updated: 10/26/2025</p>
     </footer>
 
-    <!-- Cookie Consent Banner -->
     <div id="cookie-banner" class="fixed bottom-0 left-0 right-0 p-4 md:p-6 bg-gray-800 text-white shadow-2xl transition-all duration-500 transform translate-y-0 z-50 opacity-100">
         <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between">
             <p class="text-sm mb-3 md:mb-0 md:mr-6">
@@ -103,7 +125,6 @@
         </div>
     </div>
 
-    <!-- JavaScript for Cookie Consent Logic -->
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const banner = document.getElementById('cookie-banner');
@@ -144,6 +165,45 @@
         });
     </script>
 
-</body>
-</html>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const dropdown = document.getElementById('more-dropdown');
+            const button = dropdown.querySelector('button');
+            const menu = document.getElementById('more-menu-items');
 
+            // Function to toggle the menu visibility (for click)
+            const toggleMenu = () => {
+                menu.classList.toggle('visible');
+                const isExpanded = menu.classList.contains('visible');
+                button.setAttribute('aria-expanded', isExpanded);
+            };
+
+            // Function to show the menu (for hover)
+            const showMenu = () => {
+                menu.classList.add('visible');
+                button.setAttribute('aria-expanded', 'true');
+            };
+
+            // Function to hide the menu (for hover)
+            const hideMenu = () => {
+                menu.classList.remove('visible');
+                button.setAttribute('aria-expanded', 'false');
+            };
+
+            // 1. Click Listener (for accessibility/mobile)
+            button.addEventListener('click', toggleMenu);
+
+            // 2. Hover Listeners (for desktop)
+            dropdown.addEventListener('mouseenter', showMenu);
+            dropdown.addEventListener('mouseleave', hideMenu);
+
+            // Optional: Close menu when clicking outside of it
+            document.addEventListener('click', (event) => {
+                if (!dropdown.contains(event.target) && menu.classList.contains('visible')) {
+                    hideMenu();
+                }
+            });
+        });
+    </script>
+    </body>
+</html>
