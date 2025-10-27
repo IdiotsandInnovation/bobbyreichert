@@ -185,7 +185,47 @@
             }
         });
     </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const dropdown = document.getElementById('more-dropdown');
+            const button = dropdown.querySelector('button');
+            const menu = document.getElementById('more-menu-items');
 
+            // Function to toggle the menu visibility (for click)
+            const toggleMenu = () => {
+                menu.classList.toggle('visible');
+                const isExpanded = menu.classList.contains('visible');
+                button.setAttribute('aria-expanded', isExpanded);
+            };
+
+            // Function to show the menu (for hover)
+            const showMenu = () => {
+                menu.classList.add('visible');
+                button.setAttribute('aria-expanded', 'true');
+            };
+
+            // Function to hide the menu (for hover)
+            const hideMenu = () => {
+                menu.classList.remove('visible');
+                button.setAttribute('aria-expanded', 'false');
+            };
+
+            // 1. Click Listener (for accessibility/mobile)
+            button.addEventListener('click', toggleMenu);
+
+            // 2. Hover Listeners (for desktop)
+            dropdown.addEventListener('mouseenter', showMenu);
+            dropdown.addEventListener('mouseleave', hideMenu);
+
+            // Optional: Close menu when clicking outside of it
+            document.addEventListener('click', (event) => {
+                if (!dropdown.contains(event.target) && menu.classList.contains('visible')) {
+                    hideMenu();
+                }
+            });
+        });
+    </script>
 </body>
 </html>
+
 
