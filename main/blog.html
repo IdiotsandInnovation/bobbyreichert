@@ -1,7 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-J4PE57KXDN"></script>
+    <!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-J4PE57KXDN"></script>
 <script>
     window.dataLayer = window.dataLayer || [];
     function gtag(){dataLayer.push(arguments);}
@@ -12,6 +13,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bobby Reichert | Blog</title>
+    <!-- Load Tailwind CSS from CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         /* Set the Inter font globally and ensure a smooth background */
@@ -37,7 +39,7 @@
             transform: translateY(100%) !important;
             pointer-events: none;
         }
-        /* 🔴 NEW: Custom styles for dropdown visibility and transition 🔴 */
+        /* Custom styles for dropdown visibility and transition */
         .dropdown-menu {
             opacity: 0;
             visibility: hidden;
@@ -50,28 +52,49 @@
             visibility: visible;
             transform: translateY(0);
         }
+
+        /* 🔴 NEW: Scroll-to-Top Button Styles 🔴 */
+        #scroll-to-top {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            z-index: 100;
+            opacity: 0;
+            transition: opacity 0.3s, transform 0.3s;
+            transform: scale(0.8);
+            cursor: pointer;
+        }
+        #scroll-to-top.show {
+            opacity: 1;
+            transform: scale(1);
+        }
     </style>
 </head>
 <body class="min-h-screen flex flex-col items-center">
 
+    <!-- 1. Header (Navigation) - Sticky to stay at the top -->
     <nav class="w-full bg-white shadow-lg sticky top-0 z-20">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16">
+                <!-- Logo/Name -->
                 <div class="flex-shrink-0">
                     <span class="text-xl font-bold text-indigo-600">Bobby Reichert</span>
                 </div>
+                <!-- Links -->
                 <div class="flex space-x-3 md:space-x-4 text-sm md:text-base">
                     <a href="home.html" class="text-gray-600 hover:text-indigo-600 font-medium p-2 rounded-md transition duration-150">Home</a>
                     <a href="about.html" class="text-gray-600 hover:text-indigo-600 font-medium p-2 rounded-md transition duration-150">Bio</a>
                     <a href="#" class="text-gray-900 font-bold p-2 rounded-md bg-indigo-100">Blog</a>
                     <a href="contact.html" class="text-gray-600 hover:text-indigo-600 font-medium p-2 rounded-md transition duration-150">Contact</a>
-
+                    
+                    <!-- DROPDOWN MENU -->
                     <div id="more-dropdown" class="relative group">
                         <button type="button" class="text-gray-600 hover:text-indigo-600 font-medium p-2 rounded-md transition duration-150 flex items-center" aria-expanded="false" aria-controls="more-menu-items">
                             More
                             <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                         </button>
                         
+                        <!-- Dropdown Content -->
                         <div id="more-menu-items" class="dropdown-menu absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-30">
                             <div class="py-1" role="menu" aria-orientation="vertical" aria-labelledby="more-dropdown">
                                 <a href="archived-blogs.html" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-indigo-600 transition duration-150" role="menuitem">
@@ -83,51 +106,92 @@
                             </div>
                         </div>
                     </div>
-                                    </div>
+                </div>
             </div>
         </div>
     </nav>
 
-    <main class="w-full max-w-6xl flex-grow flex items-center justify-center w-full p-4 md:p-8">
-        <div class="bg-white shadow-xl rounded-2xl p-10 md:p-16 text-center transform hover:scale-[1.01] transition duration-300 ease-in-out">
+    <!-- Main Content Area: Blog Posts -->
+    <main class="w-full max-w-3xl flex-grow p-4 md:p-8">
+        <div class="bg-white shadow-xl rounded-2xl p-6 md:p-10 w-full">
 
-            <h1 class="text-4xl font-extrabold text-gray-900 tracking-tight mb-4">
-                Blog
+            <h1 class="text-4xl font-extrabold text-gray-900 tracking-tight mb-4 text-center">
+                Blog Posts
             </h1>
-            <p class="text-xl font-light text-indigo-600 mb-6">
+            <p class="text-xl font-light text-indigo-600 mb-6 text-center">
                 I'll occasionally post something here.
             </p>
+
+            <!-- Blog Post 1 -->
             <section class="mt-8 p-6 bg-gray-50 rounded-lg border border-dashed border-gray-300">
-                <p class="text-gray-500 italic">
-                    <h2>10/27/2025</h2>
-                    <hr>
+                <h2 class="text-2xl font-bold text-gray-900 mb-2">10/27/2025: Exam Review & Website Updates</h2>
+                <hr class="mb-3 border-gray-300">
+                <p class="text-gray-700 italic text-base leading-relaxed">
                     I got around a 93% on the science test because I mixed up incomplete dominance and codominance. I also did a lot of editing to this website, which included adding two extra pages and a slight tweak in the menu UI. Mobile-friendly menus will come in the near future. I created an archive page for my blog posts over three months old so that this page doesn't get too cluttered, and I added a changelog/version history page with descriptions for each update. By the way, I have decided to not move this website back to w3spaces, so it should be here to stay until I decide otherwise. Also, I'm not dressing up for Halloween; I'm just gonna go raid peoples' candy. I've recently gotten an interest into optical disks (DVD, CD, Blu-ray, etc.), electro-mechanical disks (HDD), and similar disk-based storage methods. Also, in the lossless vs. lossy audio compression thing, I personally prefer lossy (mp3), since it is a much smaller file and there is no noticable difference between the compressed and uncompressed files. Additionally, mp3 is also the mainstream audio file compression format and is widely supported. Also, I have an SAT exam scheduled on December 6th, so I have to start practicing. For AP, testing doesn't happen until around May, so I have more time with that.
                 </p>
             </section>
+
+            <!-- Blog Post 2 -->
             <section class="mt-8 p-6 bg-gray-50 rounded-lg border border-dashed border-gray-300">
-                <p class="text-gray-500 italic">
-                    <h2>10/26/2025</h2>
-                    <hr>
+                <h2 class="text-2xl font-bold text-gray-900 mb-2">10/26/2025: Website Migration and Dodgeball Drama</h2>
+                <hr class="mb-3 border-gray-300">
+                <p class="text-gray-700 italic text-base leading-relaxed">
                     I moved the website to this webpage today since cookies weren't working on the previous platform. I might move the website back and I'm still learning to use the Cloudflare platform. I have a science test tomorrow and I have to review 64 terms. Vince yelled at Brendan during dodgeball on Friday because the ball bounced off a wall, Brendan blocked it, and Vince claimed it hit his chest.
                 </p>
             </section>
-            <section class="mt-8 p-6 bg-gray-50 rounded-lg border border-dashed border-gray-300">
-                <p class="text-gray-500 italic">
-                    <h2>10/25/2025</h2>
-                    <hr>
-                    Today I created this website. It's kinda depressing here. Also the first time I touched HTML in around three years. I'm also really busy this semester so I don't know when the next time I post will be. I'll make this website more mobile-friendly in the near future. I also have a science test on Monday and a reading guide with five questions due on Tuesday. My FTC team isn't doing too well and I still need to practice for ACSL, SATs, and USACO.
 
+            <!-- Blog Post 3 -->
+            <section class="mt-8 p-6 bg-gray-50 rounded-lg border border-dashed border-gray-300">
+                <h2 class="text-2xl font-bold text-gray-900 mb-2">10/25/2025: Launch Day & Busy Semester</h2>
+                <hr class="mb-3 border-gray-300">
+                <p class="text-gray-700 italic text-base leading-relaxed">
+                    Today I created this website. It's kinda depressing here. Also the first time I touched HTML in around three years. I'm also really busy this semester so I don't know when the next time I post will be. I'll make this website more mobile-friendly in the near future. I also have a science test on Monday and a reading guide with five questions due on Tuesday. My FTC team isn't doing too well and I still need to practice for ACSL, SATs, and USACO.
                 </p>
             </section>
             
-            
+            <!-- 🔴 NEW: COMMENT SECTION 🔴 -->
+            <section class="mt-12 pt-8 border-t-4 border-indigo-200" id="comments-section">
+                <h2 class="text-3xl font-extrabold text-gray-900 mb-6">Reader Comments</h2>
+
+                <!-- Comment Submission Form -->
+                <form id="comment-form" class="bg-indigo-50 p-6 rounded-xl shadow-inner mb-8">
+                    <p class="text-sm font-medium text-indigo-700 mb-4">
+                        Logged in as User ID: <span id="user-id-display" class="font-mono text-xs bg-indigo-200 px-1 py-0.5 rounded">...loading...</span>
+                    </p>
+                    <div class="mb-4">
+                        <label for="comment-author" class="block text-sm font-medium text-gray-700 mb-1">Your Name / Handle</label>
+                        <input type="text" id="comment-author" name="author" required placeholder="Anonymous" maxlength="50"
+                               class="w-full p-3 border border-indigo-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 transition duration-150">
+                    </div>
+                    <div class="mb-6">
+                        <label for="comment-text" class="block text-sm font-medium text-gray-700 mb-1">Your Comment</label>
+                        <textarea id="comment-text" name="text" rows="4" required placeholder="I enjoyed reading about your science test and SAT plans!" maxlength="500"
+                                  class="w-full p-3 border border-indigo-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 transition duration-150"></textarea>
+                    </div>
+                    <button type="submit" id="submit-button"
+                            class="w-full py-3 px-4 bg-indigo-600 text-white font-semibold rounded-lg shadow-md hover:bg-indigo-700 transition duration-300 disabled:opacity-50">
+                        Post Comment
+                    </button>
+                    <div id="form-message" class="mt-3 text-center text-sm font-medium hidden"></div>
+                </form>
+
+                <!-- Comment List -->
+                <div id="comments-list" class="space-y-6">
+                    <p id="loading-message" class="text-gray-500 text-center">Loading comments...</p>
+                    <!-- Comments will be injected here by JavaScript -->
+                </div>
+
+            </section>
+
         </div>
     </main>
 
-    <footer class="w-full bg-gray-100 text-gray-500 text-center text-sm py-4 border-t">
+    <!-- 2. Footer -->
+    <footer class="w-full bg-gray-100 text-gray-500 text-center text-sm py-4 border-t mt-auto">
         <p>Last Updated: 10/27/2025</p>
     </footer>
 
+    <!-- 3. Cookie Consent Banner (Fixed Position) -->
     <div id="cookie-banner" class="fixed bottom-0 left-0 right-0 p-4 md:p-6 bg-gray-800 text-white shadow-2xl transition-all duration-500 transform translate-y-0 z-50 opacity-100">
         <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between">
             <p class="text-sm mb-3 md:mb-0 md:mr-6">
@@ -139,86 +203,285 @@
         </div>
     </div>
 
+    <!-- 🔴 NEW: SCROLL-TO-TOP BUTTON 🔴 -->
+    <div id="scroll-to-top" onclick="scrollToTop()"
+         class="w-12 h-12 flex items-center justify-center bg-indigo-600 text-white rounded-full shadow-lg hover:bg-indigo-700 transition duration-300">
+        <!-- Up Arrow Icon -->
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"></path></svg>
+    </div>
+
+    <!-- JavaScript for Cookie Consent and Dropdown Logic -->
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+            // --- Cookie Consent Logic ---
             const banner = document.getElementById('cookie-banner');
             const acceptButton = document.getElementById('accept-cookies');
             const storageKey = 'cookiesAccepted';
 
-            // Check if cookies have been accepted previously
             const accepted = localStorage.getItem(storageKey);
 
             if (accepted === 'true') {
-                // If accepted, hide the banner immediately
                 if (banner) {
                     banner.style.display = 'none';
                 }
             } else {
-                // If not accepted, show the banner and set up the click listener
                 if (banner) {
-                    banner.style.display = 'block'; // Ensure it's visible initially
+                    banner.style.display = 'block';
                 }
 
                 if (acceptButton) {
                     acceptButton.addEventListener('click', () => {
-                        // 1. Set acceptance status in local storage
                         localStorage.setItem(storageKey, 'true');
 
-                        // 2. Add transition classes to gracefully hide the banner
                         if (banner) {
                             banner.classList.add('fade-out');
-
-                            // 3. Remove the banner from the DOM after the transition is complete
                             setTimeout(() => {
                                 banner.style.display = 'none';
-                            }, 500); // Matches the duration-500 class
+                            }, 500);
                         }
                     });
                 }
             }
-        });
-    </script>
-    
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
+
+            // --- Dropdown Toggle Logic (More Menu) ---
             const dropdown = document.getElementById('more-dropdown');
             const button = dropdown.querySelector('button');
             const menu = document.getElementById('more-menu-items');
 
-            // Function to toggle the menu visibility (for click)
             const toggleMenu = () => {
                 menu.classList.toggle('visible');
                 const isExpanded = menu.classList.contains('visible');
                 button.setAttribute('aria-expanded', isExpanded);
             };
 
-            // Function to show the menu (for hover)
             const showMenu = () => {
                 menu.classList.add('visible');
                 button.setAttribute('aria-expanded', 'true');
             };
 
-            // Function to hide the menu (for hover)
             const hideMenu = () => {
                 menu.classList.remove('visible');
                 button.setAttribute('aria-expanded', 'false');
             };
 
-            // 1. Click Listener (for accessibility/mobile)
             button.addEventListener('click', toggleMenu);
-
-            // 2. Hover Listeners (for desktop)
             dropdown.addEventListener('mouseenter', showMenu);
             dropdown.addEventListener('mouseleave', hideMenu);
 
-            // Optional: Close menu when clicking outside of it
             document.addEventListener('click', (event) => {
                 if (!dropdown.contains(event.target) && menu.classList.contains('visible')) {
                     hideMenu();
                 }
             });
         });
-    </script>
 
+        // --- 🔴 SCROLL-TO-TOP LOGIC 🔴 ---
+        const scrollButton = document.getElementById('scroll-to-top');
+
+        // Function to check scroll position and show/hide the button
+        function checkScroll() {
+            if (document.body.scrollTop > 300 || document.documentElement.scrollTop > 300) {
+                scrollButton.classList.add('show');
+            } else {
+                scrollButton.classList.remove('show');
+            }
+        }
+
+        // Function to scroll smoothly to the top
+        window.scrollToTop = function() {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        };
+
+        // Add event listener for scrolling
+        window.onscroll = function() {
+            checkScroll();
+        };
+        // Initial check on load
+        document.addEventListener('DOMContentLoaded', checkScroll);
+    </script>
+    
+    <!-- 🔴 NEW: FIREBASE AND COMMENT LOGIC (Module Script) 🔴 -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { 
+            getAuth, 
+            signInAnonymously, 
+            signInWithCustomToken, 
+            onAuthStateChanged 
+        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { 
+            getFirestore, 
+            collection, 
+            addDoc, 
+            query, 
+            orderBy,
+            onSnapshot,
+            serverTimestamp 
+        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // --- 1. FIREBASE INITIALIZATION ---
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
+
+        if (Object.keys(firebaseConfig).length === 0) {
+            console.error("Firebase configuration is missing.");
+            document.getElementById('loading-message').textContent = "Error: Database configuration missing. Cannot load comments.";
+            return;
+        }
+        
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+        
+        let userId = 'unknown'; // Will be updated after auth
+        let commentsRef = null;
+
+        const userIdDisplay = document.getElementById('user-id-display');
+        const commentsList = document.getElementById('comments-list');
+        const commentForm = document.getElementById('comment-form');
+        const loadingMessage = document.getElementById('loading-message');
+        const submitButton = document.getElementById('submit-button');
+        const formMessage = document.getElementById('form-message');
+
+        // --- 2. AUTHENTICATION ---
+        async function authenticate() {
+            try {
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    await signInAnonymously(auth);
+                }
+            } catch (error) {
+                console.error("Firebase Auth Error:", error);
+                // Fallback to anonymous if custom sign-in fails
+                await signInAnonymously(auth);
+            }
+        }
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                userId = user.uid || crypto.randomUUID();
+                userIdDisplay.textContent = userId;
+                
+                // Set the collection reference (Public data storage)
+                const collectionPath = `/artifacts/${appId}/public/data/blogComments`;
+                commentsRef = collection(db, collectionPath);
+                
+                // Enable the form and start listening for data
+                submitButton.disabled = false;
+                loadingMessage.textContent = "Fetching comments...";
+                subscribeToComments();
+            } else {
+                // Should be covered by the initial sign-in attempt, but good for completeness
+                userId = 'logged-out';
+                userIdDisplay.textContent = 'Please refresh to log in.';
+                submitButton.disabled = true;
+                loadingMessage.textContent = "Authentication required to load comments.";
+            }
+        });
+
+        // Run authentication on load
+        authenticate();
+
+        // --- 3. COMMENT RENDERING ---
+        function renderComments(comments) {
+            commentsList.innerHTML = ''; // Clear existing comments
+
+            if (comments.length === 0) {
+                commentsList.innerHTML = '<p class="text-gray-500 text-center italic">Be the first to leave a comment!</p>';
+                return;
+            }
+
+            comments.forEach(comment => {
+                const date = comment.timestamp ? new Date(comment.timestamp.seconds * 1000).toLocaleString() : 'Just now';
+                
+                const commentElement = document.createElement('div');
+                commentElement.className = 'p-4 bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition duration-200';
+                commentElement.innerHTML = `
+                    <div class="flex justify-between items-start mb-2 border-b pb-1">
+                        <p class="font-bold text-gray-800">${comment.author || 'Anonymous'}</p>
+                        <p class="text-xs text-gray-400">${date}</p>
+                    </div>
+                    <p class="text-gray-700 whitespace-pre-wrap">${comment.text}</p>
+                `;
+                commentsList.appendChild(commentElement);
+            });
+        }
+
+        // --- 4. REAL-TIME DATA SUBSCRIPTION ---
+        function subscribeToComments() {
+            // Create a query to order comments by timestamp descending (newest first)
+            const q = query(commentsRef, orderBy('timestamp', 'desc'));
+
+            onSnapshot(q, (snapshot) => {
+                const comments = [];
+                snapshot.forEach(doc => {
+                    comments.push(doc.data());
+                });
+                renderComments(comments);
+            }, (error) => {
+                console.error("Error listening to comments:", error);
+                commentsList.innerHTML = `<p class="text-red-500 text-center">Error loading comments: ${error.message}</p>`;
+            });
+        }
+
+        // --- 5. FORM SUBMISSION ---
+        commentForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            submitButton.disabled = true;
+            submitButton.textContent = 'Posting...';
+            formMessage.classList.add('hidden');
+
+            const author = document.getElementById('comment-author').value.trim() || 'Anonymous';
+            const text = document.getElementById('comment-text').value.trim();
+
+            if (!text) {
+                formMessage.textContent = 'Comment cannot be empty.';
+                formMessage.classList.remove('hidden');
+                submitButton.disabled = false;
+                submitButton.textContent = 'Post Comment';
+                return;
+            }
+
+            const newComment = {
+                author: author,
+                text: text,
+                userId: userId,
+                timestamp: serverTimestamp() // Firestore server timestamp
+            };
+
+            try {
+                await addDoc(commentsRef, newComment);
+                
+                // Success feedback and clear form
+                document.getElementById('comment-text').value = '';
+                document.getElementById('comment-author').value = ''; 
+                formMessage.textContent = 'Comment posted successfully!';
+                formMessage.classList.remove('hidden');
+                formMessage.classList.remove('text-red-500');
+                formMessage.classList.add('text-green-500');
+
+                // Auto-clear message after a few seconds
+                setTimeout(() => {
+                    formMessage.classList.add('hidden');
+                }, 3000);
+
+            } catch (error) {
+                console.error("Error adding document: ", error);
+                formMessage.textContent = `Error posting comment. Try again.`;
+                formMessage.classList.remove('hidden');
+                formMessage.classList.remove('text-green-500');
+                formMessage.classList.add('text-red-500');
+
+            } finally {
+                submitButton.disabled = false;
+                submitButton.textContent = 'Post Comment';
+            }
+        });
+    </script>
 </body>
 </html>
