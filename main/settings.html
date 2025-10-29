@@ -16,27 +16,50 @@
                         sans: ['Inter', 'sans-serif'],
                     },
                     colors: {
-                        'primary': '#4f46e5',
-                        'primary-dark': '#6366f1',
+                        // Updated to use the Indigo colors from the provided snippet, while keeping the primary aliases
+                        'primary': '#4f46e5', // Indigo-600
+                        'primary-dark': '#6366f1', // Indigo-500
                     }
                 }
             }
         }
     </script>
-    <!-- Load Inter font -->
+    <!-- Load Inter font (Used by the system and the provided snippet) -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
+        /* General Styles and Custom Scrollbar from the external snippet */
+        body {
+            font-family: 'Inter', sans-serif;
+            /* Background color now controlled by CSS variables for light/dark mode */
+        }
+        
+        /* Custom scrollbar for a cleaner look */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #d1d5db; /* Gray-400 */
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f7f9fc;
+        }
+        /* Custom styles for the fixed cookie banner transition (used by JS to hide it smoothly) */
+        .fade-out {
+            opacity: 0 !important;
+            transform: translateY(100%) !important;
+            pointer-events: none;
+        }
+
         /* Custom styles for the segmented controls (No sliding bar logic) */
         .segmented-control {
             display: grid;
-            /* grid-template-columns is now set by Tailwind classes in HTML (e.g., grid-cols-2 or grid-cols-3) */
             border-radius: 0.5rem;
             background-color: var(--bg-control);
             padding: 4px;
             box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
         }
         .segmented-control input[type="radio"] {
-            /* Hide default radio button */
             position: absolute;
             opacity: 0;
             width: 0;
@@ -54,13 +77,13 @@
         }
         /* Highlight the selected option by changing its background and text color */
         .segmented-control input[type="radio"]:checked + label {
-            background-color: var(--bg-active); /* White/Gray in active state */
-            color: var(--text-active); /* Primary color or black/white for active text */
+            background-color: var(--bg-active); 
+            color: var(--text-active); 
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
             border-radius: 0.375rem;
         }
         
-        /* Dropdown Menu Styles */
+        /* Dropdown Menu Styles (Kept for consistency with the new nav bar logic) */
         .dropdown-menu {
             opacity: 0;
             visibility: hidden;
@@ -74,7 +97,7 @@
             transform: translateY(0);
         }
 
-        /* Dark mode variables */
+        /* Dark mode variables (RETAINED) */
         .dark {
             --bg-body: #111827;
             --bg-card: #1f2937;
@@ -87,9 +110,9 @@
             --border-color: #374151;
         }
         
-        /* Light mode variables */
+        /* Light mode variables (RETAINED) */
         :root {
-            --bg-body: #f3f4f6;
+            --bg-body: #f7f9fc; /* Adopted background from snippet */
             --bg-card: #ffffff;
             --text-main: #1f2937;
             --text-secondary: #6b7280;
@@ -109,38 +132,41 @@
 
 <body class="font-sans min-h-screen flex flex-col transition-colors duration-300">
 
-    <!-- 🔴 START: NAVIGATION BAR 🔴 -->
+    <!-- 🔴 START: NAVIGATION BAR (UPDATED) 🔴 -->
+    <!-- Used the structure from the provided snippet, making sure the styling works with light/dark modes -->
     <nav class="w-full bg-white shadow-lg sticky top-0 z-20" style="background-color: var(--bg-card);">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16">
                 <!-- Logo/Name -->
                 <div class="flex-shrink-0">
-                    <span class="text-xl font-bold text-primary">Bobby Reichert</span>
+                    <span class="text-xl font-bold text-indigo-600">Bobby Reichert</span>
                 </div>
                 <!-- Links -->
                 <div class="flex space-x-3 md:space-x-4 text-sm md:text-base">
-                    <a href="home.html" class="text-secondary hover:text-primary font-medium p-2 rounded-md transition duration-150">Home</a>
-                    <a href="about.html" class="text-secondary hover:text-primary font-medium p-2 rounded-md transition duration-150">Bio</a>
-                    <a href="blog.html" class="text-secondary hover:text-primary font-medium p-2 rounded-md transition duration-150">Blog</a>
-                    <a href="contact.html" class="text-secondary hover:text-primary font-medium p-2 rounded-md transition duration-150">Contact</a>
+                    <a href="home.html" class="text-gray-600 hover:text-indigo-600 font-medium p-2 rounded-md transition duration-150">Home</a>
+                    <a href="about.html" class="text-gray-600 hover:text-indigo-600 font-medium p-2 rounded-md transition duration-150">Bio</a>
+                    <a href="blog.html" class="text-gray-600 hover:text-indigo-600 font-medium p-2 rounded-md transition duration-150">Blog</a>
+                    <a href="contact.html" class="text-gray-600 hover:text-indigo-600 font-medium p-2 rounded-md transition duration-150">Contact</a>
                     
                     <!-- DROPDOWN MENU -->
                     <div id="more-dropdown" class="relative group">
-                        <button type="button" class="text-primary font-bold p-2 rounded-md bg-indigo-100 dark:bg-primary-dark dark:text-white transition duration-150 flex items-center" aria-expanded="false" aria-controls="more-menu-items">
+                        <button type="button" class="text-gray-900 font-bold p-2 rounded-md bg-indigo-100 flex items-center" aria-expanded="false" aria-controls="more-menu-items">
                             More
                             <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                         </button>
                         
                         <!-- Dropdown Content -->
-                        <div id="more-menu-items" class="dropdown-menu absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white dark:bg-gray-800 ring-1 ring-black ring-opacity-5 z-30">
+                        <!-- Using light mode styling from snippet for the dropdown menu -->
+                        <div id="more-menu-items" class="dropdown-menu absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-30">
                             <div class="py-1" role="menu" aria-orientation="vertical" aria-labelledby="more-dropdown">
-                                <a href="archived-blogs.html" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-primary transition duration-150" role="menuitem">
+                                <a href="archived-blogs.html" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-indigo-600 transition duration-150" role="menuitem">
                                     Archived Blogs
                                 </a>
-                                <a href="changelog.html" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-primary transition duration-150" role="menuitem">
+                                <a href="changelog.html" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-indigo-600 transition duration-150" role="menuitem">
                                     Changelog
                                 </a>
-                                <a href="settings.html" class="block px-4 py-2 text-sm text-primary dark:text-primary-dark font-bold bg-indigo-50 dark:bg-gray-700 transition duration-150" role="menuitem">
+                                <!-- Highlighted item since we are on the Settings page -->
+                                <a href="settings.html" class="block px-4 py-2 text-sm text-indigo-700 bg-indigo-50 hover:bg-gray-100 transition duration-150 font-semibold" role="menuitem">
                                     Settings
                                 </a>
                             </div>
@@ -162,12 +188,12 @@
             
             <div class="space-y-8 mt-8">
                 
-                <!-- --- Theme Settings Section (Now 2 options) --- -->
+                <!-- --- Theme Settings Section (Only 2 options: Light/Dark) --- -->
                 <div>
                     <h2 class="text-xl font-semibold mb-3">Interface Theme</h2>
                     <p class="text-sm mb-4" style="color: var(--text-secondary);">Customize the look of the application.</p>
                     
-                    <!-- Updated to grid-cols-2 and removed 'auto' option -->
+                    <!-- grid-cols-2 as requested (Auto option removed) -->
                     <div id="theme-control" class="relative segmented-control max-w-sm mx-auto grid-cols-2">
                         
                         <input type="radio" id="theme-light" name="theme" value="light">
@@ -209,19 +235,15 @@
         </div>
     </main>
 
-    <!-- 🔴 START: FOOTER 🔴 -->
-    <footer class="w-full bg-white shadow-t border-t mt-8" style="border-top-color: var(--border-color); background-color: var(--bg-card);">
-        <div class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8 text-center">
-            <p class="text-sm" style="color: var(--text-secondary);">
-                &copy; 2025 Bobby Reichert. All rights reserved. | 
-                <a href="#" class="hover:text-primary transition duration-150">Privacy Policy</a> |
-                <a href="#" class="hover:text-primary transition duration-150">Terms of Service</a>
-            </p>
-        </div>
+    <!-- 🔴 START: FOOTER (UPDATED) 🔴 -->
+    <!-- Used the structure from the provided snippet -->
+    <footer class="w-full bg-gray-100 text-gray-500 text-center text-sm py-4 border-t mt-auto">
+        <p>Last Updated: 10/27/2025</p>
     </footer>
     <!-- 🔴 END: FOOTER 🔴 -->
 
-    <!-- 3. Cookie Consent Banner (Fixed Position) -->
+    <!-- 🔴 START: COOKIE BANNER (UPDATED) 🔴 -->
+    <!-- Used the structure from the provided snippet -->
     <div id="cookie-banner" class="fixed bottom-0 left-0 right-0 p-4 md:p-6 bg-gray-800 text-white shadow-2xl transition-all duration-500 transform translate-y-0 z-50 opacity-100">
         <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between">
             <p class="text-sm mb-3 md:mb-0 md:mr-6">
@@ -232,76 +254,13 @@
             </button>
         </div>
     </div>
-
     <!-- 🔴 END: COOKIE BANNER 🔴 -->
 
 
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            // --- Cookie Consent Logic ---
-            const banner = document.getElementById('cookie-banner');
-            const acceptButton = document.getElementById('accept-cookies');
-            const storageKey = 'cookiesAccepted';
-
-            const accepted = localStorage.getItem(storageKey);
-
-            if (accepted === 'true') {
-                if (banner) {
-                    banner.style.display = 'none';
-                }
-            } else {
-                if (banner) {
-                    banner.style.display = 'block';
-                }
-
-                if (acceptButton) {
-                    acceptButton.addEventListener('click', () => {
-                        localStorage.setItem(storageKey, 'true');
-                        if (banner) {
-                            banner.classList.add('fade-out');
-                            setTimeout(() => {
-                                banner.style.display = 'none';
-                            }, 500);
-                        }
-                    });
-                }
-            }
-
-            // --- Dropdown Toggle Logic (More Menu) ---
-            const dropdown = document.getElementById('more-dropdown');
-            const dropdownButton = dropdown.querySelector('button');
-            const menu = document.getElementById('more-menu-items');
-
-            const toggleMenu = () => {
-                menu.classList.toggle('visible');
-                const isExpanded = menu.classList.contains('visible');
-                dropdownButton.setAttribute('aria-expanded', isExpanded);
-            };
-
-            const showMenu = () => {
-                menu.classList.add('visible');
-                dropdownButton.setAttribute('aria-expanded', 'true');
-            };
-
-            const hideMenu = () => {
-                menu.classList.remove('visible');
-                dropdownButton.setAttribute('aria-expanded', 'false');
-            };
-
-            dropdownButton.addEventListener('click', toggleMenu);
-            dropdown.addEventListener('mouseenter', showMenu);
-            dropdown.addEventListener('mouseleave', hideMenu);
-
-            document.addEventListener('click', (event) => {
-                if (!dropdown.contains(event.target) && menu.classList.contains('visible')) {
-                    hideMenu();
-                }
-            });
-        });
-
         const THEME_KEY = 'app-theme';
         const MENU_KEY = 'app-menu-mode';
-        
+        const COOKIE_KEY = 'cookiesAccepted'; // Updated key to match snippet
         
         const htmlElement = document.documentElement;
         // Check for existence of controls before using in settings page logic
@@ -309,7 +268,9 @@
         const menuControl = document.getElementById('menu-control');
         const saveIndicator = document.getElementById('save-indicator');
 
-        
+        // Cookie banner elements
+        const cookieBanner = document.getElementById('cookie-banner');
+        const acceptButton = document.getElementById('accept-cookies');
         
         /**
          * Applies the selected theme to the <html> element and saves it.
@@ -376,60 +337,56 @@
         }
 
         /**
-         * Initializes the cookie consent banner logic.
+         * Initializes the cookie consent banner logic (Using logic from the external snippet).
          */
         function initializeCookieBanner() {
-            if (cookieBanner) {
-                // If cookies are NOT accepted, show the banner
-                if (!localStorage.getItem(COOKIE_KEY)) {
-                    cookieBanner.classList.remove('hidden');
-                    // Use timeout to enable CSS transition
+            if (!cookieBanner || !acceptButton) return;
+            
+            const accepted = localStorage.getItem(COOKIE_KEY);
+
+            if (accepted === 'true') {
+                cookieBanner.style.display = 'none';
+            } else {
+                cookieBanner.style.display = 'block';
+
+                acceptButton.addEventListener('click', () => {
+                    localStorage.setItem(COOKIE_KEY, 'true');
+                    cookieBanner.classList.add('fade-out');
                     setTimeout(() => {
-                        cookieBanner.classList.remove('translate-y-full');
-                    }, 100); 
-                }
-    
-                if (acceptButton) {
-                    acceptButton.addEventListener('click', () => {
-                        localStorage.setItem(COOKIE_KEY, 'true');
-                        cookieBanner.classList.add('translate-y-full');
-                        // Hide completely after transition
-                        setTimeout(() => {
-                            cookieBanner.classList.add('hidden');
-                        }, 500); 
-                    });
-                }
+                        cookieBanner.style.display = 'none';
+                    }, 500);
+                });
             }
         }
 
         /**
-         * Initializes dropdown listeners for navigation.
+         * Initializes dropdown listeners for navigation (Using logic from the external snippet).
          */
         function initializeDropdownListeners() {
             // --- Dropdown Toggle Logic (More Menu) ---
             const dropdown = document.getElementById('more-dropdown');
             if (!dropdown) return;
 
-            const button = dropdown.querySelector('button');
+            const dropdownButton = dropdown.querySelector('button');
             const menu = document.getElementById('more-menu-items');
 
             const toggleMenu = () => {
                 menu.classList.toggle('visible');
                 const isExpanded = menu.classList.contains('visible');
-                button.setAttribute('aria-expanded', isExpanded);
+                dropdownButton.setAttribute('aria-expanded', isExpanded);
             };
 
             const showMenu = () => {
                 menu.classList.add('visible');
-                button.setAttribute('aria-expanded', 'true');
+                dropdownButton.setAttribute('aria-expanded', 'true');
             };
 
             const hideMenu = () => {
                 menu.classList.remove('visible');
-                button.setAttribute('aria-expanded', 'false');
+                dropdownButton.setAttribute('aria-expanded', 'false');
             };
 
-            button.addEventListener('click', toggleMenu);
+            dropdownButton.addEventListener('click', toggleMenu);
             dropdown.addEventListener('mouseenter', showMenu);
             dropdown.addEventListener('mouseleave', hideMenu);
 
@@ -463,13 +420,12 @@
             // 1. Initialize Dropdown Menu Listeners
             initializeDropdownListeners();
 
-            // 2. Retrieve and apply stored settings (to ensure theme/mode work on ALL pages)
-            // Default theme is now 'light' since 'auto' is removed.
+            // 2. Retrieve and apply stored settings. Defaults are 'light' and 'auto'
             const initialTheme = localStorage.getItem(THEME_KEY) || 'light'; 
             const initialMenuMode = localStorage.getItem(MENU_KEY) || 'auto';
             
             applyTheme(initialTheme);
-            applyMenuMode(initialMenuMode); // This will still update the menu status text if we're on settings.html
+            applyMenuMode(initialMenuMode);
 
             // 3. Initialize Cookie Banner
             initializeCookieBanner();
