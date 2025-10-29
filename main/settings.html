@@ -26,10 +26,10 @@
     <!-- Load Inter font -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
-        /* Custom styles for the segmented controls */
+        /* Custom styles for the segmented controls (No sliding bar logic) */
         .segmented-control {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
+            /* grid-template-columns is now set by Tailwind classes in HTML (e.g., grid-cols-2 or grid-cols-3) */
             border-radius: 0.5rem;
             background-color: var(--bg-control);
             padding: 4px;
@@ -45,7 +45,6 @@
         .segmented-control label {
             text-align: center;
             padding: 0.5rem 0.25rem;
-            border-radius: 0.375rem;
             cursor: pointer;
             transition: all 0.2s;
             font-weight: 600;
@@ -53,11 +52,15 @@
             position: relative;
             z-index: 10;
         }
+        /* Highlight the selected option by changing its background and text color */
         .segmented-control input[type="radio"]:checked + label {
-            color: var(--text-active);
+            background-color: var(--bg-active); /* White/Gray in active state */
+            color: var(--text-active); /* Primary color or black/white for active text */
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
+            border-radius: 0.375rem;
         }
         
-        /* 🔴 NEW: Dropdown Menu Styles 🔴 */
+        /* Dropdown Menu Styles */
         .dropdown-menu {
             opacity: 0;
             visibility: hidden;
@@ -159,39 +162,42 @@
             
             <div class="space-y-8 mt-8">
                 
-                <!-- --- Theme Settings Section --- -->
+                <!-- --- Theme Settings Section (Now 2 options) --- -->
                 <div>
                     <h2 class="text-xl font-semibold mb-3">Interface Theme</h2>
                     <p class="text-sm mb-4" style="color: var(--text-secondary);">Customize the look of the application.</p>
                     
-                    <div id="theme-control" class="relative segmented-control max-w-sm mx-auto">
+                    <!-- Updated to grid-cols-2 and removed 'auto' option -->
+                    <div id="theme-control" class="relative segmented-control max-w-sm mx-auto grid-cols-2">
                         
                         <input type="radio" id="theme-light" name="theme" value="light">
                         <label for="theme-light">Light</label>
                         
                         <input type="radio" id="theme-dark" name="theme" value="dark">
-                        <label for="theme-dark">Dark (unavailable)</label>
+                        <label for="theme-dark">Dark</label>
                         
                     </div>
                 </div>
 
-                <!-- --- Menu Bar Settings Section --- -->
+                <!-- --- Menu Bar Settings Section (Still 3 options) --- -->
                 <div>
                     <h2 class="text-xl font-semibold mb-3 border-t pt-8" style="border-top-color: var(--border-color);">Menu Bar Mode</h2>
                     <p class="text-sm mb-4" style="color: var(--text-secondary);">Define how the main navigation bar behaves.</p>
                     
-                    <div id="menu-control" class="relative segmented-control max-w-sm mx-auto">
+                    <div id="menu-control" class="relative segmented-control max-w-sm mx-auto grid-cols-3">
                         
                         <input type="radio" id="menu-desktop" name="menu" value="desktop">
                         <label for="menu-desktop">Desktop</label>
                         
                         <input type="radio" id="menu-mobile" name="menu" value="mobile">
-                        <label for="menu-mobile">Mobile (unavailable)</label>
+                        <label for="menu-mobile">Mobile</label>
                         
                         <input type="radio" id="menu-auto" name="menu" value="auto">
                         <label for="menu-auto">Auto</label>
                     </div>
-                    
+                    <p id="menu-status" class="mt-4 text-center text-sm italic" style="color: var(--text-secondary);">
+                        Current setting: Auto (Determined by screen size).
+                    </p>
                 </div>
                 
                 <!-- Save Indicator (just for show) -->
@@ -203,46 +209,69 @@
         </div>
     </main>
 
+    <!-- 🔴 START: FOOTER 🔴 -->
+    <footer class="w-full bg-white shadow-t border-t mt-8" style="border-top-color: var(--border-color); background-color: var(--bg-card);">
+        <div class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8 text-center">
+            <p class="text-sm" style="color: var(--text-secondary);">
+                &copy; 2025 Bobby Reichert. All rights reserved. | 
+                <a href="#" class="hover:text-primary transition duration-150">Privacy Policy</a> |
+                <a href="#" class="hover:text-primary transition duration-150">Terms of Service</a>
+            </p>
+        </div>
+    </footer>
+    <!-- 🔴 END: FOOTER 🔴 -->
+
+    <!-- 🔴 START: COOKIE BANNER 🔴 -->
+    <div id="cookie-banner" class="fixed bottom-0 left-0 right-0 p-4 bg-gray-900 dark:bg-gray-700 text-white z-50 transform translate-y-full transition-transform duration-500 hidden">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between">
+            <p class="text-sm text-center md:text-left mb-3 md:mb-0">
+                This site uses cookies to enhance your experience. By continuing to use this site, you agree to our 
+                <a href="#" class="underline text-primary-dark font-medium">Cookie Policy</a>.
+            </p>
+            <button id="accept-cookies" class="w-full md:w-auto px-4 py-2 bg-primary hover:bg-primary-dark text-white text-sm font-medium rounded-lg shadow-md transition duration-200 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-opacity-50">
+                Accept and Close
+            </button>
+        </div>
+    </div>
+    <!-- 🔴 END: COOKIE BANNER 🔴 -->
+
+
     <script>
         const THEME_KEY = 'app-theme';
         const MENU_KEY = 'app-menu-mode';
+        const COOKIE_KEY = 'cookies-accepted';
         
         const htmlElement = document.documentElement;
+        // Check for existence of controls before using in settings page logic
         const themeControl = document.getElementById('theme-control');
         const menuControl = document.getElementById('menu-control');
-        const menuStatus = document.getElementById('menu-status');
         const saveIndicator = document.getElementById('save-indicator');
+
+        // Cookie banner elements
+        const cookieBanner = document.getElementById('cookie-banner');
+        const acceptButton = document.getElementById('accept-cookies');
         
         /**
-         * Converts stored 'auto' theme preference into 'dark' or 'light' 
-         * based on the system's current setting.
-         * @param {string} themePreference The theme preference (light|dark|auto).
-         * @returns {string} The resolved theme (light|dark).
-         */
-        function resolveTheme(themePreference) {
-            if (themePreference === 'auto') {
-                return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-            }
-            return themePreference;
-        }
-
-        /**
          * Applies the selected theme to the <html> element and saves it.
-         * @param {string} preference The theme preference (light|dark|auto).
+         * Only handles 'light' and 'dark' now.
+         * @param {string} preference The theme preference (light|dark).
          */
         function applyTheme(preference) {
             localStorage.setItem(THEME_KEY, preference);
-            const resolvedTheme = resolveTheme(preference);
             
-            if (resolvedTheme === 'dark') {
+            // Check the preference and apply 'dark' class
+            if (preference === 'dark') {
                 htmlElement.classList.add('dark');
             } else {
                 htmlElement.classList.remove('dark');
             }
 
-            // Update the segmented control position
-            updateControlIndicator(themeControl, preference);
-            showSaveIndicator();
+            // Only attempt to update the UI if the controls exist (i.e., we are on settings.html)
+            if (themeControl) {
+                const themeInput = themeControl.querySelector(`input[value="${preference}"]`);
+                if(themeInput) { themeInput.checked = true; }
+                showSaveIndicator();
+            }
         }
 
         /**
@@ -252,79 +281,75 @@
         function applyMenuMode(mode) {
             localStorage.setItem(MENU_KEY, mode);
             
-            let statusText = '';
-            if (mode === 'auto') {
-                statusText = 'Auto (Determined by screen size).';
-            } else if (mode === 'desktop') {
-                statusText = 'Desktop mode enforced (Full navigation visible).';
-            } else {
-                statusText = 'Mobile mode enforced (Hamburger menu).';
-            }
-            menuStatus.textContent = 'Current setting: ' + statusText;
-            
-            // Update the segmented control position
-            updateControlIndicator(menuControl, mode);
-            showSaveIndicator();
-        }
-
-        /**
-         * Visually moves the segmented control indicator to the selected radio button.
-         * @param {HTMLElement} controlElement The main segmented control container.
-         * @param {string} value The value of the selected option.
-         */
-        function updateControlIndicator(controlElement, value) {
-            const checkedInput = controlElement.querySelector(`input[value="${value}"]`);
-            if (checkedInput) {
-                checkedInput.checked = true; // Ensure the radio button is checked
+            // Only attempt to update the UI if the controls exist
+            if (menuControl) {
+                const menuStatus = document.getElementById('menu-status');
                 
-                // Calculate position and width of the selected label
-                const inputElements = Array.from(controlElement.children).filter(el => el.tagName === 'INPUT');
-                const index = inputElements.indexOf(checkedInput);
-                
-                // The index corresponds to the grid column position (0, 1, or 2)
-                const translateX = (100 / 3) * index;
-                const width = 100 / 3;
-
-                // Simpler visual indicator solution using a dedicated div instead of ::before:
-                let indicator = controlElement.querySelector('.segmented-indicator');
-                if (!indicator) {
-                    indicator = document.createElement('div');
-                    indicator.classList.add('segmented-indicator');
-                    indicator.style.cssText = `
-                        position: absolute;
-                        top: 4px;
-                        bottom: 4px;
-                        transition: transform 0.2s ease-in-out;
-                        background-color: var(--bg-active);
-                        border-radius: 0.375rem;
-                        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
-                        z-index: 5;
-                        width: ${width}%;
-                        transform: translateX(${translateX}%);
-                    `;
-                    controlElement.prepend(indicator);
+                let statusText = '';
+                if (mode === 'auto') {
+                    statusText = 'Auto (Determined by screen size).';
+                } else if (mode === 'desktop') {
+                    statusText = 'Desktop mode enforced (Full navigation visible).';
                 } else {
-                    indicator.style.transform = `translateX(${translateX}%)`;
+                    statusText = 'Mobile mode enforced (Hamburger menu).';
                 }
+                menuStatus.textContent = 'Current setting: ' + statusText;
+                
+                // Set the correct radio button state
+                const menuInput = menuControl.querySelector(`input[value="${mode}"]`);
+                if(menuInput) { menuInput.checked = true; }
+                showSaveIndicator();
             }
         }
         
         /** Shows the "Settings saved!" indicator briefly. */
         function showSaveIndicator() {
-            saveIndicator.classList.remove('opacity-0');
-            saveIndicator.classList.add('opacity-100');
-            clearTimeout(window.saveTimer);
-            window.saveTimer = setTimeout(() => {
-                saveIndicator.classList.remove('opacity-100');
-                saveIndicator.classList.add('opacity-0');
-            }, 1500);
+            if (saveIndicator) {
+                saveIndicator.classList.remove('opacity-0');
+                saveIndicator.classList.add('opacity-100');
+                clearTimeout(window.saveTimer);
+                window.saveTimer = setTimeout(() => {
+                    saveIndicator.classList.remove('opacity-100');
+                    saveIndicator.classList.add('opacity-0');
+                }, 1500);
+            }
         }
 
-        // --- Event Listeners ---
-        
+        /**
+         * Initializes the cookie consent banner logic.
+         */
+        function initializeCookieBanner() {
+            if (cookieBanner) {
+                // If cookies are NOT accepted, show the banner
+                if (!localStorage.getItem(COOKIE_KEY)) {
+                    cookieBanner.classList.remove('hidden');
+                    // Use timeout to enable CSS transition
+                    setTimeout(() => {
+                        cookieBanner.classList.remove('translate-y-full');
+                    }, 100); 
+                }
+    
+                if (acceptButton) {
+                    acceptButton.addEventListener('click', () => {
+                        localStorage.setItem(COOKIE_KEY, 'true');
+                        cookieBanner.classList.add('translate-y-full');
+                        // Hide completely after transition
+                        setTimeout(() => {
+                            cookieBanner.classList.add('hidden');
+                        }, 500); 
+                    });
+                }
+            }
+        }
+
+        /**
+         * Initializes dropdown listeners for navigation.
+         */
         function initializeDropdownListeners() {
             // --- Dropdown Toggle Logic (More Menu) ---
             const dropdown = document.getElementById('more-dropdown');
+            if (!dropdown) return;
+
             const button = dropdown.querySelector('button');
             const menu = document.getElementById('more-menu-items');
 
@@ -355,49 +380,39 @@
             });
         }
         
-        // 1. Theme Listener
-        themeControl.addEventListener('change', (event) => {
-            if (event.target.name === 'theme') {
-                applyTheme(event.target.value);
-            }
-        });
+        // --- Event Listeners (Only active on settings.html) ---
+        if (themeControl) {
+            themeControl.addEventListener('change', (event) => {
+                if (event.target.name === 'theme') {
+                    applyTheme(event.target.value);
+                }
+            });
+        }
 
-        // 2. Menu Listener
-        menuControl.addEventListener('change', (event) => {
-            if (event.target.name === 'menu') {
-                applyMenuMode(event.target.value);
-            }
-        });
+        if (menuControl) {
+            menuControl.addEventListener('change', (event) => {
+                if (event.target.name === 'menu') {
+                    applyMenuMode(event.target.value);
+                }
+            });
+        }
 
-        // 3. System Dark Mode Listener (for 'auto' theme)
-        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
-            const currentPreference = localStorage.getItem(THEME_KEY) || 'auto';
-            if (currentPreference === 'auto') {
-                // Re-apply the 'auto' theme to re-evaluate the system preference
-                applyTheme('auto'); 
-            }
-        });
-
-
-        // --- Initialization ---
+        // --- Core Initialization ---
 
         function initializeSettings() {
             // 1. Initialize Dropdown Menu Listeners
             initializeDropdownListeners();
 
-            // 2. Retrieve stored settings or use 'auto' as default
-            const initialTheme = localStorage.getItem(THEME_KEY) || 'auto';
+            // 2. Retrieve and apply stored settings (to ensure theme/mode work on ALL pages)
+            // Default theme is now 'light' since 'auto' is removed.
+            const initialTheme = localStorage.getItem(THEME_KEY) || 'light'; 
             const initialMenuMode = localStorage.getItem(MENU_KEY) || 'auto';
             
-            // Apply theme immediately (without saving again)
             applyTheme(initialTheme);
-            
-            // Apply menu mode immediately (without saving again)
-            applyMenuMode(initialMenuMode);
-            
-            // Set the correct radio button states and indicator positions on load
-            updateControlIndicator(themeControl, initialTheme);
-            updateControlIndicator(menuControl, initialMenuMode);
+            applyMenuMode(initialMenuMode); // This will still update the menu status text if we're on settings.html
+
+            // 3. Initialize Cookie Banner
+            initializeCookieBanner();
         }
 
         // Run initialization when the document is ready
