@@ -267,6 +267,38 @@
                 }
             }
 
+            // --- Dropdown Toggle Logic (More Menu) ---
+            const dropdown = document.getElementById('more-dropdown');
+            const dropdownButton = dropdown.querySelector('button');
+            const menu = document.getElementById('more-menu-items');
+
+            const toggleMenu = () => {
+                menu.classList.toggle('visible');
+                const isExpanded = menu.classList.contains('visible');
+                dropdownButton.setAttribute('aria-expanded', isExpanded);
+            };
+
+            const showMenu = () => {
+                menu.classList.add('visible');
+                dropdownButton.setAttribute('aria-expanded', 'true');
+            };
+
+            const hideMenu = () => {
+                menu.classList.remove('visible');
+                dropdownButton.setAttribute('aria-expanded', 'false');
+            };
+
+            dropdownButton.addEventListener('click', toggleMenu);
+            dropdown.addEventListener('mouseenter', showMenu);
+            dropdown.addEventListener('mouseleave', hideMenu);
+
+            document.addEventListener('click', (event) => {
+                if (!dropdown.contains(event.target) && menu.classList.contains('visible')) {
+                    hideMenu();
+                }
+            });
+        });
+
         const THEME_KEY = 'app-theme';
         const MENU_KEY = 'app-menu-mode';
         
