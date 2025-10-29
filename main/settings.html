@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Settings</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Configure Tailwind -->
+    <script>
+        tailwind.config = {
+            darkMode: 'class', // Enable dark mode based on 'dark' class on the html element
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        'primary': '#4f46e5',
+                        'primary-dark': '#6366f1',
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Load Inter font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Custom styles for the segmented controls */
+        .segmented-control {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            border-radius: 0.5rem;
+            background-color: var(--bg-control);
+            padding: 4px;
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        .segmented-control input[type="radio"] {
+            /* Hide default radio button */
+            position: absolute;
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .segmented-control label {
+            text-align: center;
+            padding: 0.5rem 0.25rem;
+            border-radius: 0.375rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 600;
+            color: var(--text-label);
+            position: relative;
+            z-index: 10;
+        }
+        .segmented-control input[type="radio"]:checked + label {
+            color: var(--text-active);
+        }
+        
+        /* 🔴 NEW: Dropdown Menu Styles 🔴 */
+        .dropdown-menu {
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.2s ease-out;
+        }
+
+        .dropdown-menu.visible {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        /* Dark mode variables */
+        .dark {
+            --bg-body: #111827;
+            --bg-card: #1f2937;
+            --text-main: #f3f4f6;
+            --text-secondary: #9ca3af;
+            --bg-control: #374151;
+            --bg-active: #4b5563;
+            --text-label: #d1d5db;
+            --text-active: #ffffff;
+            --border-color: #374151;
+        }
+        
+        /* Light mode variables */
+        :root {
+            --bg-body: #f3f4f6;
+            --bg-card: #ffffff;
+            --text-main: #1f2937;
+            --text-secondary: #6b7280;
+            --bg-control: #e5e7eb;
+            --bg-active: #ffffff;
+            --text-label: #4b5563;
+            --text-active: #4f46e5;
+            --border-color: #e5e7eb;
+        }
+        
+        body {
+            background-color: var(--bg-body);
+            color: var(--text-main);
+        }
+    </style>
+</head>
+
+<body class="font-sans min-h-screen flex flex-col transition-colors duration-300">
+
+    <!-- 🔴 START: NAVIGATION BAR 🔴 -->
+    <nav class="w-full bg-white shadow-lg sticky top-0 z-20" style="background-color: var(--bg-card);">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <!-- Logo/Name -->
+                <div class="flex-shrink-0">
+                    <span class="text-xl font-bold text-primary">Bobby Reichert</span>
+                </div>
+                <!-- Links -->
+                <div class="flex space-x-3 md:space-x-4 text-sm md:text-base">
+                    <a href="home.html" class="text-secondary hover:text-primary font-medium p-2 rounded-md transition duration-150">Home</a>
+                    <a href="about.html" class="text-secondary hover:text-primary font-medium p-2 rounded-md transition duration-150">Bio</a>
+                    <a href="blog.html" class="text-secondary hover:text-primary font-medium p-2 rounded-md transition duration-150">Blog</a>
+                    <a href="contact.html" class="text-secondary hover:text-primary font-medium p-2 rounded-md transition duration-150">Contact</a>
+                    
+                    <!-- DROPDOWN MENU -->
+                    <div id="more-dropdown" class="relative group">
+                        <button type="button" class="text-primary font-bold p-2 rounded-md bg-indigo-100 dark:bg-primary-dark dark:text-white transition duration-150 flex items-center" aria-expanded="false" aria-controls="more-menu-items">
+                            More
+                            <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                        </button>
+                        
+                        <!-- Dropdown Content -->
+                        <div id="more-menu-items" class="dropdown-menu absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white dark:bg-gray-800 ring-1 ring-black ring-opacity-5 z-30">
+                            <div class="py-1" role="menu" aria-orientation="vertical" aria-labelledby="more-dropdown">
+                                <a href="archived-blogs.html" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-primary transition duration-150" role="menuitem">
+                                    Archived Blogs
+                                </a>
+                                <a href="changelog.html" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-primary transition duration-150" role="menuitem">
+                                    Changelog
+                                </a>
+                                <a href="settings.html" class="block px-4 py-2 text-sm text-primary dark:text-primary-dark font-bold bg-indigo-50 dark:bg-gray-700 transition duration-150" role="menuitem">
+                                    Settings
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+    <!-- 🔴 END: NAVIGATION BAR 🔴 -->
+
+
+    <main class="flex-grow flex items-center justify-center p-4">
+        <div id="settings-card" class="w-full max-w-lg shadow-xl rounded-xl p-6 md:p-10 transition-colors duration-300" style="background-color: var(--bg-card); color: var(--text-main);">
+            
+            <!-- Header -->
+            <h1 class="text-3xl font-bold mb-2">Application Settings</h1>
+            <p class="text-sm" style="color: var(--text-secondary);">Manage your personalized interface preferences.</p>
+            
+            <div class="space-y-8 mt-8">
+                
+                <!-- --- Theme Settings Section --- -->
+                <div>
+                    <h2 class="text-xl font-semibold mb-3">Interface Theme</h2>
+                    <p class="text-sm mb-4" style="color: var(--text-secondary);">Customize the look of the application.</p>
+                    
+                    <div id="theme-control" class="relative segmented-control max-w-sm mx-auto">
+                        
+                        <input type="radio" id="theme-light" name="theme" value="light">
+                        <label for="theme-light">Light</label>
+                        
+                        <input type="radio" id="theme-dark" name="theme" value="dark">
+                        <label for="theme-dark">Dark (unavailable)</label>
+                        
+                    </div>
+                </div>
+
+                <!-- --- Menu Bar Settings Section --- -->
+                <div>
+                    <h2 class="text-xl font-semibold mb-3 border-t pt-8" style="border-top-color: var(--border-color);">Menu Bar Mode</h2>
+                    <p class="text-sm mb-4" style="color: var(--text-secondary);">Define how the main navigation bar behaves.</p>
+                    
+                    <div id="menu-control" class="relative segmented-control max-w-sm mx-auto">
+                        
+                        <input type="radio" id="menu-desktop" name="menu" value="desktop">
+                        <label for="menu-desktop">Desktop</label>
+                        
+                        <input type="radio" id="menu-mobile" name="menu" value="mobile">
+                        <label for="menu-mobile">Mobile (unavailable)</label>
+                        
+                        <input type="radio" id="menu-auto" name="menu" value="auto">
+                        <label for="menu-auto">Auto</label>
+                    </div>
+                    
+                </div>
+                
+                <!-- Save Indicator (just for show) -->
+                <div id="save-indicator" class="text-center text-sm font-medium opacity-0 transition-opacity duration-500 pt-4 text-primary-dark">
+                    Settings saved!
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const THEME_KEY = 'app-theme';
+        const MENU_KEY = 'app-menu-mode';
+        
+        const htmlElement = document.documentElement;
+        const themeControl = document.getElementById('theme-control');
+        const menuControl = document.getElementById('menu-control');
+        const menuStatus = document.getElementById('menu-status');
+        const saveIndicator = document.getElementById('save-indicator');
+        
+        /**
+         * Converts stored 'auto' theme preference into 'dark' or 'light' 
+         * based on the system's current setting.
+         * @param {string} themePreference The theme preference (light|dark|auto).
+         * @returns {string} The resolved theme (light|dark).
+         */
+        function resolveTheme(themePreference) {
+            if (themePreference === 'auto') {
+                return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+            }
+            return themePreference;
+        }
+
+        /**
+         * Applies the selected theme to the <html> element and saves it.
+         * @param {string} preference The theme preference (light|dark|auto).
+         */
+        function applyTheme(preference) {
+            localStorage.setItem(THEME_KEY, preference);
+            const resolvedTheme = resolveTheme(preference);
+            
+            if (resolvedTheme === 'dark') {
+                htmlElement.classList.add('dark');
+            } else {
+                htmlElement.classList.remove('dark');
+            }
+
+            // Update the segmented control position
+            updateControlIndicator(themeControl, preference);
+            showSaveIndicator();
+        }
+
+        /**
+         * Saves the menu bar mode preference and updates status text.
+         * @param {string} mode The menu mode preference (desktop|mobile|auto).
+         */
+        function applyMenuMode(mode) {
+            localStorage.setItem(MENU_KEY, mode);
+            
+            let statusText = '';
+            if (mode === 'auto') {
+                statusText = 'Auto (Determined by screen size).';
+            } else if (mode === 'desktop') {
+                statusText = 'Desktop mode enforced (Full navigation visible).';
+            } else {
+                statusText = 'Mobile mode enforced (Hamburger menu).';
+            }
+            menuStatus.textContent = 'Current setting: ' + statusText;
+            
+            // Update the segmented control position
+            updateControlIndicator(menuControl, mode);
+            showSaveIndicator();
+        }
+
+        /**
+         * Visually moves the segmented control indicator to the selected radio button.
+         * @param {HTMLElement} controlElement The main segmented control container.
+         * @param {string} value The value of the selected option.
+         */
+        function updateControlIndicator(controlElement, value) {
+            const checkedInput = controlElement.querySelector(`input[value="${value}"]`);
+            if (checkedInput) {
+                checkedInput.checked = true; // Ensure the radio button is checked
+                
+                // Calculate position and width of the selected label
+                const inputElements = Array.from(controlElement.children).filter(el => el.tagName === 'INPUT');
+                const index = inputElements.indexOf(checkedInput);
+                
+                // The index corresponds to the grid column position (0, 1, or 2)
+                const translateX = (100 / 3) * index;
+                const width = 100 / 3;
+
+                // Simpler visual indicator solution using a dedicated div instead of ::before:
+                let indicator = controlElement.querySelector('.segmented-indicator');
+                if (!indicator) {
+                    indicator = document.createElement('div');
+                    indicator.classList.add('segmented-indicator');
+                    indicator.style.cssText = `
+                        position: absolute;
+                        top: 4px;
+                        bottom: 4px;
+                        transition: transform 0.2s ease-in-out;
+                        background-color: var(--bg-active);
+                        border-radius: 0.375rem;
+                        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
+                        z-index: 5;
+                        width: ${width}%;
+                        transform: translateX(${translateX}%);
+                    `;
+                    controlElement.prepend(indicator);
+                } else {
+                    indicator.style.transform = `translateX(${translateX}%)`;
+                }
+            }
+        }
+        
+        /** Shows the "Settings saved!" indicator briefly. */
+        function showSaveIndicator() {
+            saveIndicator.classList.remove('opacity-0');
+            saveIndicator.classList.add('opacity-100');
+            clearTimeout(window.saveTimer);
+            window.saveTimer = setTimeout(() => {
+                saveIndicator.classList.remove('opacity-100');
+                saveIndicator.classList.add('opacity-0');
+            }, 1500);
+        }
+
+        // --- Event Listeners ---
+        
+        function initializeDropdownListeners() {
+            // --- Dropdown Toggle Logic (More Menu) ---
+            const dropdown = document.getElementById('more-dropdown');
+            const button = dropdown.querySelector('button');
+            const menu = document.getElementById('more-menu-items');
+
+            const toggleMenu = () => {
+                menu.classList.toggle('visible');
+                const isExpanded = menu.classList.contains('visible');
+                button.setAttribute('aria-expanded', isExpanded);
+            };
+
+            const showMenu = () => {
+                menu.classList.add('visible');
+                button.setAttribute('aria-expanded', 'true');
+            };
+
+            const hideMenu = () => {
+                menu.classList.remove('visible');
+                button.setAttribute('aria-expanded', 'false');
+            };
+
+            button.addEventListener('click', toggleMenu);
+            dropdown.addEventListener('mouseenter', showMenu);
+            dropdown.addEventListener('mouseleave', hideMenu);
+
+            document.addEventListener('click', (event) => {
+                if (!dropdown.contains(event.target) && menu.classList.contains('visible')) {
+                    hideMenu();
+                }
+            });
+        }
+        
+        // 1. Theme Listener
+        themeControl.addEventListener('change', (event) => {
+            if (event.target.name === 'theme') {
+                applyTheme(event.target.value);
+            }
+        });
+
+        // 2. Menu Listener
+        menuControl.addEventListener('change', (event) => {
+            if (event.target.name === 'menu') {
+                applyMenuMode(event.target.value);
+            }
+        });
+
+        // 3. System Dark Mode Listener (for 'auto' theme)
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+            const currentPreference = localStorage.getItem(THEME_KEY) || 'auto';
+            if (currentPreference === 'auto') {
+                // Re-apply the 'auto' theme to re-evaluate the system preference
+                applyTheme('auto'); 
+            }
+        });
+
+
+        // --- Initialization ---
+
+        function initializeSettings() {
+            // 1. Initialize Dropdown Menu Listeners
+            initializeDropdownListeners();
+
+            // 2. Retrieve stored settings or use 'auto' as default
+            const initialTheme = localStorage.getItem(THEME_KEY) || 'auto';
+            const initialMenuMode = localStorage.getItem(MENU_KEY) || 'auto';
+            
+            // Apply theme immediately (without saving again)
+            applyTheme(initialTheme);
+            
+            // Apply menu mode immediately (without saving again)
+            applyMenuMode(initialMenuMode);
+            
+            // Set the correct radio button states and indicator positions on load
+            updateControlIndicator(themeControl, initialTheme);
+            updateControlIndicator(menuControl, initialMenuMode);
+        }
+
+        // Run initialization when the document is ready
+        document.addEventListener('DOMContentLoaded', initializeSettings);
+
+    </script>
+</body>
+</html>
