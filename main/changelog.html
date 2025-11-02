@@ -53,6 +53,17 @@
             transform: translateY(0);
         }
 
+        /* 🔴 MOBILE MENU STYLES (NEW) 🔴 */
+        #mobile-menu {
+            transform: translateX(100%);
+            transition: transform 0.3s ease-out;
+            pointer-events: none; /* Initially disabled for clicking elements behind it */
+        }
+        #mobile-menu.open {
+            transform: translateX(0);
+            pointer-events: auto; /* Enable interaction when open */
+        }
+
         /* 🔴 CHANGELOG TIMELINE STYLES 🔴 */
         .timeline {
             position: relative;
@@ -108,8 +119,9 @@
                 <div class="flex-shrink-0">
                     <span class="text-xl font-bold text-indigo-600">Bobby Reichert</span>
                 </div>
-                <!-- Links -->
-                <div class="flex space-x-3 md:space-x-4 text-sm md:text-base">
+                
+                <!-- Desktop Links & Dropdown (Hidden on Mobile) -->
+                <div class="hidden md:flex items-center space-x-3 md:space-x-4 text-sm md:text-base">
                     <a href="home.html" class="text-gray-600 hover:text-indigo-600 font-medium p-2 rounded-md transition duration-150">Home</a>
                     <a href="about.html" class="text-gray-600 hover:text-indigo-600 font-medium p-2 rounded-md transition duration-150">Bio</a>
                     <a href="blog.html" class="text-gray-600 hover:text-indigo-600 font-medium p-2 rounded-md transition duration-150">Blog</a>
@@ -117,9 +129,9 @@
                     
                     <!-- DROPDOWN MENU - 'More' is highlighted as the active page section -->
                     <div id="more-dropdown" class="relative group">
-                        <button type="button" class="text-gray-900 font-bold p-2 rounded-md bg-indigo-100 flex items-center" aria-expanded="false" aria-controls="more-menu-items">
+                        <button type="button" class="text-gray-900 font-bold p-2 rounded-md bg-indigo-100 flex items-center hover:bg-indigo-200 transition" aria-expanded="false" aria-controls="more-menu-items">
                             More
-                            <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                            <svg class="w-4 h-4 ml-1 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                         </button>
                         
                         <!-- Dropdown Content -->
@@ -139,9 +151,45 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- Mobile Menu Button (Visible on Mobile) -->
+                <div class="md:hidden">
+                    <button id="mobile-menu-button" type="button" class="text-gray-500 hover:text-gray-700 inline-flex items-center justify-center p-2 rounded-md transition duration-150" aria-controls="mobile-menu" aria-expanded="false">
+                        <span class="sr-only">Open main menu</span>
+                        <!-- Hamburger Icon -->
+                        <svg id="hamburger-icon" class="block h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                        </svg>
+                        <!-- Close Icon (X) -->
+                        <svg id="close-icon" class="hidden h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
             </div>
         </div>
     </nav>
+    
+    <!-- 🔴 START: MOBILE MENU PANEL 🔴 -->
+    <div id="mobile-menu" class="fixed inset-0 top-16 w-full h-full md:hidden z-10 bg-white">
+        <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3 flex flex-col">
+            <!-- Main Links -->
+            <a href="home.html" class="text-lg font-medium block px-3 py-2 rounded-md text-gray-700 hover:bg-gray-100 hover:text-indigo-600 transition duration-150">Home</a>
+            <a href="about.html" class="text-lg font-medium block px-3 py-2 rounded-md text-gray-700 hover:bg-gray-100 hover:text-indigo-600 transition duration-150">Bio</a>
+            <a href="blog.html" class="text-lg font-medium block px-3 py-2 rounded-md text-gray-700 hover:bg-gray-100 hover:text-indigo-600 transition duration-150">Blog</a>
+            <a href="contact.html" class="text-lg font-medium block px-3 py-2 rounded-md text-gray-700 hover:bg-gray-100 hover:text-indigo-600 transition duration-150">Contact</a>
+            
+            <!-- Separator -->
+            <div class="h-px w-full my-2 bg-gray-200"></div>
+
+            <!-- "More" Dropdown Items -->
+            <a href="archived-blogs.html" class="text-md block px-3 py-2 rounded-md text-gray-600 hover:bg-gray-100 hover:text-indigo-600 transition duration-150">Archived Blogs</a>
+            <a href="#" class="text-md block px-3 py-2 rounded-md text-indigo-700 bg-indigo-50 font-semibold transition duration-150">Changelog</a>
+            <a href="planned-features.html" class="text-md block px-3 py-2 rounded-md text-gray-600 hover:bg-gray-100 hover:text-indigo-600 transition duration-150">Future Features</a>
+            <a href="settings.html" class="text-md block px-3 py-2 rounded-md text-gray-600 hover:bg-gray-100 hover:text-indigo-600 transition duration-150">Settings</a>
+        </div>
+    </div>
+    <!-- 🔴 END: MOBILE MENU PANEL 🔴 -->
 
     <!-- Main Content Area: Changelog -->
     <main class="w-full max-w-3xl flex-grow p-4 md:p-8">
@@ -151,16 +199,29 @@
                 Changelog
             </h1>
             <p class="text-lg font-light text-indigo-600 mb-8 text-center">
-                A history of website updates and improvements.
+                A history of website updates.
             </p>
 
             <!-- 🔴 START: TIMELINE CONTAINER 🔴 -->
             <div class="timeline">
-                 <!-- Timeline Item: Version 1.22 -->
+                <!-- Timeline Item: Version 1.23 -->
+                <div class="timeline-item">
+                    <div class="bg-blue-50 p-4 rounded-lg shadow-md border-t-4 border-blue-600">
+                        <p class="text-xs font-medium text-blue-600 mb-1">November 1, 2025</p>
+                        <h3 class="text-xl font-bold text-gray-800 mb-2">Version 1.23: Mobile menu</h3>
+                        <ul class="list-disc ml-5 space-y-1 text-sm text-gray-700">
+                            
+                            <li>New mobile menu shown on narrow displays (Previously menu elements would go off the side of the screen)</li>
+                            <li>Settings menu development (Beta)</li>
+                            <li>Bug Fixes</li>
+                        </ul>
+                    </div>
+                </div>
+                <!-- Timeline Item: Version 1.22 -->
                 <div class="timeline-item">
                     <div class="bg-blue-50 p-4 rounded-lg shadow-md border-t-4 border-blue-600">
                         <p class="text-xs font-medium text-blue-600 mb-1">October 28, 2025</p>
-                        <h3 class="text-xl font-bold text-gray-800 mb-2">Version 1.21: Planned Features & Known Bugs page </h3>
+                        <h3 class="text-xl font-bold text-gray-800 mb-2">Version 1.22: Planned Features & Known Bugs page </h3>
                         <ul class="list-disc ml-5 space-y-1 text-sm text-gray-700">
                             
                             <li>New page to check first before reporting a bug or suggesting a new feature</li>
@@ -232,7 +293,7 @@
                             <li>Fixed broken links</li>
                             <li>Moved website to Cloudflare platform</li>
                             <li>Reordered blog entry order: now shows more recent at the top</li>
-                            <li>Fixed cookies</li>
+                            <li>Fixed cookies and Google Analytics</li>
                         </ul>
                     </div>
                 </div>
@@ -244,8 +305,8 @@
                         <h3 class="text-xl font-bold text-gray-800 mb-2">Version 1.0: Initial Website Launch</h3>
                         <ul class="list-disc ml-5 space-y-1 text-sm text-gray-700">
                             <li>Launched initial pages on w3spaces: Home, Bio, Blog, and Contact.</li>
-                            <li>Implemented the universal cookies and consent banner.</li>
-                            <li>Established design using Tailwind CSS and the Inter font family.</li>
+                            <li>Implemented cookies and consent banner.</li>
+                            <li>Design using Tailwind CSS and the Inter font family.</li>
                         </ul>
                     </div>
                 </div>
@@ -258,7 +319,7 @@
 
     <!-- 2. Footer -->
     <footer class="w-full bg-gray-100 text-gray-500 text-center text-sm py-4 border-t mt-auto">
-        <p>Last Updated: 10/27/2025</p>
+        <p>Last Updated: 11/01/2025</p>
     </footer>
 
     <!-- 3. Cookie Consent Banner (Fixed Position) -->
@@ -273,9 +334,42 @@
         </div>
     </div>
 
-    <!-- JavaScript for Cookie Consent and Dropdown Logic -->
+    <!-- JavaScript for Cookie Consent, Dropdown Logic, and Mobile Menu (UPDATED) -->
     <script>
+        // Mobile menu elements (must be defined globally or within the DOMContentLoaded listener)
+        let mobileMenuButton;
+        let mobileMenu;
+        let hamburgerIcon;
+        let closeIcon;
+
+        /**
+         * Toggles the mobile navigation menu open and closed.
+         */
+        function toggleMobileMenu() {
+            if (!mobileMenu) return; // Guard against running before DOM is ready
+
+            const isOpen = mobileMenu.classList.contains('open');
+            mobileMenu.classList.toggle('open');
+            
+            // Toggle icons and aria-expanded state
+            if (isOpen) {
+                hamburgerIcon.classList.remove('hidden');
+                closeIcon.classList.add('hidden');
+                mobileMenuButton.setAttribute('aria-expanded', 'false');
+            } else {
+                hamburgerIcon.classList.add('hidden');
+                closeIcon.classList.remove('hidden');
+                mobileMenuButton.setAttribute('aria-expanded', 'true');
+            }
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
+            // Initialize mobile menu elements
+            mobileMenuButton = document.getElementById('mobile-menu-button');
+            mobileMenu = document.getElementById('mobile-menu');
+            hamburgerIcon = document.getElementById('hamburger-icon');
+            closeIcon = document.getElementById('close-icon');
+
             // --- Cookie Consent Logic ---
             const banner = document.getElementById('cookie-banner');
             const acceptButton = document.getElementById('accept-cookies');
@@ -326,15 +420,42 @@
                 dropdownButton.setAttribute('aria-expanded', 'false');
             };
 
-            dropdownButton.addEventListener('click', toggleMenu);
+            // Desktop Dropdown Listeners
+            // Using mouseenter/mouseleave for hover effects on desktop
             dropdown.addEventListener('mouseenter', showMenu);
             dropdown.addEventListener('mouseleave', hideMenu);
+            // Click listener for desktop to allow keyboard/touch toggle if needed
+            dropdownButton.addEventListener('click', (e) => {
+                if (window.innerWidth >= 768) {
+                    e.preventDefault(); 
+                    // No action needed here on click, hover handles it, but keeps button functional.
+                }
+            });
 
+
+            // Close dropdown when clicking outside on desktop
             document.addEventListener('click', (event) => {
-                if (!dropdown.contains(event.target) && menu.classList.contains('visible')) {
+                if (window.innerWidth >= 768 && !dropdown.contains(event.target) && menu.classList.contains('visible')) {
                     hideMenu();
                 }
             });
+
+
+            // --- Mobile Menu Listeners (NEW) ---
+            if (mobileMenuButton) {
+                mobileMenuButton.addEventListener('click', toggleMobileMenu);
+
+                // Close mobile menu when a link inside is clicked
+                if (mobileMenu) {
+                    mobileMenu.querySelectorAll('a').forEach(link => {
+                        link.addEventListener('click', () => {
+                            if (mobileMenu.classList.contains('open')) {
+                                toggleMobileMenu();
+                            }
+                        });
+                    });
+                }
+            }
         });
     </script>
 

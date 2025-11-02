@@ -53,6 +53,16 @@
             transform: translateY(0);
         }
 
+        
+        #mobile-menu {
+            transform: translateX(100%);
+            transition: transform 0.3s ease-out;
+            pointer-events: none; 
+        }
+        #mobile-menu.open {
+            transform: translateX(0);
+            pointer-events: auto; 
+        }
       
         #scroll-to-top {
             position: fixed;
@@ -72,19 +82,21 @@
 </head>
 <body class="min-h-screen flex flex-col items-center">
 
-    <!-- 1. Header (Navigation) - Sticky to stay at the top -->
+    <!-- 1. Header (Navigation) -->
     <nav class="w-full bg-white shadow-lg sticky top-0 z-20">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16">
-                <!-- Logo/Name -->
+                
                 <div class="flex-shrink-0">
                     <span class="text-xl font-bold text-indigo-600">Bobby Reichert</span>
                 </div>
-                <!-- Links -->
-                <div class="flex space-x-3 md:space-x-4 text-sm md:text-base">
+                
+                <!-- Desktop Links & Dropdown -->
+                <div class="hidden md:flex items-center space-x-3 md:space-x-4 text-sm md:text-base">
                     <a href="home.html" class="text-gray-600 hover:text-indigo-600 font-medium p-2 rounded-md transition duration-150">Home</a>
                     <a href="about.html" class="text-gray-600 hover:text-indigo-600 font-medium p-2 rounded-md transition duration-150">Bio</a>
-                    <a href="#" class="text-gray-900 font-bold p-2 rounded-md bg-indigo-100">Blog</a>
+                    <!-- Highlighted item -->
+                    <a href="#" class="text-gray-900 font-bold p-2 rounded-md bg-indigo-100 hover:bg-indigo-200 transition">Blog</a>
                     <a href="contact.html" class="text-gray-600 hover:text-indigo-600 font-medium p-2 rounded-md transition duration-150">Contact</a>
                     
                     <!-- DROPDOWN MENU -->
@@ -113,9 +125,46 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- Mobile Menu Button -->
+                <div class="md:hidden">
+                    <button id="mobile-menu-button" type="button" class="text-gray-500 hover:text-gray-700 inline-flex items-center justify-center p-2 rounded-md transition duration-150" aria-controls="mobile-menu" aria-expanded="false">
+                        <span class="sr-only">Open main menu</span>
+                        <!-- Hamburger Icon -->
+                        <svg id="hamburger-icon" class="block h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                        </svg>
+                        <!-- Close Icon (X) -->
+                        <svg id="close-icon" class="hidden h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
             </div>
         </div>
     </nav>
+
+    <!-- 🔴 START: MOBILE MENU PANEL 🔴 -->
+    <div id="mobile-menu" class="fixed inset-0 top-16 w-full h-full md:hidden z-10 bg-white overflow-y-auto">
+        <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3 flex flex-col">
+            <!-- Main Links -->
+            <a href="home.html" class="text-lg font-medium block px-3 py-2 rounded-md text-gray-700 hover:bg-gray-100 hover:text-indigo-600 transition duration-150">Home</a>
+            <a href="about.html" class="text-lg font-medium block px-3 py-2 rounded-md text-gray-700 hover:bg-gray-100 hover:text-indigo-600 transition duration-150">Bio</a>
+            <!-- Highlighted item -->
+            <a href="#" class="text-lg block px-3 py-2 rounded-md text-indigo-700 bg-indigo-50 font-semibold transition duration-150">Blog (Current)</a>
+            <a href="contact.html" class="text-lg font-medium block px-3 py-2 rounded-md text-gray-700 hover:bg-gray-100 hover:text-indigo-600 transition duration-150">Contact</a>
+            
+            <!-- Separator -->
+            <div class="h-px w-full my-2 bg-gray-200"></div>
+
+            <!-- "More" Dropdown Items -->
+            <a href="archived-blogs.html" class="text-md block px-3 py-2 rounded-md text-gray-600 hover:bg-gray-100 hover:text-indigo-600 transition duration-150">Archived Blogs</a>
+            <a href="changelog.html" class="text-md block px-3 py-2 rounded-md text-gray-600 hover:bg-gray-100 hover:text-indigo-600 transition duration-150">Changelog</a>
+            <a href="planned-features.html" class="text-md block px-3 py-2 rounded-md text-gray-600 hover:bg-gray-100 hover:text-indigo-600 transition duration-150">Future Features</a>
+            <a href="settings.html" class="text-md block px-3 py-2 rounded-md text-gray-600 hover:bg-gray-100 hover:text-indigo-600 transition duration-150">Settings</a>
+        </div>
+    </div>
+    <!-- 🔴 END: MOBILE MENU PANEL 🔴 -->
 
     <!-- Main Content Area: Blog Posts -->
     <main class="w-full max-w-6xl flex-grow p-4 md:p-8">
@@ -134,6 +183,7 @@
                 <p class="text-gray-700 italic text-base leading-relaxed">
                   Today in English, we watched a Twilight Zone episode where an insane dude sees a weird labubu destroying a plane but only he can see it. The episode is called 'Nightmare at 20,000 Feet'. As a plane nerd, obviously I notice a couple of problems. First, it was filmed in a non-pressurized-type airframe, which can't fly at 20,000 ft. Second, the labubu person somehow didn't get flung off when he was standing vertical on a wing in the middle of a storm, and theres a few more that aren't as big. Also, when I went to raid peoples' candy, the Seattle weather completely soaked me. Also, I didn't have a costume so I just taped an image of Pete Hegseth on my face. (Note: I know this post says its October 31st, technically I'm writing this on November 1st cuz its 12:27 AM right now)
                 </p>
+            </section>
             <!-- Blog Post 5 -->
             <section class="mt-8 p-6 bg-gray-50 rounded-lg border border-dashed border-gray-300">
                 <h2 class="text-2xl font-bold text-gray-900 mb-2">10/29/2025</h2>
@@ -178,8 +228,6 @@
                 </p>
             </section>
             
-            
-
         </div>
     </main>
 
@@ -200,16 +248,49 @@
         </div>
     </div>
 
-    <!-- 🔴 NEW: SCROLL-TO-TOP BUTTON 🔴 -->
+    <!-- Scroll-to-Top Button -->
     <div id="scroll-to-top" onclick="scrollToTop()"
          class="w-12 h-12 flex items-center justify-center bg-indigo-600 text-white rounded-full shadow-lg hover:bg-indigo-700 transition duration-300">
         <!-- Up Arrow Icon -->
         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"></path></svg>
     </div>
 
-    <!-- JavaScript for Cookie Consent and Dropdown Logic -->
+    <!-- JavaScript for all interactions -->
     <script>
+        // Global variables for mobile menu
+        let mobileMenuButton;
+        let mobileMenu;
+        let hamburgerIcon;
+        let closeIcon;
+
+        /**
+         * Toggles the mobile navigation menu open and closed.
+         */
+        function toggleMobileMenu() {
+            if (!mobileMenu || !mobileMenuButton) return; 
+
+            const isOpen = mobileMenu.classList.contains('open');
+            mobileMenu.classList.toggle('open');
+            
+            // Toggle icons and aria-expanded state
+            if (isOpen) {
+                hamburgerIcon.classList.remove('hidden');
+                closeIcon.classList.add('hidden');
+                mobileMenuButton.setAttribute('aria-expanded', 'false');
+            } else {
+                hamburgerIcon.classList.add('hidden');
+                closeIcon.classList.remove('hidden');
+                mobileMenuButton.setAttribute('aria-expanded', 'true');
+            }
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
+            // Initialize mobile menu elements
+            mobileMenuButton = document.getElementById('mobile-menu-button');
+            mobileMenu = document.getElementById('mobile-menu');
+            hamburgerIcon = document.getElementById('hamburger-icon');
+            closeIcon = document.getElementById('close-icon');
+
             // --- Cookie Consent Logic ---
             const banner = document.getElementById('cookie-banner');
             const acceptButton = document.getElementById('accept-cookies');
@@ -261,18 +342,39 @@
                 button.setAttribute('aria-expanded', 'false');
             };
 
-            button.addEventListener('click', toggleMenu);
+            // Desktop hover behavior
             dropdown.addEventListener('mouseenter', showMenu);
             dropdown.addEventListener('mouseleave', hideMenu);
 
+            // Click behavior for accessibility and mobile (on desktop dropdown button)
+            button.addEventListener('click', toggleMenu);
+
+            // Close dropdown when clicking outside of it
             document.addEventListener('click', (event) => {
                 if (!dropdown.contains(event.target) && menu.classList.contains('visible')) {
                     hideMenu();
                 }
             });
+
+            // --- Mobile Menu Listeners ---
+            if (mobileMenuButton) {
+                mobileMenuButton.addEventListener('click', toggleMobileMenu);
+
+                // Close mobile menu when a link inside is clicked
+                if (mobileMenu) {
+                    mobileMenu.querySelectorAll('a').forEach(link => {
+                        link.addEventListener('click', () => {
+                            if (mobileMenu.classList.contains('open')) {
+                                // Add a short delay to allow link navigation to process before menu closes smoothly
+                                setTimeout(toggleMobileMenu, 100); 
+                            }
+                        });
+                    });
+                }
+            }
         });
 
-        // --- 🔴 SCROLL-TO-TOP LOGIC 🔴 ---
+        // --- SCROLL-TO-TOP LOGIC ---
         const scrollButton = document.getElementById('scroll-to-top');
 
         // Function to check scroll position and show/hide the button
@@ -299,11 +401,5 @@
         // Initial check on load
         document.addEventListener('DOMContentLoaded', checkScroll);
     </script>
-    
-  
 </body>
 </html>
-
-
-
-

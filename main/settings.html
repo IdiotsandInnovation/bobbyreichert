@@ -114,7 +114,7 @@
 <body class="font-sans min-h-screen flex flex-col transition-colors duration-300">
 
     <!-- 🔴 START: NAVIGATION BAR 🔴 -->
-    <!-- Navigation uses fixed light background colors -->
+    
     <nav class="w-full bg-white shadow-lg sticky top-0 z-20">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16">
@@ -123,9 +123,8 @@
                     <span class="text-xl font-bold text-primary">Bobby Reichert</span>
                 </div>
 
-                <!-- Desktop Links & Dropdown (Hidden on Mobile) -->
+                <!-- Desktop Links & Dropdown -->
                 <div class="hidden md:flex items-center space-x-3 md:space-x-4 text-sm md:text-base">
-                    <!-- Links -->
                     <a href="home.html" class="text-gray-600 hover:text-primary font-medium p-2 rounded-md transition duration-150">Home</a>
                     <a href="about.html" class="text-gray-600 hover:text-primary font-medium p-2 rounded-md transition duration-150">Bio</a>
                     <a href="blog.html" class="text-gray-600 hover:text-primary font-medium p-2 rounded-md transition duration-150">Blog</a>
@@ -133,10 +132,8 @@
                     
                     <!-- DROPDOWN MENU -->
                     <div id="more-dropdown" class="relative group">
-                        <!-- Button -->
                         <button type="button" class="text-gray-900 font-bold p-2 rounded-md bg-indigo-100 flex items-center hover:bg-indigo-200 transition" aria-expanded="false" aria-controls="more-menu-items">
                             More
-                            <!-- Icon -->
                             <svg class="w-4 h-4 ml-1 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                         </button>
                         
@@ -153,7 +150,6 @@
                                 <a href="planned-features.html" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-primary transition duration-150" role="menuitem">
                                     Future Features
                                 </a>
-                                <!-- Highlighted item -->
                                 <a href="#" class="block px-4 py-2 text-sm font-semibold text-indigo-700 bg-indigo-50 hover:text-primary transition duration-150" role="menuitem">
                                     Settings
                                 </a>
@@ -162,7 +158,7 @@
                     </div>
                 </div>
 
-                <!-- Mobile Menu Button (Hidden on Desktop) -->
+                <!-- Mobile Menu Button -->
                 <div class="md:hidden">
                     <button id="mobile-menu-button" type="button" class="text-gray-500 hover:text-gray-700 inline-flex items-center justify-center p-2 rounded-md transition duration-150" aria-controls="mobile-menu" aria-expanded="false">
                         <span class="sr-only">Open main menu</span>
@@ -199,7 +195,7 @@
             <a href="changelog.html" class="text-md block px-3 py-2 rounded-md text-gray-600 hover:bg-gray-100 hover:text-primary transition duration-150">Changelog</a>
             <a href="planned-features.html" class="text-md block px-3 py-2 rounded-md text-gray-600 hover:bg-gray-100 hover:text-primary transition duration-150">Future Features</a>
             <!-- Highlighted item -->
-            <a href="#" class="text-md block px-3 py-2 rounded-md text-indigo-700 bg-indigo-50 font-semibold transition duration-150">Settings (Current)</a>
+            <a href="#" class="text-md block px-3 py-2 rounded-md text-indigo-700 bg-indigo-50 font-semibold transition duration-150">Settings</a>
         </div>
     </div>
     <!-- 🔴 END: MOBILE MENU PANEL 🔴 -->

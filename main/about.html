@@ -1,17 +1,19 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-J4PE57KXDN"></script>
-<script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
 
-    gtag('config', 'G-J4PE57KXDN');
-</script>
+        gtag('config', 'G-J4PE57KXDN');
+    </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bobby Reichert | Bio</title>
+    <!-- Load Tailwind CSS from CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         /* Set the Inter font globally and ensure a smooth background */
@@ -37,7 +39,7 @@
             transform: translateY(100%) !important;
             pointer-events: none;
         }
-        /* 🔴 NEW: Custom styles for dropdown visibility and transition 🔴 */
+        /* Custom styles for dropdown visibility and transition */
         .dropdown-menu {
             opacity: 0;
             visibility: hidden;
@@ -50,21 +52,39 @@
             visibility: visible;
             transform: translateY(0);
         }
+
+        /* 🔴 NEW: MOBILE MENU STYLES 🔴 */
+        #mobile-menu {
+            transform: translateX(100%);
+            transition: transform 0.3s ease-out;
+            pointer-events: none; /* Initially disabled for clicking elements behind it */
+        }
+        #mobile-menu.open {
+            transform: translateX(0);
+            pointer-events: auto; /* Enable interaction when open */
+        }
     </style>
 </head>
 <body class="min-h-screen flex flex-col items-center">
 
+    <!-- 1. Header (Navigation) - Sticky to stay at the top -->
     <nav class="w-full bg-white shadow-lg sticky top-0 z-20">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16">
+                <!-- Logo/Name -->
                 <div class="flex-shrink-0">
                     <span class="text-xl font-bold text-indigo-600">Bobby Reichert</span>
                 </div>
-                <div class="flex space-x-3 md:space-x-4 text-sm md:text-base">
+
+                <!-- Desktop Links & Dropdown (Hidden on Mobile) -->
+                <div class="hidden md:flex items-center space-x-3 md:space-x-4 text-sm md:text-base">
                     <a href="home.html" class="text-gray-600 hover:text-indigo-600 font-medium p-2 rounded-md transition duration-150">Home</a>
+                    <!-- Active Link -->
                     <a href="#" class="text-gray-900 font-bold p-2 rounded-md bg-indigo-100">Bio</a>
                     <a href="blog.html" class="text-gray-600 hover:text-indigo-600 font-medium p-2 rounded-md transition duration-150">Blog</a>
                     <a href="contact.html" class="text-gray-600 hover:text-indigo-600 font-medium p-2 rounded-md transition duration-150">Contact</a>
+                    
+                    <!-- DROPDOWN MENU -->
                     <div id="more-dropdown" class="relative group">
                         <button type="button" class="text-gray-600 hover:text-indigo-600 font-medium p-2 rounded-md transition duration-150 flex items-center" aria-expanded="false" aria-controls="more-menu-items">
                             More
@@ -88,12 +108,50 @@
                             </div>
                         </div>
                     </div>
-                    
+                </div>
+
+                <!-- Mobile Menu Button (Visible on Mobile) -->
+                <div class="md:hidden">
+                    <button id="mobile-menu-button" type="button" class="text-gray-500 hover:text-gray-700 inline-flex items-center justify-center p-2 rounded-md transition duration-150" aria-controls="mobile-menu" aria-expanded="false">
+                        <span class="sr-only">Open main menu</span>
+                        <!-- Hamburger Icon -->
+                        <svg id="hamburger-icon" class="block h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                        </svg>
+                        <!-- Close Icon (X) -->
+                        <svg id="close-icon" class="hidden h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
                 </div>
             </div>
         </div>
     </nav>
 
+    <!-- 🔴 START: MOBILE MENU PANEL 🔴 -->
+    <div id="mobile-menu" class="fixed inset-0 top-16 w-full h-full md:hidden z-10 bg-white overflow-y-auto">
+        <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3 flex flex-col">
+            <!-- Main Links -->
+            <a href="home.html" class="text-lg font-medium block px-3 py-2 rounded-md text-gray-700 hover:bg-gray-100 hover:text-indigo-600 transition duration-150">Home</a>
+            <!-- Active Link -->
+            <a href="#" class="text-lg font-medium block px-3 py-2 rounded-md text-indigo-700 bg-indigo-50 font-bold transition duration-150">Bio (Current)</a>
+            <a href="blog.html" class="text-lg font-medium block px-3 py-2 rounded-md text-gray-700 hover:bg-gray-100 hover:text-indigo-600 transition duration-150">Blog</a>
+            <a href="contact.html" class="text-lg font-medium block px-3 py-2 rounded-md text-gray-700 hover:bg-gray-100 hover:text-indigo-600 transition duration-150">Contact</a>
+            
+            <!-- Separator -->
+            <div class="h-px w-full my-2 bg-gray-200"></div>
+
+            <!-- "More" Dropdown Items -->
+            <p class="text-sm px-3 pt-2 text-gray-500 font-semibold">More</p>
+            <a href="archived-blogs.html" class="text-md block px-3 py-2 rounded-md text-gray-600 hover:bg-gray-100 hover:text-indigo-600 transition duration-150">Archived Blogs</a>
+            <a href="changelog.html" class="text-md block px-3 py-2 rounded-md text-gray-600 hover:bg-gray-100 hover:text-indigo-600 transition duration-150">Changelog</a>
+            <a href="planned-features.html" class="text-md block px-3 py-2 rounded-md text-gray-600 hover:bg-gray-100 hover:text-indigo-600 transition duration-150">Future Features</a>
+            <a href="settings.html" class="text-md block px-3 py-2 rounded-md text-gray-600 hover:bg-gray-100 hover:text-indigo-600 transition duration-150">Settings</a>
+        </div>
+    </div>
+    <!-- 🔴 END: MOBILE MENU PANEL 🔴 -->
+
+    <!-- Main Content Area: Bio -->
     <main class="flex-grow flex items-center justify-center w-full p-4 md:p-8">
         <div class="w-full max-w-3xl bg-white shadow-xl rounded-2xl p-8 md:p-12 transform hover:scale-[1.01] transition duration-300 ease-in-out">
 
@@ -122,13 +180,15 @@
                 </p>
             </section>
 
-            </div>
+        </div>
     </main>
 
-    <footer class="w-full bg-gray-100 text-gray-500 text-center text-sm py-4 border-t">
+    <!-- 2. Footer -->
+    <footer class="w-full bg-gray-100 text-gray-500 text-center text-sm py-4 border-t mt-auto">
         <p>Last Updated: 10/26/2025</p>
     </footer>
 
+    <!-- 3. Cookie Consent Banner (Fixed Position) -->
     <div id="cookie-banner" class="fixed bottom-0 left-0 right-0 p-4 md:p-6 bg-gray-800 text-white shadow-2xl transition-all duration-500 transform translate-y-0 z-50 opacity-100">
         <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between">
             <p class="text-sm mb-3 md:mb-0 md:mr-6">
@@ -140,8 +200,44 @@
         </div>
     </div>
 
+    <!-- JavaScript for Cookie Consent and Dropdown/Mobile Logic -->
     <script>
+        // Global variables for mobile menu
+        let mobileMenuButton;
+        let mobileMenu;
+        let hamburgerIcon;
+        let closeIcon;
+
+        /**
+         * Toggles the mobile navigation menu open and closed.
+         */
+        function toggleMobileMenu() {
+            if (!mobileMenu || !mobileMenuButton) return; 
+
+            const isOpen = mobileMenu.classList.contains('open');
+            mobileMenu.classList.toggle('open');
+            
+            // Toggle icons and aria-expanded state
+            if (isOpen) {
+                hamburgerIcon.classList.remove('hidden');
+                closeIcon.classList.add('hidden');
+                mobileMenuButton.setAttribute('aria-expanded', 'false');
+            } else {
+                hamburgerIcon.classList.add('hidden');
+                closeIcon.classList.remove('hidden');
+                mobileMenuButton.setAttribute('aria-expanded', 'true');
+            }
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
+            // Initialize mobile menu elements
+            mobileMenuButton = document.getElementById('mobile-menu-button');
+            mobileMenu = document.getElementById('mobile-menu');
+            hamburgerIcon = document.getElementById('hamburger-icon');
+            closeIcon = document.getElementById('close-icon');
+
+
+            // --- Cookie Consent Logic ---
             const banner = document.getElementById('cookie-banner');
             const acceptButton = document.getElementById('accept-cookies');
             const storageKey = 'cookiesAccepted';
@@ -177,11 +273,8 @@
                     });
                 }
             }
-        });
-    </script>
-    
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
+
+            // --- Dropdown Toggle Logic (More Menu) ---
             const dropdown = document.getElementById('more-dropdown');
             const button = dropdown.querySelector('button');
             const menu = document.getElementById('more-menu-items');
@@ -218,9 +311,25 @@
                     hideMenu();
                 }
             });
+
+            // --- Mobile Menu Listeners ---
+            if (mobileMenuButton) {
+                mobileMenuButton.addEventListener('click', toggleMobileMenu);
+
+                // Close mobile menu when a link inside is clicked
+                if (mobileMenu) {
+                    mobileMenu.querySelectorAll('a').forEach(link => {
+                        link.addEventListener('click', () => {
+                            if (mobileMenu.classList.contains('open')) {
+                                // Add a short delay to allow link navigation to process before menu closes smoothly
+                                setTimeout(toggleMobileMenu, 100); 
+                            }
+                        });
+                    });
+                }
+            }
         });
     </script>
     
 </body>
 </html>
-
