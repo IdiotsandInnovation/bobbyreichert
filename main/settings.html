@@ -364,7 +364,7 @@
                 if (theme === 'system') {
                     statusText = `System (Currently: ${mediaQuery.matches ? 'Dark' : 'Light'}).`;
                 } else {
-                    statusText = `${theme.charAt(0).toUpperCase() + theme.slice(1)} mode enforced.`;
+                    statusText = `${theme.charAt(0).toUpperCase() + theme.slice(1)} mode`;
                 }
                 themeStatus.textContent = 'Current setting: ' + statusText;
                 
@@ -428,11 +428,11 @@
                 
                 let statusText = '';
                 if (mode === 'auto') {
-                    statusText = 'Auto (Determined by screen size).';
+                    statusText = 'Auto';
                 } else if (mode === 'desktop') {
-                    statusText = 'Desktop mode enforced (Full navigation visible).';
+                    statusText = 'Desktop';
                 } else {
-                    statusText = 'Mobile mode enforced (Hamburger menu).';
+                    statusText = 'Mobile';
                 }
                 menuStatus.textContent = 'Current setting: ' + statusText;
                 
