@@ -2,37 +2,64 @@
 <html lang="en">
 <head>
     <!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-J4PE57KXDN"></script>
-<script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-J4PE57KXDN"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
 
-    gtag('config', 'G-J4PE57KXDN');
-</script>
+        gtag('config', 'G-J4PE57KXDN');
+    </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bobby Reichert | Blog</title>
     <!-- Load Tailwind CSS from CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Configure Tailwind - Dark mode ENABLED -->
+    <script>
+        tailwind.config = {
+            darkMode: 'class', // Enable dark mode via the 'dark' class on <html>
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        'primary': '#4f46e5', // Indigo-600
+                        'primary-dark': '#a5b4fc' // Indigo-300 for dark mode accent
+                    }
+                }
+            }
+        }
+    </script>
     <style>
-        /* Set the Inter font globally and ensure a smooth background */
+        /* Set the Inter font globally */
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #f7f9fc; /* Very light grey/blue background */
+            /* No fixed background color here, let Tailwind classes handle it */
         }
+        
         /* Custom scrollbar for a cleaner look */
         ::-webkit-scrollbar {
             width: 8px;
         }
+        /* Light Mode Scrollbar */
         ::-webkit-scrollbar-thumb {
             background: #d1d5db; /* Gray-400 */
             border-radius: 4px;
         }
         ::-webkit-scrollbar-track {
-            background: #f7f9fc;
+            background: #f7f9fc; /* Very light grey/blue background */
         }
+        /* Dark Mode Scrollbar Overrides */
+        .dark ::-webkit-scrollbar-thumb {
+            background: #4b5563; /* Gray-600 */
+        }
+        .dark ::-webkit-scrollbar-track {
+            background: #111827; /* Gray-900 background */
+        }
+
         /* Custom styles for the fixed cookie banner transition (used by JS to hide it smoothly) */
         .fade-out {
             opacity: 0 !important;
@@ -80,45 +107,48 @@
         }
     </style>
 </head>
-<body class="min-h-screen flex flex-col items-center">
+<!-- Body now uses responsive dark/light mode classes -->
+<body class="min-h-screen flex flex-col items-center transition-colors duration-300 bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
 
     <!-- 1. Header (Navigation) -->
-    <nav class="w-full bg-white shadow-lg sticky top-0 z-20">
+    <!-- Nav uses responsive dark/light mode classes -->
+    <nav class="w-full bg-white shadow-lg sticky top-0 z-20 dark:bg-gray-800 dark:shadow-xl">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16">
                 
                 <div class="flex-shrink-0">
-                    <span class="text-xl font-bold text-indigo-600">Bobby Reichert</span>
+                    <span class="text-xl font-bold text-primary dark:text-primary-dark">Bobby Reichert</span>
                 </div>
                 
                 <!-- Desktop Links & Dropdown -->
                 <div class="hidden md:flex items-center space-x-3 md:space-x-4 text-sm md:text-base">
-                    <a href="home.html" class="text-gray-600 hover:text-indigo-600 font-medium p-2 rounded-md transition duration-150">Home</a>
-                    <a href="about.html" class="text-gray-600 hover:text-indigo-600 font-medium p-2 rounded-md transition duration-150">Bio</a>
+                    <!-- Links use responsive dark/light mode classes -->
+                    <a href="home.html" class="text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary-dark font-medium p-2 rounded-md transition duration-150">Home</a>
+                    <a href="about.html" class="text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary-dark font-medium p-2 rounded-md transition duration-150">Bio</a>
                     
-                    <a href="#" class="text-gray-900 font-bold p-2 rounded-md bg-indigo-100 hover:bg-indigo-200 transition">Blog</a>
-                    <a href="contact.html" class="text-gray-600 hover:text-indigo-600 font-medium p-2 rounded-md transition duration-150">Contact</a>
+                    <a href="#" class="text-gray-900 dark:text-gray-100 font-bold p-2 rounded-md bg-indigo-100 dark:bg-indigo-800 hover:bg-indigo-200 dark:hover:bg-indigo-700 transition">Blog</a>
+                    <a href="contact.html" class="text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary-dark font-medium p-2 rounded-md transition duration-150">Contact</a>
                     
                     <!-- DROPDOWN MENU -->
                     <div id="more-dropdown" class="relative group">
-                        <button type="button" class="text-gray-600 hover:text-indigo-600 font-medium p-2 rounded-md transition duration-150 flex items-center" aria-expanded="false" aria-controls="more-menu-items">
+                        <button type="button" class="text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary-dark font-medium p-2 rounded-md transition duration-150 flex items-center" aria-expanded="false" aria-controls="more-menu-items">
                             More
                             <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                         </button>
                         
-                        <!-- Dropdown Content -->
-                        <div id="more-menu-items" class="dropdown-menu absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-30">
+                        <!-- Dropdown Content uses responsive dark/light mode classes -->
+                        <div id="more-menu-items" class="dropdown-menu absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white dark:bg-gray-700 ring-1 ring-black ring-opacity-5 dark:ring-gray-600 z-30">
                             <div class="py-1" role="menu" aria-orientation="vertical" aria-labelledby="more-dropdown">
-                                <a href="archived-blogs.html" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-indigo-600 transition duration-150" role="menuitem">
+                                <a href="archived-blogs.html" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 hover:text-primary transition duration-150" role="menuitem">
                                     Archived Blogs
                                 </a>
-                                <a href="changelog.html" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-indigo-600 transition duration-150" role="menuitem">
+                                <a href="changelog.html" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 hover:text-primary transition duration-150" role="menuitem">
                                     Changelog
                                 </a>
-                                <a href="planned-features.html" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-indigo-600 transition duration-150" role="menuitem">
+                                <a href="planned-features.html" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 hover:text-primary transition duration-150" role="menuitem">
                                     Future Features
                                 </a>
-                                <a href="settings.html" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-indigo-600 transition duration-150" role="menuitem">
+                                <a href="settings.html" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 hover:text-primary transition duration-150" role="menuitem">
                                     Settings
                                 </a>
                             </div>
@@ -128,7 +158,7 @@
 
                 <!-- Mobile Menu Button -->
                 <div class="md:hidden">
-                    <button id="mobile-menu-button" type="button" class="text-gray-500 hover:text-gray-700 inline-flex items-center justify-center p-2 rounded-md transition duration-150" aria-controls="mobile-menu" aria-expanded="false">
+                    <button id="mobile-menu-button" type="button" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 inline-flex items-center justify-center p-2 rounded-md transition duration-150" aria-controls="mobile-menu" aria-expanded="false">
                         <span class="sr-only">Open main menu</span>
                         <!-- Hamburger Icon -->
                         <svg id="hamburger-icon" class="block h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
@@ -145,139 +175,151 @@
     </nav>
 
     <!-- 🔴 START: MOBILE MENU PANEL 🔴 -->
-    <div id="mobile-menu" class="fixed inset-0 top-16 w-full h-full md:hidden z-10 bg-white overflow-y-auto">
+    <!-- Mobile menu uses responsive dark/light mode classes -->
+    <div id="mobile-menu" class="fixed inset-0 top-16 w-full h-full md:hidden z-10 bg-white dark:bg-gray-900 overflow-y-auto">
         <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3 flex flex-col">
-            <!-- Main Links -->
-            <a href="home.html" class="text-lg font-medium block px-3 py-2 rounded-md text-gray-700 hover:bg-gray-100 hover:text-indigo-600 transition duration-150">Home</a>
-            <a href="about.html" class="text-lg font-medium block px-3 py-2 rounded-md text-gray-700 hover:bg-gray-100 hover:text-indigo-600 transition duration-150">Bio</a>
-            <!-- Highlighted item -->
-            <a href="#" class="text-lg block px-3 py-2 rounded-md text-indigo-700 bg-indigo-50 font-semibold transition duration-150">Blog (Current)</a>
-            <a href="contact.html" class="text-lg font-medium block px-3 py-2 rounded-md text-gray-700 hover:bg-gray-100 hover:text-indigo-600 transition duration-150">Contact</a>
+            <!-- Main Links use responsive dark/light mode classes -->
+            <a href="home.html" class="text-lg font-medium block px-3 py-2 rounded-md text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-primary transition duration-150">Home</a>
+            <a href="about.html" class="text-lg font-medium block px-3 py-2 rounded-md text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-primary transition duration-150">Bio</a>
+            <!-- Highlighted item uses responsive dark/light mode classes -->
+            <a href="#" class="text-lg block px-3 py-2 rounded-md text-primary dark:text-primary-dark bg-indigo-50 dark:bg-indigo-900 font-semibold transition duration-150">Blog (Current)</a>
+            <a href="contact.html" class="text-lg font-medium block px-3 py-2 rounded-md text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-primary transition duration-150">Contact</a>
             
-            <div class="h-px w-full my-2 bg-gray-200"></div>
+            <div class="h-px w-full my-2 bg-gray-200 dark:bg-gray-700"></div>
 
-            <!-- "More" Dropdown Items -->
-            <a href="archived-blogs.html" class="text-md block px-3 py-2 rounded-md text-gray-600 hover:bg-gray-100 hover:text-indigo-600 transition duration-150">Archived Blogs</a>
-            <a href="changelog.html" class="text-md block px-3 py-2 rounded-md text-gray-600 hover:bg-gray-100 hover:text-indigo-600 transition duration-150">Changelog</a>
-            <a href="planned-features.html" class="text-md block px-3 py-2 rounded-md text-gray-600 hover:bg-gray-100 hover:text-indigo-600 transition duration-150">Future Features</a>
-            <a href="settings.html" class="text-md block px-3 py-2 rounded-md text-gray-600 hover:bg-gray-100 hover:text-indigo-600 transition duration-150">Settings</a>
+            <!-- "More" Dropdown Items use responsive dark/light mode classes -->
+            <a href="archived-blogs.html" class="text-md block px-3 py-2 rounded-md text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-primary transition duration-150">Archived Blogs</a>
+            <a href="changelog.html" class="text-md block px-3 py-2 rounded-md text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-primary transition duration-150">Changelog</a>
+            <a href="planned-features.html" class="text-md block px-3 py-2 rounded-md text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-primary transition duration-150">Future Features</a>
+            <a href="settings.html" class="text-md block px-3 py-2 rounded-md text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-primary transition duration-150">Settings</a>
         </div>
     </div>
     <!-- 🔴 END: MOBILE MENU PANEL 🔴 -->
     <!-- Main Content Area: Blog Posts -->
     <main class="w-full max-w-6xl flex-grow p-4 md:p-8">
-        <div class="bg-white shadow-xl rounded-2xl p-6 md:p-10 w-full">
+        <!-- Main card uses responsive dark/light mode classes -->
+        <div class="bg-white dark:bg-gray-800 shadow-xl rounded-2xl p-6 md:p-10 w-full dark:shadow-2xl">
 
-            <h1 class="text-4xl font-extrabold text-gray-900 tracking-tight mb-4 text-center">
+            <h1 class="text-4xl font-extrabold text-gray-900 dark:text-gray-100 tracking-tight mb-4 text-center">
                 Blog Posts
             </h1>
-            <p class="text-xl font-light text-indigo-600 mb-6 text-center">
+            <p class="text-xl font-light text-primary dark:text-primary-dark mb-6 text-center">
                 I'll occasionally post something here.
             </p>
+            
+            <!-- Blog Post sections updated for dark mode -->
+            <!-- Blog Post 14 -->
+            <section class="mt-8 p-6 bg-gray-50 dark:bg-gray-700 rounded-lg border border-dashed border-gray-300 dark:border-gray-600">
+                <h2 class="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">11/11/2025</h2>
+                <hr class="mb-3 border-gray-300 dark:border-gray-600">
+                <p class="text-gray-700 dark:text-gray-200 italic text-base leading-relaxed">
+                    There was no school today, so I worked on this website quite a bit. Now I'm on track to complete update 1.24 on 11/15. I also tried learning to use the CNC machine, and it's pretty complicated. I got an 100 on the Scott essay. We also only get 1 PE day this week. I'm currently trying to think of an 8th-grade quote for the yearbook. Two potential ones (that are very different) are: "I don't know" -Mike Johnson, and "You don't realize something was important to you until it's gone."
+                </p>
+            </section>
             <!-- Blog Post 13 -->
-            <section class="mt-8 p-6 bg-gray-50 rounded-lg border border-dashed border-gray-300">
-                <h2 class="text-2xl font-bold text-gray-900 mb-2">11/10/2025</h2>
-                <hr class="mb-3 border-gray-300">
-                <p class="text-gray-700 italic text-base leading-relaxed">
+            <section class="mt-8 p-6 bg-gray-50 dark:bg-gray-700 rounded-lg border border-dashed border-gray-300 dark:border-gray-600">
+                <h2 class="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">11/10/2025</h2>
+                <hr class="mb-3 border-gray-300 dark:border-gray-600">
+                <p class="text-gray-700 dark:text-gray-200 italic text-base leading-relaxed">
                     Today I got my second monitor working on my RPi 4. Turns out, the HDMI cable was bad. I now use the second display for coding and the first for everything else. I have tomorrow off, so I'm going to try to learn to use the CNC machine and update this website. I also just found out that my robotics team spent $200+ on lunch yesterday when we could've just spent $20. They also want to laser cut the metal drivetrain parts without CNCing wood for prototyping first. They're such money wasters, and half the parents don't even contribute money to the team. Tomorrow I'll also maybe call Jayson and Neel. Brendan still hasn't given me his Skype (now Teams, 🖕 Microsoft). I'll also CAD a v3 or v2+ robot and learn CAM.
                 </p>
             </section>
             <!-- Blog Post 12 -->
-            <section class="mt-8 p-6 bg-gray-50 rounded-lg border border-dashed border-gray-300">
-                <h2 class="text-2xl font-bold text-gray-900 mb-2">11/09/2025</h2>
-                <hr class="mb-3 border-gray-300">
-                <p class="text-gray-700 italic text-base leading-relaxed">
+            <section class="mt-8 p-6 bg-gray-50 dark:bg-gray-700 rounded-lg border border-dashed border-gray-300 dark:border-gray-600">
+                <h2 class="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">11/09/2025</h2>
+                <hr class="mb-3 border-gray-300 dark:border-gray-600">
+                <p class="text-gray-700 dark:text-gray-200 italic text-base leading-relaxed">
                     The robotics competition was good. We currently have 1st place in our interleague because on the last match, we got really lucky and scored a 'motif' during auto, and we got 6 ranking points, pushing us up to first from fourth. I also upgraded my Pi setup to use two monitors but one of them doesn't work.
                 </p>
             </section>
             <!-- Blog Post 11 -->
-            <section class="mt-8 p-6 bg-gray-50 rounded-lg border border-dashed border-gray-300">
-                <h2 class="text-2xl font-bold text-gray-900 mb-2">11/08/2025</h2>
-                <hr class="mb-3 border-gray-300">
-                <p class="text-gray-700 italic text-base leading-relaxed">
+            <section class="mt-8 p-6 bg-gray-50 dark:bg-gray-700 rounded-lg border border-dashed border-gray-300 dark:border-gray-600">
+                <h2 class="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">11/08/2025</h2>
+                <hr class="mb-3 border-gray-300 dark:border-gray-600">
+                <p class="text-gray-700 dark:text-gray-200 italic text-base leading-relaxed">
                     Tomorrow I have a robotics competition in Snoqualmie. Today we were doing some sort of outreach event and I borrowed a CNC machine from a friend in Olympia. I still need to learn how to use it. I'm also not sure that I can roll out the dark mode and settings menu before 11/15 because I'm so busy this time of the year. I also haven't read the entire Hiroshima book yet. I need to wake early tomorrow and it's 11:33 PM right now. On Friday in U.S. History, Scott apparently was teaching WA politics and Bob Fergusen and Dave Reichert and he joked, "It's a good thing that Caden and Brendan aren't in here".
                 </p>
             </section>
             <!-- Blog Post 10 -->
-            <section class="mt-8 p-6 bg-gray-50 rounded-lg border border-dashed border-gray-300">
-                <h2 class="text-2xl font-bold text-gray-900 mb-2">11/06/2025</h2>
-                <hr class="mb-3 border-gray-300">
-                <p class="text-gray-700 italic text-base leading-relaxed">
+            <section class="mt-8 p-6 bg-gray-50 dark:bg-gray-700 rounded-lg border border-dashed border-gray-300 dark:border-gray-600">
+                <h2 class="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">11/06/2025</h2>
+                <hr class="mb-3 border-gray-300 dark:border-gray-600">
+                <p class="text-gray-700 dark:text-gray-200 italic text-base leading-relaxed">
                     Lua gave more time during the test today, and I got an 100% on Big Ideas. I might have lost a couple of points on showing work, since my compass line was very faint. I got an 100% in the most recent (double-sided) reading guide. Wayne got 1.5 off on the second question but Vince was so lazy to calculate the score that he just gave Wayne a 10/10. In Scott's class, I have a summative assessment on Monday, which means I have a 90% chance of losing my 99 in Social Studies. It's on this book called Hiroshima by John Hersey. In science, we also have a short project and the due date is TBD. I've also completely made the switch to editing this site on VS Code on my RPi 4B. Cloudflare hosting is actually really good compared to W3spaces.
                 </p>
             </section>
             <!-- Blog Post 9 -->
-            <section class="mt-8 p-6 bg-gray-50 rounded-lg border border-dashed border-gray-300">
-                <h2 class="text-2xl font-bold text-gray-900 mb-2">11/05/2025</h2>
-                <hr class="mb-3 border-gray-300">
-                <p class="text-gray-700 italic text-base leading-relaxed">
+            <section class="mt-8 p-6 bg-gray-50 dark:bg-gray-700 rounded-lg border border-dashed border-gray-300 dark:border-gray-600">
+                <h2 class="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">11/05/2025</h2>
+                <hr class="mb-3 border-gray-300 dark:border-gray-600">
+                <p class="text-gray-700 dark:text-gray-200 italic text-base leading-relaxed">
                     In Geometry, there was a test that Lua said was "very short" but at the end of the period, half the people weren't done, and she says she probably will just have to grade what we have. So, half the class is extremely pissed at her (especially Julia, who was crashing out the rest of the day) and Wayne said he'll strangle her the next chance he gets. I'm really pissed too because I was part of the group that didn't finish. I really hope she gives extra time tomorrow. Also, we didn't have to play basketball today.
                 </p>
             </section>
             <!-- Blog Post 8 -->
-            <section class="mt-8 p-6 bg-gray-50 rounded-lg border border-dashed border-gray-300">
-                <h2 class="text-2xl font-bold text-gray-900 mb-2">11/04/2025</h2>
-                <hr class="mb-3 border-gray-300">
-                <p class="text-gray-700 italic text-base leading-relaxed">
+            <section class="mt-8 p-6 bg-gray-50 dark:bg-gray-700 rounded-lg border border-dashed border-gray-300 dark:border-gray-600">
+                <h2 class="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">11/04/2025</h2>
+                <hr class="mb-3 border-gray-300 dark:border-gray-600">
+                <p class="text-gray-700 dark:text-gray-200 italic text-base leading-relaxed">
                     I somehow destroyed my off-brand RPi Camera. While I was testing the camera feed, the camera ribbon came off and when I reconnected it, something shorted, but I still don't know what. Now the camera module doesn't work on either of my Pis. Also, today in English I got my grade back after Vince entered it wrong last week. In PE, Vince left to go take a s** session and some fentanyl, so Lyle was subbing and we played Capture the Flag. Tomorrow we have to play basketball because stupid Appoline wanted to. I hate Vince's "basketball" because its just a long game of bump where everyone shoots once, and then this stupid 'poison' thing. I think that Appoline likes it because she/he/they (I don't even know) can just sit on the side most of the period.
                 </p>
             </section>
             <!-- Blog Post 7 -->
-            <section class="mt-8 p-6 bg-gray-50 rounded-lg border border-dashed border-gray-300">
-                <h2 class="text-2xl font-bold text-gray-900 mb-2">11/03/2025</h2>
-                <hr class="mb-3 border-gray-300">
-                <p class="text-gray-700 italic text-base leading-relaxed">
+            <section class="mt-8 p-6 bg-gray-50 dark:bg-gray-700 rounded-lg border border-dashed border-gray-300 dark:border-gray-600">
+                <h2 class="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">11/03/2025</h2>
+                <hr class="mb-3 border-gray-300 dark:border-gray-600">
+                <p class="text-gray-700 dark:text-gray-200 italic text-base leading-relaxed">
                     Not much happened today. As usual, Vince took his biweekly absence, and gave us a DOUBLE-SIDED reading guide, while the second-period class gets to do IXLs. I think he took too much fentanyl the day before. Yesterday, I added a mobile-friendly menu, if you haven't noticed already, but I can't quite seem to get the settings page working. Brendan also finally won his first Gimkit game in about a week. By the way, yesterday was also Daylight Savings Day, which sucks because it messes up my sleep cycle and is essentially pointless. Plus, it just makes converting between time zones more difficult because some countries use DST and some don't. Also, yesterday I was on a call with Jayson and Neel, which was really fun. I wish that I could talk to them more often or even in person, but unfortunately thats impossible to do right now 😢.
                 </p>
             </section>
             <!-- Blog Post 6 -->
-            <section class="mt-8 p-6 bg-gray-50 rounded-lg border border-dashed border-gray-300">
-                <h2 class="text-2xl font-bold text-gray-900 mb-2">10/31/2025</h2>
-                <hr class="mb-3 border-gray-300">
-                <p class="text-gray-700 italic text-base leading-relaxed">
+            <section class="mt-8 p-6 bg-gray-50 dark:bg-gray-700 rounded-lg border border-dashed border-gray-300 dark:border-gray-600">
+                <h2 class="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">10/31/2025</h2>
+                <hr class="mb-3 border-gray-300 dark:border-gray-600">
+                <p class="text-gray-700 dark:text-gray-200 italic text-base leading-relaxed">
                   Today in English, we watched a Twilight Zone episode where an insane dude sees a weird labubu destroying a plane but only he can see it. The episode is called 'Nightmare at 20,000 Feet'. As a plane nerd, obviously I notice a couple of problems. First, it was filmed in a non-pressurized-type airframe, which can't fly at 20,000 ft. Second, the labubu person somehow didn't get flung off when he was standing vertical on a wing in the middle of a storm, and theres a few more that aren't as big. Also, when I went to raid peoples' candy, the Seattle weather completely soaked me. Also, I didn't have a costume so I just taped an image of Pete Hegseth on my face. (Note: I know this post says its October 31st, technically I'm writing this on November 1st because its 12:27 AM right now)
                 </p>
             </section>
             <!-- Blog Post 5 -->
-            <section class="mt-8 p-6 bg-gray-50 rounded-lg border border-dashed border-gray-300">
-                <h2 class="text-2xl font-bold text-gray-900 mb-2">10/29/2025</h2>
-                <hr class="mb-3 border-gray-300">
-                <p class="text-gray-700 italic text-base leading-relaxed">
+            <section class="mt-8 p-6 bg-gray-50 dark:bg-gray-700 rounded-lg border border-dashed border-gray-300 dark:border-gray-600">
+                <h2 class="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">10/29/2025</h2>
+                <hr class="mb-3 border-gray-300 dark:border-gray-600">
+                <p class="text-gray-700 dark:text-gray-200 italic text-base leading-relaxed">
                   Honestly, I'm not sure how my school is #1 in Washington state. First, it was that half the class didn't know which direction the sun rises. Then, Appoline and Anelia didn't know what a rhombus was, even though Lua warned them that a past student also didn't know the shape from the first-grade curriculum. Then, yesterday, Viyan didn't know the difference between beer, red wine and white wine. Rohit also asked if someone can be addicted to port wine (which is how Vince went on the ramble on addictions). Then today, Anelia said that you can only see the moon when it crosses in front of the sun. Olivia says the sun just appears because of the day and disappears at night. Also, Viyan doesn't know the definition of 'latter', and he keeps trying to steal my food. Also, if you have any new feature recommendations, please email me.
                 </p>
             </section>
             <!-- Blog Post 4 -->
-            <section class="mt-8 p-6 bg-gray-50 rounded-lg border border-dashed border-gray-300">
-                <h2 class="text-2xl font-bold text-gray-900 mb-2">10/28/2025</h2>
-                <hr class="mb-3 border-gray-300">
-                <p class="text-gray-700 italic text-base leading-relaxed">
+            <section class="mt-8 p-6 bg-gray-50 dark:bg-gray-700 rounded-lg border border-dashed border-gray-300 dark:border-gray-600">
+                <h2 class="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">10/28/2025</h2>
+                <hr class="mb-3 border-gray-300 dark:border-gray-600">
+                <p class="text-gray-700 dark:text-gray-200 italic text-base leading-relaxed">
                     Today in English, Vince yapped for so long about types of wine and wine addictions and drug addictions (he's such a hypocrite). Speaking of him, today he was a total of ten minutes late to class. In tennis baseball, I got three people out while I was at first base. Raymond also hit the ball straight up into the air nine times in a row and he kept getting foul balls. I decided to add a comments section to this page, but I then removed it shortly after because the Firestore dynamic content box wouldn't load. Also, if you haven't noticed already, I tweaked the format for this page a bit.
                     
                 </p>
             </section>
             <!-- Blog Post 3 -->
-            <section class="mt-8 p-6 bg-gray-50 rounded-lg border border-dashed border-gray-300">
-                <h2 class="text-2xl font-bold text-gray-900 mb-2">10/27/2025</h2>
-                <hr class="mb-3 border-gray-300">
-                <p class="text-gray-700 italic text-base leading-relaxed">
+            <section class="mt-8 p-6 bg-gray-50 dark:bg-gray-700 rounded-lg border border-dashed border-gray-300 dark:border-gray-600">
+                <h2 class="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">10/27/2025</h2>
+                <hr class="mb-3 border-gray-300 dark:border-gray-600">
+                <p class="text-gray-700 dark:text-gray-200 italic text-base leading-relaxed">
                     I got around a 93% on the science test because I mixed up incomplete dominance and codominance. I also did a lot of editing to this website, which included adding two extra pages and a slight tweak in the menu UI. Mobile-friendly menus will come in the near future. I created an archive page for my blog posts over three months old so that this page doesn't get too cluttered, and I added a changelog/version history page with descriptions for each update. By the way, I have decided to not move this website back to w3spaces, so it should be here to stay until I decide otherwise. Also, I'm not dressing up for Halloween; I'm just gonna go raid peoples' candy. I've recently gotten an interest into optical disks (DVD, CD, Blu-ray, etc.), electro-mechanical disks (HDD), and similar disk-based storage methods. Also, in the lossless vs. lossy audio compression thing, I personally prefer lossy (mp3), since it is a much smaller file and there is no noticable difference between the compressed and uncompressed files. Additionally, mp3 is also the mainstream audio file compression format and is widely supported. Also, I have an SAT exam scheduled on December 6th, so I have to start practicing. For AP, testing doesn't happen until around May, so I have more time with that.
                 </p>
             </section>
 
             <!-- Blog Post 2 -->
-            <section class="mt-8 p-6 bg-gray-50 rounded-lg border border-dashed border-gray-300">
-                <h2 class="text-2xl font-bold text-gray-900 mb-2">10/26/2025</h2>
-                <hr class="mb-3 border-gray-300">
-                <p class="text-gray-700 italic text-base leading-relaxed">
+            <section class="mt-8 p-6 bg-gray-50 dark:bg-gray-700 rounded-lg border border-dashed border-gray-300 dark:border-gray-600">
+                <h2 class="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">10/26/2025</h2>
+                <hr class="mb-3 border-gray-300 dark:border-gray-600">
+                <p class="text-gray-700 dark:text-gray-200 italic text-base leading-relaxed">
                     I moved the website to this webpage today since cookies weren't working on the previous platform. I might move the website back and I'm still learning to use the Cloudflare platform. I have a science test tomorrow and I have to review 64 terms. Vince yelled at Brendan during dodgeball on Friday because the ball bounced off a wall, Brendan blocked it, and Vince claimed it hit his chest.
                 </p>
             </section>
 
             <!-- Blog Post 1 -->
-            <section class="mt-8 p-6 bg-gray-50 rounded-lg border border-dashed border-gray-300">
-                <h2 class="text-2xl font-bold text-gray-900 mb-2">10/25/2025</h2>
-                <hr class="mb-3 border-gray-300">
-                <p class="text-gray-700 italic text-base leading-relaxed">
+            <section class="mt-8 p-6 bg-gray-50 dark:bg-gray-700 rounded-lg border border-dashed border-gray-300 dark:border-gray-600">
+                <h2 class="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">10/25/2025</h2>
+                <hr class="mb-3 border-gray-300 dark:border-gray-600">
+                <p class="text-gray-700 dark:text-gray-200 italic text-base leading-relaxed">
                     Today I created this website. It's kinda depressing here. Also the first time I touched HTML in around three years. I'm also really busy this semester so I don't know when the next time I post will be. I'll make this website more mobile-friendly in the near future. I also have a science test on Monday and a reading guide with five questions due on Tuesday. My FTC team isn't doing too well and I still need to practice for ACSL, SATs, and USACO.
                 </p>
             </section>
@@ -286,11 +328,12 @@
     </main>
 
     <!-- 2. Footer -->
-    <footer class="w-full bg-gray-100 text-gray-500 text-center text-sm py-4 border-t mt-auto">
+    <footer class="w-full bg-gray-100 dark:bg-gray-900 text-gray-500 dark:text-gray-400 text-center text-sm py-4 border-t dark:border-gray-700 mt-auto">
         <p>Last Updated: 11/10/2025</p>
     </footer>
 
     <!-- 3. Cookie Consent Banner (Fixed Position) -->
+    <!-- Banner uses fixed dark background, common for alerts, so no dark mode override needed -->
     <div id="cookie-banner" class="fixed bottom-0 left-0 right-0 p-4 md:p-6 bg-gray-800 text-white shadow-2xl transition-all duration-500 transform translate-y-0 z-50 opacity-100">
         <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between">
             <p class="text-sm mb-3 md:mb-0 md:mr-6">
@@ -302,20 +345,60 @@
         </div>
     </div>
 
-    <!-- Scroll-to-Top Button -->
+    <!-- Scroll-to-Top Button uses responsive dark/light mode classes -->
     <div id="scroll-to-top" onclick="scrollToTop()"
-         class="w-12 h-12 flex items-center justify-center bg-indigo-600 text-white rounded-full shadow-lg hover:bg-indigo-700 transition duration-300">
+         class="w-12 h-12 flex items-center justify-center bg-indigo-600 dark:bg-indigo-500 text-white rounded-full shadow-lg hover:bg-indigo-700 dark:hover:bg-indigo-400 transition duration-300">
         <!-- Up Arrow Icon -->
         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"></path></svg>
     </div>
 
     <!-- JavaScript for all interactions -->
     <script>
-        // Global variables for mobile menu
+        // --- CONSTANTS ---
+        const THEME_KEY = 'app-theme-mode'; // Key used to store theme preference
+        const COOKIE_KEY = 'cookiesAccepted';
+
+        // --- DOM Elements ---
         let mobileMenuButton;
         let mobileMenu;
         let hamburgerIcon;
         let closeIcon;
+
+        // Match Media Query for OS preference
+        const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+
+        // --- THEME MODE LOGIC ---
+
+        /**
+         * Applies the 'dark' class to the HTML element based on the resolved theme.
+         * @param {string} theme 'light', 'dark', or 'system'.
+         */
+        function applyTheme(theme) {
+            const html = document.documentElement;
+            let resolvedTheme = theme;
+
+            if (theme === 'system') {
+                resolvedTheme = mediaQuery.matches ? 'dark' : 'light';
+            }
+
+            if (resolvedTheme === 'dark') {
+                html.classList.add('dark');
+            } else {
+                html.classList.remove('dark');
+            }
+        }
+        
+        // Sets up listener for OS theme changes if 'system' is selected.
+        function setupSystemThemeListener() {
+            mediaQuery.addEventListener('change', () => {
+                const currentPreference = localStorage.getItem(THEME_KEY) || 'system';
+                if (currentPreference === 'system') {
+                    applyTheme('system');
+                }
+            });
+        }
+        
+        // --- MOBILE MENU LOGIC ---
 
         /**
          * Toggles the mobile navigation menu open and closed.
@@ -339,7 +422,12 @@
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-            // Initialize mobile menu elements
+            // 1. Initialize Theme Mode
+            const initialThemeMode = localStorage.getItem(THEME_KEY) || 'system';
+            applyTheme(initialThemeMode);
+            setupSystemThemeListener();
+
+            // 2. Initialize mobile menu elements
             mobileMenuButton = document.getElementById('mobile-menu-button');
             mobileMenu = document.getElementById('mobile-menu');
             hamburgerIcon = document.getElementById('hamburger-icon');
@@ -348,9 +436,8 @@
             // --- Cookie Consent Logic ---
             const banner = document.getElementById('cookie-banner');
             const acceptButton = document.getElementById('accept-cookies');
-            const storageKey = 'cookiesAccepted';
 
-            const accepted = localStorage.getItem(storageKey);
+            const accepted = localStorage.getItem(COOKIE_KEY);
 
             if (accepted === 'true') {
                 if (banner) {
@@ -363,7 +450,7 @@
 
                 if (acceptButton) {
                     acceptButton.addEventListener('click', () => {
-                        localStorage.setItem(storageKey, 'true');
+                        localStorage.setItem(COOKIE_KEY, 'true');
 
                         if (banner) {
                             banner.classList.add('fade-out');
@@ -380,20 +467,27 @@
             const button = dropdown.querySelector('button');
             const menu = document.getElementById('more-menu-items');
 
+            // Function to show/hide menu on button click (for accessibility/mobile toggle)
             const toggleMenu = () => {
                 menu.classList.toggle('visible');
                 const isExpanded = menu.classList.contains('visible');
                 button.setAttribute('aria-expanded', isExpanded);
             };
-
+            
+            // Function to show the menu (for hover)
             const showMenu = () => {
-                menu.classList.add('visible');
-                button.setAttribute('aria-expanded', 'true');
+                 if (window.innerWidth >= 768) {
+                    menu.classList.add('visible');
+                    button.setAttribute('aria-expanded', 'true');
+                 }
             };
 
+            // Function to hide the menu (for hover)
             const hideMenu = () => {
-                menu.classList.remove('visible');
-                button.setAttribute('aria-expanded', 'false');
+                if (window.innerWidth >= 768) {
+                    menu.classList.remove('visible');
+                    button.setAttribute('aria-expanded', 'false');
+                }
             };
 
             // Desktop hover behavior
@@ -405,7 +499,7 @@
 
             // Close dropdown when clicking outside of it
             document.addEventListener('click', (event) => {
-                if (!dropdown.contains(event.target) && menu.classList.contains('visible')) {
+                if (window.innerWidth >= 768 && !dropdown.contains(event.target) && menu.classList.contains('visible')) {
                     hideMenu();
                 }
             });
@@ -434,9 +528,9 @@
         // Function to check scroll position and show/hide the button
         function checkScroll() {
             if (document.body.scrollTop > 300 || document.documentElement.scrollTop > 300) {
-                scrollButton.classList.add('show');
+                if (scrollButton) scrollButton.classList.add('show');
             } else {
-                scrollButton.classList.remove('show');
+                if (scrollButton) scrollButton.classList.remove('show');
             }
         }
 
