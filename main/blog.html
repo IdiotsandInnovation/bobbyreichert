@@ -105,6 +105,87 @@
             opacity: 1;
             transform: scale(1);
         }
+        /* ===============================
+   🔵 Liquid Blue Glass Scroll-to-Top Button
+   =============================== */
+#scroll-to-top {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    z-index: 100;
+    opacity: 0;
+    transform: scale(0.8);
+    cursor: pointer;
+    transition: opacity 0.3s, transform 0.3s;
+
+    /* Liquid blue glass */
+    backdrop-filter: blur(14px) saturate(180%);
+    -webkit-backdrop-filter: blur(14px) saturate(180%);
+    background: rgba(80, 120, 255, 0.22);
+    border: 1.4px solid rgba(140, 180, 255, 0.55);
+
+    box-shadow: 0 8px 24px rgba(0, 40, 160, 0.35);
+    overflow: hidden;       /* needed for shimmer clipping */
+}
+
+/* Show state */
+#scroll-to-top.show {
+    opacity: 1;
+    transform: scale(1);
+}
+
+/* Dark Mode Liquid Glass */
+.dark #scroll-to-top {
+    background: rgba(60, 100, 220, 0.22);
+    border-color: rgba(200, 220, 255, 0.4);
+    box-shadow: 0 8px 24px rgba(20, 40, 120, 0.5);
+}
+
+/* ===============================
+   ✨ Animated Shimmer
+   =============================== */
+#scroll-to-top::before {
+    content: "";
+    position: absolute;
+    top: -150%;
+    left: -150%;
+    width: 300%;
+    height: 300%;
+    background: linear-gradient(
+        120deg,
+        transparent 0%,
+        rgba(255, 255, 255, 0.22) 50%,
+        transparent 100%
+    );
+    opacity: 0;
+    transition: opacity 0.3s;
+    transform: rotate(25deg);
+}
+
+/* Show shimmer on hover */
+#scroll-to-top:hover::before {
+    opacity: 1;
+    animation: shimmer 1.6s linear infinite;
+}
+
+@keyframes shimmer {
+    0%   { transform: translate(-50%, -50%) rotate(25deg); }
+    100% { transform: translate(50%, 50%) rotate(25deg); }
+}
+
+/* ===============================
+   🫧 Liquid Wobble Hover Effect
+   =============================== */
+#scroll-to-top:hover {
+    transform: scale(1.08) translateY(-2px);
+    transition: transform 0.2s ease-out;
+}
+
+#scroll-to-top:active {
+    transform: scale(0.95);
+    transition: transform 0.1s;
+}
+
     </style>
 </head>
 <!-- Body now uses responsive dark/light mode classes -->
@@ -351,12 +432,15 @@
         </div>
     </div>
 
-    <!-- Scroll-to-Top Button uses responsive dark/light mode classes -->
     <div id="scroll-to-top" onclick="scrollToTop()"
-         class="w-12 h-12 flex items-center justify-center bg-indigo-600 dark:bg-indigo-500 text-white rounded-full shadow-lg hover:bg-indigo-700 dark:hover:bg-indigo-400 transition duration-300">
-        <!-- Up Arrow Icon -->
-        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"></path></svg>
-    </div>
+     class="w-12 h-12 flex items-center justify-center rounded-full text-white">
+    <svg class="w-6 h-6" fill="none" stroke="currentColor"
+         viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M5 10l7-7m0 0l7 7m-7-7v18"></path>
+    </svg>
+</div>
+
 
     <!-- JavaScript for all interactions -->
     <script>
@@ -556,4 +640,5 @@
         document.addEventListener('DOMContentLoaded', checkScroll);
     </script>
 </body>
+
 </html>
