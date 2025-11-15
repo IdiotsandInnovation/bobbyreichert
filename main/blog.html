@@ -438,9 +438,20 @@
         let auth;
         let currentUserId = null;
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
         const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
         const COMMENTS_COLLECTION_PATH = `artifacts/${appId}/public/data/blog_comments`;
+        
+        // Safely parse the Firebase config string from the environment
+        let firebaseConfig = {};
+        try {
+            const configString = typeof __firebase_config !== 'undefined' ? __firebase_config : null;
+            // Check if string exists and is not just whitespace before parsing
+            if (configString && configString.trim()) {
+                firebaseConfig = JSON.parse(configString);
+            }
+        } catch (e) {
+            console.error("Failed to parse __firebase_config JSON. It might be malformed.", e);
+        }
 
         // --- DOM Elements ---
         let mobileMenuButton;
@@ -515,9 +526,10 @@
          */
         async function setupFirebase() {
             try {
+                // Check if the configuration object is empty after safe parsing
                 if (Object.keys(firebaseConfig).length === 0) {
-                    console.error("Firebase config is empty. Cannot initialize.");
-                    userIdDisplay.textContent = "Error: Comment service configuration missing. Cannot connect to database.";
+                    console.error("Firebase config is empty or invalid. Cannot initialize.");
+                    userIdDisplay.innerHTML = "Error: **Cannot connect to database.** Comment service configuration missing or invalid.";
                     submitButton.disabled = true;
                     submitButton.classList.add('submit-disabled');
                     loadingIndicator.textContent = "Comments service unavailable due to configuration error.";
@@ -560,10 +572,12 @@
                 });
 
             } catch (error) {
+                // This catch handles general initialization errors
                 console.error("Error setting up Firebase:", error);
-                userIdDisplay.textContent = `Error: Authentication failed (${error.code || error.message}). Cannot connect to database.`;
+                userIdDisplay.innerHTML = `Error: **Cannot connect to database.** (${error.code || error.message}).`;
                 submitButton.disabled = true;
                 submitButton.classList.add('submit-disabled');
+                loadingIndicator.textContent = "Comments service unavailable due to a connection or configuration error.";
             }
         }
 
