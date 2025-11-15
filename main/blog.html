@@ -102,8 +102,8 @@
             cursor: pointer;
         }
         #scroll-to-top.show {
-            opacity: 0.85;
-            transform: scale(0.95);
+            opacity: 0.7;
+            transform: scale(1);
         }
 
         /* Custom style for disabled button state */
@@ -508,7 +508,7 @@
             setTimeout(() => { formMessage.textContent = ''; }, 5000);
         }
 
-        // --- FIREBASE LOGIC ---
+        // --- FIREBASE LOGIC (Auto-setup using environment variables) ---
 
         /**
          * Initializes Firebase and handles user authentication.
@@ -517,10 +517,10 @@
             try {
                 if (Object.keys(firebaseConfig).length === 0) {
                     console.error("Firebase config is empty. Cannot initialize.");
-                    userIdDisplay.textContent = "Error: Firebase configuration missing.";
+                    userIdDisplay.textContent = "Error: Comment service configuration missing. Cannot connect to database.";
                     submitButton.disabled = true;
                     submitButton.classList.add('submit-disabled');
-                    loadingIndicator.textContent = "Comments service unavailable.";
+                    loadingIndicator.textContent = "Comments service unavailable due to configuration error.";
                     return;
                 }
                 
@@ -544,13 +544,15 @@
                 onAuthStateChanged(auth, (user) => {
                     if (user) {
                         currentUserId = user.uid;
-                        userIdDisplay.innerHTML = `Signed in as: <span class="font-bold">${currentUserId}</span>`;
+                        // Display full user ID as required
+                        userIdDisplay.innerHTML = `✅ Comment Service Ready. Signed in as: <span class="font-bold break-all">${currentUserId}</span>`;
                         submitButton.disabled = false;
                         submitButton.classList.remove('submit-disabled');
                         loadComments(); // Start listening for comments after successful auth
                     } else {
-                        currentUserId = crypto.randomUUID(); // Fallback to random ID if auth fails
-                        userIdDisplay.innerHTML = `Signed in anonymously. ID: <span class="font-bold">${currentUserId}</span>`;
+                        // Fallback to random ID if auth fails, but keep commenting disabled
+                        currentUserId = crypto.randomUUID(); 
+                        userIdDisplay.innerHTML = `Error: Authentication failed. Using temporary ID: <span class="font-bold break-all">${currentUserId}</span>. Cannot post comments without full authentication.`;
                         submitButton.disabled = true;
                         submitButton.classList.add('submit-disabled');
                         console.warn("Authentication failed, signed in with local UUID.");
@@ -559,7 +561,7 @@
 
             } catch (error) {
                 console.error("Error setting up Firebase:", error);
-                userIdDisplay.textContent = `Error: Authentication failed (${error.code}).`;
+                userIdDisplay.textContent = `Error: Authentication failed (${error.code || error.message}). Cannot connect to database.`;
                 submitButton.disabled = true;
                 submitButton.classList.add('submit-disabled');
             }
@@ -577,7 +579,6 @@
             const commentsQuery = query(
                 collection(db, COMMENTS_COLLECTION_PATH)
                 // Note: Sorting is done in-memory to avoid mandatory index creation issues
-                // If performance becomes an issue with many comments, a Firestore index must be added.
             );
 
             // Set up real-time listener
@@ -627,8 +628,8 @@
                         <p class="text-xs text-gray-500 dark:text-gray-400">${dateString}</p>
                     </div>
                     <p class="mt-2 text-gray-700 dark:text-gray-200 whitespace-pre-wrap">${commentText}</p>
-                    <div class="mt-2 text-xs text-gray-400 dark:text-gray-500 border-t border-dashed border-gray-100 dark:border-gray-700 pt-2">
-                        Posted by user ID: ${comment.userId.substring(0, 8)}...
+                    <div class="mt-2 text-xs text-gray-400 dark:text-gray-500 border-t border-dashed border-gray-100 dark:border-gray-700 pt-2 break-all">
+                        Posted by user ID: ${comment.userId}
                     </div>
                 `;
                 commentsList.appendChild(commentElement);
@@ -642,8 +643,8 @@
         async function submitComment(event) {
             event.preventDefault();
             
-            if (!db || !currentUserId) {
-                showFormMessage("Service not ready. Please wait for authentication.", 'error');
+            if (!db || !currentUserId || submitButton.disabled) {
+                showFormMessage("Comment service is not ready or authentication failed.", 'error');
                 return;
             }
 
