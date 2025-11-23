@@ -102,7 +102,7 @@
             cursor: pointer;
         }
         #scroll-to-top.show {
-            opacity: 0.7;
+            opacity: 1; /* Changed from 0.7 to 1 so the blur and semi-transparent bg work correctly */
             transform: scale(1);
         }
 
@@ -445,7 +445,8 @@
 
     <!-- 3. Cookie Consent Banner (Fixed Position) -->
     <!-- Banner uses fixed dark background, common for alerts, so no dark mode override needed -->
-    <div id="cookie-banner" class="fixed bottom-0 left-0 right-0 p-4 md:p-6 bg-gray-800 text-white shadow-2xl transition-all duration-500 transform translate-y-0 z-50 opacity-100">
+    <!-- Added bg-gray-800/80 and backdrop-blur-md for glassmorphism effect -->
+    <div id="cookie-banner" class="fixed bottom-0 left-0 right-0 p-4 md:p-6 bg-gray-800/80 backdrop-blur-md text-white shadow-2xl transition-all duration-500 transform translate-y-0 z-50 opacity-100">
         <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between">
             <p class="text-sm mb-3 md:mb-0 md:mr-6">
                 This website uses cookies to ensure you get the best experience and to track web traffic. By continuing to use this site, you agree to our use of cookies.
@@ -457,8 +458,9 @@
     </div>
 
     <!-- Scroll-to-Top Button uses responsive dark/light mode classes -->
+    <!-- Added backdrop-blur-md, adjusted opacity on hover, and used semi-transparent bg colors -->
     <div id="scroll-to-top" onclick="scrollToTop()"
-         class="w-12 h-12 flex items-center justify-center bg-blue-600 dark:bg-blue-500 text-white rounded-full shadow-lg hover:bg-blue-700 dark:hover:bg-indigo-400 transition duration-300">
+         class="w-12 h-12 flex items-center justify-center bg-blue-600/50 dark:bg-blue-500/50 backdrop-blur-md text-white rounded-full shadow-lg hover:bg-blue-600/70 dark:hover:bg-blue-500/70 transition duration-300">
         <!-- Up Arrow Icon -->
         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"></path></svg>
     </div>
