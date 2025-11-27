@@ -105,48 +105,48 @@
 </head>
 <!-- Body now uses responsive dark/light mode classes -->
 <body class="min-h-screen flex flex-col items-center transition-colors duration-300 bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
-
-    <!-- 🔴 START: NAVIGATION BAR 🔴 -->
-    <!-- Nav uses responsive dark/light mode classes -->
-    <nav class="w-full bg-white shadow-lg sticky top-0 z-20 dark:bg-gray-800 dark:shadow-xl">
+<!-- 🔴 START: NAVIGATION BAR 🔴 -->
+    
+    <!-- Nav classes are now managed entirely by JS -->
+    <nav id="main-nav" class="w-full shadow-lg sticky top-0 z-20 dark:shadow-xl transition-colors duration-300">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16">
                 <!-- Logo/Name -->
                 <div class="flex-shrink-0">
-                    <!-- Logo color defined using theme primary color -->
-                    <span class="text-xl font-bold text-primary dark:text-primary-dark">Bobby Reichert</span>
+                    <span class="text-xl font-bold text-primary">Bobby Reichert</span>
                 </div>
-                
-                <!-- Desktop Links & Dropdown (Hidden on Mobile) -->
-                <div class="hidden md:flex items-center space-x-3 md:space-x-4 text-sm md:text-base">
-                    <!-- Main Links with dark mode text support -->
-                    <a href="#" class="text-gray-900 dark:text-gray-100 font-bold p-2 rounded-md bg-indigo-100 dark:bg-indigo-800 hover:bg-indigo-200 dark:hover:bg-indigo-700 transition">Home</a>
+
+                <!-- Desktop Links & Dropdown (Added ID: desktop-nav) -->
+                <div id="desktop-nav" class="hidden md:flex items-center space-x-3 md:space-x-4 text-sm md:text-base">
+                    <!-- Links now use dark: classes for text color -->
+                    <a href="home.html" class="text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary-dark font-medium p-2 rounded-md transition duration-150">Home</a>
                     <a href="about.html" class="text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary-dark font-medium p-2 rounded-md transition duration-150">Bio</a>
                     <a href="blog.html" class="text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary-dark font-medium p-2 rounded-md transition duration-150">Blog</a>
                     <a href="contact.html" class="text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary-dark font-medium p-2 rounded-md transition duration-150">Contact</a>
                     
                     <!-- DROPDOWN MENU -->
                     <div id="more-dropdown" class="relative group">
-                        <!-- Dropdown Button -->
-                        <button type="button" class="text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary-dark font-medium p-2 rounded-md transition duration-150 flex items-center" aria-expanded="false" aria-controls="more-menu-items">
+                        <button type="button" class="text-gray-900 dark:text-gray-100 font-bold p-2 rounded-md bg-indigo-100 dark:bg-indigo-700 flex items-center hover:bg-indigo-200 dark:hover:bg-indigo-600 transition" aria-expanded="false" aria-controls="more-menu-items">
                             More
-                            <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                            <!-- Icon color adjusts for dark mode -->
+                            <svg class="w-4 h-4 ml-1 text-gray-700 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                         </button>
                         
-                        <!-- Dropdown Content uses responsive dark/light mode classes -->
-                        <div id="more-menu-items" class="dropdown-menu absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white dark:bg-gray-700 ring-1 ring-black ring-opacity-5 dark:ring-gray-600 z-30">
+                        <!-- Dropdown Content uses dark: classes -->
+                        <div id="more-menu-items" class="dropdown-menu absolute right-0 mt-2 w-48 rounded-md shadow-lg ring-1 ring-black ring-opacity-5 z-30 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300">
                             <div class="py-1" role="menu" aria-orientation="vertical" aria-labelledby="more-dropdown">
+                                <!-- Menu Items -->
                                 <a href="archived-blogs.html" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 hover:text-primary transition duration-150" role="menuitem">
                                     Archived Blogs
                                 </a>
                                 <a href="changelog.html" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 hover:text-primary transition duration-150" role="menuitem">
                                     Changelog
                                 </a>
-                                
                                 <a href="planned-features.html" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 hover:text-primary transition duration-150" role="menuitem">
                                     Future Features
                                 </a>
-                                <a href="settings.html" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 hover:text-primary transition duration-150" role="menuitem">
+                                <!-- Highlighted item -->
+                                <a href="#" class="block px-4 py-2 text-sm font-semibold text-indigo-700 bg-indigo-50 dark:text-primary-dark dark:bg-indigo-900 hover:text-primary dark:hover:text-primary-dark transition duration-150" role="menuitem">
                                     Settings
                                 </a>
                             </div>
@@ -154,9 +154,8 @@
                     </div>
                 </div>
 
-                <!-- Mobile Menu Button (Visible on Mobile) -->
-                <div class="md:hidden">
-                    <!-- Button text/icon colors updated for dark mode -->
+                <!-- Mobile Menu Button (Added ID: mobile-toggle) -->
+                <div id="mobile-toggle" class="md:hidden">
                     <button id="mobile-menu-button" type="button" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 inline-flex items-center justify-center p-2 rounded-md transition duration-150" aria-controls="mobile-menu" aria-expanded="false">
                         <span class="sr-only">Open main menu</span>
                         <!-- Hamburger Icon -->
@@ -175,16 +174,14 @@
     <!-- 🔴 END: NAVIGATION BAR 🔴 -->
     
     <!-- 🔴 START: MOBILE MENU PANEL 🔴 -->
-    <!-- Mobile menu uses responsive dark/light mode classes -->
-    <div id="mobile-menu" class="fixed inset-0 top-16 w-full h-full md:hidden z-10 bg-white dark:bg-gray-900">
+    <!-- Mobile menu classes are now managed entirely by JS -->
+    <div id="mobile-menu" class="fixed inset-0 top-16 w-full h-full md:hidden z-10">
         <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3 flex flex-col">
-            <!-- Highlighted item -->
-            <a href="#" class="text-lg block px-3 py-2 rounded-md text-primary dark:text-primary-dark bg-indigo-50 dark:bg-indigo-900 font-semibold transition duration-150">Home (Current)</a>
-            
-            <!-- Other links use responsive dark/light mode classes -->
-            <a href="about.html" class="text-lg font-medium block px-3 py-2 rounded-md text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-primary transition duration-150">Bio</a>
-            <a href="blog.html" class="text-lg font-medium block px-3 py-2 rounded-md text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-primary transition duration-150">Blog</a>
-            <a href="contact.html" class="text-lg font-medium block px-3 py-2 rounded-md text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-primary transition duration-150">Contact</a>
+            <!-- Main Links -->
+            <a href="home.html" class="text-lg font-medium block px-3 py-2 rounded-md text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-primary dark:hover:text-primary-dark transition duration-150">Home</a>
+            <a href="about.html" class="text-lg font-medium block px-3 py-2 rounded-md text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-primary dark:hover:text-primary-dark transition duration-150">Bio</a>
+            <a href="blog.html" class="text-lg font-medium block px-3 py-2 rounded-md text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-primary dark:hover:text-primary-dark transition duration-150">Blog</a>
+            <a href="contact.html" class="text-lg font-medium block px-3 py-2 rounded-md text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-primary dark:hover:text-primary-dark transition duration-150">Contact</a>
             
             <!-- Separator -->
             <div class="h-px w-full my-2 bg-gray-200 dark:bg-gray-700"></div>
@@ -193,7 +190,8 @@
             <a href="archived-blogs.html" class="text-md block px-3 py-2 rounded-md text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-primary transition duration-150">Archived Blogs</a>
             <a href="changelog.html" class="text-md block px-3 py-2 rounded-md text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-primary transition duration-150">Changelog</a>
             <a href="planned-features.html" class="text-md block px-3 py-2 rounded-md text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-primary transition duration-150">Future Features</a>
-            <a href="settings.html" class="text-md block px-3 py-2 rounded-md text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-primary transition duration-150">Settings</a>
+            <!-- Highlighted item -->
+            <a href="#" class="text-md block px-3 py-2 rounded-md text-indigo-700 bg-indigo-50 dark:text-primary-dark dark:bg-indigo-900 font-semibold transition duration-150">Settings</a>
         </div>
     </div>
     <!-- 🔴 END: MOBILE MENU PANEL 🔴 -->
@@ -216,6 +214,12 @@
             <section class="mt-8 p-6 bg-gray-50 dark:bg-gray-700 rounded-lg border border-dashed border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200">
                 <p>
                     Normal paragraph test, font: Inter (Light mode: gray-700, Dark mode: gray-200)
+                    hr bar test:
+                    <hr>
+                    test end<br>
+                    line break test:
+                    <br><br>
+                    test end
                 </p>
             </section>
             
