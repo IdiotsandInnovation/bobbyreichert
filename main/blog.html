@@ -503,284 +503,178 @@
 
     <!-- JavaScript for all interactions -->
     <script type="module">
-  // Import the functions you need from the SDKs you need
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
-  import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-analytics.js";
-  // TODO: Add SDKs for Firebase products that you want to use
-  // https://firebase.google.com/docs/web/setup#available-libraries
+  <script type="module">
+/* ---------------- FIREBASE IMPORTS ---------------- */
+import { 
+  initializeApp 
+} from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
 
-  // Your web app's Firebase configuration
-  // For Firebase JS SDK v7.20.0 and later, measurementId is optional
-  const firebaseConfig = {
-    apiKey: "AIzaSyCJTduHsoftZ9jxzK2zGt89JKXhLhkeGk8",
-    authDomain: "bobbyreichertwebpage.firebaseapp.com",
-    projectId: "bobbyreichertwebpage",
-    storageBucket: "bobbyreichertwebpage.firebasestorage.app",
-    messagingSenderId: "621093540176",
-    appId: "1:621093540176:web:56cdb61804298e570c1c55",
-    measurementId: "G-GJ4RV7NNXH"
-  };
+import { 
+  getFirestore, collection, addDoc, onSnapshot,
+  query, serverTimestamp, setLogLevel 
+} from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
 
-  // Initialize Firebase
-  const app = initializeApp(firebaseConfig);
-  const analytics = getAnalytics(app);
+import {
+  getAuth, onAuthStateChanged, setPersistence,
+  browserLocalPersistence, signInAnonymously
+} from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
 
-        // --- FIREBASE GLOBALS ---
-        let db;
-        let auth;
-        let currentUserId = null;
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
-        const COMMENTS_COLLECTION_PATH = `artifacts/${appId}/public/data/blog_comments`;
-        
-        
+/* ---------------- FIREBASE INIT ---------------- */
+const firebaseConfig = {
+  apiKey: "AIzaSyCJTduHsoftZ9jxzK2zGt89JKXhLhkeGk8",
+  authDomain: "bobbyreichertwebpage.firebaseapp.com",
+  projectId: "bobbyreichertwebpage",
+  storageBucket: "bobbyreichertwebpage.firebasestorage.app",
+  messagingSenderId: "621093540176",
+  appId: "1:621093540176:web:56cdb61804298e570c1c55",
+  measurementId: "G-GJ4RV7NNXH"
+};
 
-        // --- DOM Elements ---
-        let mobileMenuButton;
-        let mobileMenu;
-        let hamburgerIcon;
-        let closeIcon;
-        let submitButton;
-        let commentsList;
-        let formMessage;
-        let userIdDisplay;
-        let commentCount;
-        let loadingIndicator;
-        let commentForm;
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const auth = getAuth(app);
 
-        // Match Media Query for OS preference
-        const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+// For debugging
+setLogLevel("debug");
 
-        // --- UTILITY FUNCTIONS ---
-        
-        /**
-         * Sanitizes user input to prevent XSS attacks.
-         * @param {string} str The input string to sanitize.
-         * @returns {string} The sanitized string.
-         */
-        function sanitizeInput(str) {
-            const temp = document.createElement('div');
-            temp.textContent = str;
-            return temp.innerHTML;
-        }
+/* ---------------- DOM ELEMENTS ---------------- */
+const userIdDisplay = document.getElementById("user-id-display");
+const commentForm = document.getElementById("comment-form");
+const submitButton = document.getElementById("submit-button");
+const commentList = document.getElementById("comments-list");
+const commentCount = document.getElementById("comment-count");
+const formMessage = document.getElementById("form-message");
+const loadingIndicator = document.getElementById("loading-indicator");
 
-        /**
-         * Formats a Firebase timestamp or Date object into a readable string.
-         * @param {object} timestamp A Firestore Timestamp object or Date.
-         * @returns {string} Formatted date string.
-         */
-        function formatTimestamp(timestamp) {
-            if (timestamp && timestamp.toDate) {
-                return timestamp.toDate().toLocaleString('en-US', { 
-                    year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' 
-                });
-            }
-            if (timestamp instanceof Date) {
-                return timestamp.toLocaleString('en-US', { 
-                    year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' 
-                });
-            }
-            return 'Just now';
-        }
+let currentUserId = null;
+const COMMENTS_PATH = "comments";  // simpler path
 
-        /**
-         * Shows a message in the form's feedback area.
-         * @param {string} message The message text.
-         * @param {string} type 'success' or 'error'.
-         */
-        function showFormMessage(message, type) {
-            if (!formMessage) return;
-            formMessage.textContent = message;
-            if (type === 'error') {
-                formMessage.className = 'mt-3 text-sm font-medium text-red-600 dark:text-red-400';
-            } else if (type === 'success') {
-                formMessage.className = 'mt-3 text-sm font-medium text-green-600 dark:text-green-400';
-            } else {
-                formMessage.className = 'mt-3 text-sm font-medium text-gray-500 dark:text-gray-400';
-            }
-            setTimeout(() => { formMessage.textContent = ''; }, 5000);
-        }
+/* ---------------------------------------------------
+   Authentication
+----------------------------------------------------- */
+async function initAuth() {
+  try {
+    await setPersistence(auth, browserLocalPersistence);
 
-        // --- FIREBASE LOGIC (Auto-setup using environment variables) ---
+    signInAnonymously(auth).catch(console.error);
 
-        /**
-         * Initializes Firebase and handles user authentication.
-         */
-        async function setupFirebase() {
-            try {
-                // Check if the configuration object is empty after safe parsing
-                if (Object.keys(firebaseConfig).length === 0) {
-                    console.error("Firebase config is empty or invalid. Cannot initialize.");
-                    userIdDisplay.innerHTML = "Error: Cannot connect to Firebase. Comment service configuration missing or invalid.";
-                    submitButton.disabled = true;
-                    submitButton.classList.add('submit-disabled');
-                    loadingIndicator.textContent = "Comments service unavailable due to configuration error.";
-                    return;
-                }
-                
-                // Set debug logging for Firestore
-                setLogLevel('Debug');
-                
-                const app = initializeApp(firebaseConfig);
-                db = getFirestore(app);
-                auth = getAuth(app);
-                
-                // Use browser local persistence to maintain sign-in state across refreshes
-                await setPersistence(auth, browserLocalPersistence);
-                
-                if (initialAuthToken) {
-                    await signInWithCustomToken(auth, initialAuthToken);
-                } else {
-                    await signInAnonymously(auth);
-                }
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        currentUserId = user.uid;
+        userIdDisplay.innerHTML = `Signed in as <b>${currentUserId}</b>`;
+        submitButton.disabled = false;
+        submitButton.classList.remove("submit-disabled");
+        loadComments();
+      }
+    });
 
-                // Wait for auth state change to ensure user ID is ready
-                onAuthStateChanged(auth, (user) => {
-                    if (user) {
-                        currentUserId = user.uid;
-                        // Display full user ID as required
-                        userIdDisplay.innerHTML = `✅ Comment Service Ready. Signed in as: <span class="font-bold break-all">${currentUserId}</span>`;
-                        submitButton.disabled = false;
-                        submitButton.classList.remove('submit-disabled');
-                        loadComments(); // Start listening for comments after successful auth
-                    } else {
-                        // Fallback to random ID if auth fails, but keep commenting disabled
-                        currentUserId = crypto.randomUUID(); 
-                        userIdDisplay.innerHTML = `Error: Authentication failed. Using temporary ID: <span class="font-bold break-all">${currentUserId}</span>. Cannot post comments without full authentication.`;
-                        submitButton.disabled = true;
-                        submitButton.classList.add('submit-disabled');
-                        console.warn("Authentication failed, signed in with local UUID.");
-                    }
-                });
+  } catch (err) {
+    console.error(err);
+    userIdDisplay.textContent = "Failed to initialize Firebase Auth.";
+  }
+}
 
-            } catch (error) {
-                // This catch handles general initialization errors
-                console.error("Error setting up Firebase:", error);
-                userIdDisplay.innerHTML = `Error: **Cannot connect to database.** (${error.code || error.message}).`;
-                submitButton.disabled = true;
-                submitButton.classList.add('submit-disabled');
-                loadingIndicator.textContent = "Comments service unavailable due to a connection or configuration error.";
-            }
-        }
+/* ---------------------------------------------------
+   Load Comments in Realtime
+----------------------------------------------------- */
+function loadComments() {
+  const q = query(collection(db, COMMENTS_PATH));
 
-        /**
-         * Attaches a real-time listener to the comments collection and renders them.
-         */
-        function loadComments() {
-            if (!db || !currentUserId) {
-                console.error("Firestore not initialized or user ID missing.");
-                return;
-            }
-            
-            const commentsQuery = query(
-                collection(db, COMMENTS_COLLECTION_PATH)
-                // Note: Sorting is done in-memory to avoid mandatory index creation issues
-            );
+  onSnapshot(q, (snapshot) => {
+    const comments = [];
+    snapshot.forEach((doc) => comments.push({ id: doc.id, ...doc.data() }));
 
-            // Set up real-time listener
-            onSnapshot(commentsQuery, (snapshot) => {
-                const comments = [];
-                snapshot.forEach(doc => {
-                    comments.push({ id: doc.id, ...doc.data() });
-                });
-                
-                // Sort the comments by timestamp (newest first) in memory
-                comments.sort((a, b) => {
-                    const timeA = a.timestamp ? a.timestamp.toMillis() : 0;
-                    const timeB = b.timestamp ? b.timestamp.toMillis() : 0;
-                    return timeB - timeA;
-                });
-                
-                renderComments(comments);
-            }, (error) => {
-                console.error("Error listening to comments:", error);
-                loadingIndicator.textContent = "Error loading comments.";
-            });
-        }
-        
-        /**
-         * Renders the list of comments to the DOM.
-         * @param {Array<object>} comments - Array of comment objects.
-         */
-        function renderComments(comments) {
-            commentsList.innerHTML = '';
-            commentCount.textContent = comments.length;
+    // newest → oldest
+    comments.sort((a, b) => (b.timestamp?.seconds || 0) - (a.timestamp?.seconds || 0));
 
-            if (comments.length === 0) {
-                commentsList.innerHTML = `<div class="text-center p-8 text-gray-500 dark:text-gray-400">Be the first to leave a comment!</div>`;
-                return;
-            }
-            
-            comments.forEach(comment => {
-                const dateString = formatTimestamp(comment.timestamp);
-                const userName = sanitizeInput(comment.name || 'Anonymous');
-                const commentText = sanitizeInput(comment.text);
-                
-                const commentElement = document.createElement('div');
-                commentElement.className = 'p-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm transition duration-150 hover:shadow-md';
-                commentElement.innerHTML = `
-                    <div class="flex items-start justify-between">
-                        <p class="font-bold text-lg text-primary dark:text-primary-dark">${userName}</p>
-                        <p class="text-xs text-gray-500 dark:text-gray-400">${dateString}</p>
-                    </div>
-                    <p class="mt-2 text-gray-700 dark:text-gray-200 whitespace-pre-wrap">${commentText}</p>
-                    <div class="mt-2 text-xs text-gray-400 dark:text-gray-500 border-t border-dashed border-gray-100 dark:border-gray-700 pt-2 break-all">
-                        Posted by user ID: ${comment.userId}
-                    </div>
-                `;
-                commentsList.appendChild(commentElement);
-            });
-        }
-        
-        /**
-         * Handles the form submission to post a new comment.
-         * @param {Event} event 
-         */
-        async function submitComment(event) {
-            event.preventDefault();
-            
-            if (!db || !currentUserId || submitButton.disabled) {
-                showFormMessage("Comment service is not ready or authentication failed.", 'error');
-                return;
-            }
+    renderComments(comments);
+  });
+}
 
-            const nameInput = document.getElementById('comment-name').value;
-            const textInput = document.getElementById('comment-text').value;
+/* ---------------------------------------------------
+   Render Comments
+----------------------------------------------------- */
+function renderComments(comments) {
+  commentList.innerHTML = "";
+  commentCount.textContent = comments.length;
 
-            const name = nameInput.trim() || 'Anonymous';
-            const text = textInput.trim();
+  if (comments.length === 0) {
+    commentList.innerHTML = `<div class="text-gray-500 dark:text-gray-400 text-center p-4">
+      No comments yet. Be the first!
+    </div>`;
+    return;
+  }
 
-            if (text.length < 5 || text.length > 500) {
-                showFormMessage("Comment must be between 5 and 500 characters.", 'error');
-                return;
-            }
-            
-            submitButton.disabled = true;
-            submitButton.classList.add('submit-disabled');
-            submitButton.textContent = 'Posting...';
+  comments.forEach((c) => {
+    const wrapper = document.createElement("div");
+    wrapper.className =
+      "p-4 bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-xl shadow";
 
-            try {
-                const newComment = {
-                    name: sanitizeInput(name),
-                    text: sanitizeInput(text),
-                    userId: currentUserId,
-                    timestamp: serverTimestamp() 
-                };
+    wrapper.innerHTML = `
+      <div class="flex justify-between">
+        <p class="font-bold text-primary dark:text-primary-dark">
+          ${c.name || "Anonymous"}
+        </p>
+        <p class="text-xs text-gray-500">${formatDate(c.timestamp)}</p>
+      </div>
+      <p class="mt-2 whitespace-pre-wrap text-gray-700 dark:text-gray-200">
+        ${c.text}
+      </p>
+    `;
+    commentList.appendChild(wrapper);
+  });
+}
 
-                await addDoc(collection(db, COMMENTS_COLLECTION_PATH), newComment);
-                
-                showFormMessage("Comment posted successfully!", 'success');
-                document.getElementById('comment-text').value = ''; // Clear only the comment text
-                document.getElementById('comment-name').value = ''; // Clear name input as well
-            } catch (e) {
-                console.error("Error adding document: ", e);
-                showFormMessage(`Failed to post comment. Error: ${e.message}`, 'error');
-            } finally {
-                submitButton.disabled = false;
-                submitButton.classList.remove('submit-disabled');
-                submitButton.textContent = 'Post Comment';
-            }
-        }
+/* ---------------------------------------------------
+   Submit Comment
+----------------------------------------------------- */
+commentForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  if (!currentUserId) return;
+
+  const name = document.getElementById("comment-name").value.trim();
+  const text = document.getElementById("comment-text").value.trim();
+
+  if (text.length < 3) {
+    formMessage.textContent = "Comment is too short.";
+    formMessage.className = "text-red-500";
+    return;
+  }
+
+  submitButton.disabled = true;
+  submitButton.textContent = "Posting...";
+
+  await addDoc(collection(db, COMMENTS_PATH), {
+    name: name || "Anonymous",
+    text,
+    userId: currentUserId,
+    timestamp: serverTimestamp(),
+  });
+
+  formMessage.textContent = "Comment posted!";
+  formMessage.className = "text-green-500";
+
+  document.getElementById("comment-text").value = "";
+  document.getElementById("comment-name").value = "";
+
+  submitButton.disabled = false;
+  submitButton.textContent = "Post Comment";
+});
+
+/* ---------------------------------------------------
+   Helper: Timestamp → readable string
+----------------------------------------------------- */
+function formatDate(ts) {
+  if (!ts) return "Just now";
+  const date = ts.toDate();
+  return date.toLocaleString();
+}
+
+/* Start authentication */
+initAuth();
+</script>
+
         
 
         const THEME_KEY = 'app-theme-mode'; // Key used to store theme preference
