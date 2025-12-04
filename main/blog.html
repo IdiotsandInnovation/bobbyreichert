@@ -598,11 +598,32 @@
       const accepted = localStorage.getItem(COOKIE_KEY);
       if (accepted === 'true') { if (banner) banner.style.display = 'none'; }
       else { if (banner) banner.style.display = 'block'; if (acceptButton) acceptButton.addEventListener('click', () => { localStorage.setItem(COOKIE_KEY, 'true'); if (banner) { banner.classList.add('fade-out'); setTimeout(() => { banner.style.display = 'none'; }, 500); } }); }
-
-      // Scroll to top
+      
       const scrollButton = document.getElementById('scroll-to-top');
-      function checkScroll() { if (document.body.scrollTop > 300 || document.documentElement.scrollTop > 300) { if (scrollButton) scrollButton.classList.add('show'); } else { if (scrollButton) scrollButton.classList.remove('show'); } }
-      window.onscroll = checkScroll; checkScroll();
+            const commentButton = document.getElementById('scroll-to-comments');
+            const commentsSection = document.getElementById('comments');
+
+            function checkScroll() { 
+                const scrolled = document.body.scrollTop > 300 || document.documentElement.scrollTop > 300;
+                
+                if (scrolled) { 
+                    if (scrollButton) scrollButton.classList.add('show'); 
+                    if (commentButton) commentButton.classList.add('show');
+                } else { 
+                    if (scrollButton) scrollButton.classList.remove('show'); 
+                    if (commentButton) commentButton.classList.remove('show');
+                } 
+            }
+            
+            window.onscroll = checkScroll; 
+            checkScroll();
+
+            // Scroll to comments functionality
+            if (commentButton && commentsSection) {
+                commentButton.addEventListener('click', () => {
+                    commentsSection.scrollIntoView({ behavior: 'smooth' });
+                });
+            }
 
     }); // DOMContentLoaded
     </script>
