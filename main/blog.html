@@ -630,7 +630,12 @@
                     commentsSection.scrollIntoView({ behavior: 'smooth' });
                 });
             }
+             // Scroll to top
+      const scrollButton = document.getElementById('scroll-to-top');
+      function checkScroll() { if (document.body.scrollTop > 300 || document.documentElement.scrollTop > 300) { if (scrollButton) scrollButton.classList.add('show'); } else { if (scrollButton) scrollButton.classList.remove('show'); } }
+      window.onscroll = checkScroll; checkScroll();
 
+    
     }); // DOMContentLoaded
     </script>
 </body>
