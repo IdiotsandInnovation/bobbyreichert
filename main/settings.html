@@ -453,20 +453,15 @@
             const navBlurClasses = ['bg-white/10', 'backdrop-blur-md', 'dark:bg-gray-800/30'];
             const navSolidClasses = ['bg-white', 'dark:bg-gray-800'];
 
-            // Classes specific to the Mobile Menu (#mobile-menu)
-            // UPDATED: Lowered opacity from 95% to 80% and increased blur to 'md'
-            const menuBlurClasses = ['bg-white/80', 'backdrop-blur-md', 'dark:bg-gray-900/80'];
+            const menuBlurClasses = ['bg-white/30', 'backdrop-blur-md', 'dark:bg-gray-900/40'];
             const menuSolidClasses = ['bg-white', 'dark:bg-gray-900'];
             
-            // Combine all possible classes to be removed first for a clean switch
             const allNavClasses = [...navBlurClasses, ...navSolidClasses];
             const allMenuClasses = [...menuBlurClasses, ...menuSolidClasses];
 
-            // 1. Clean both elements
             navElement.classList.remove(...allNavClasses);
             mobileMenu.classList.remove(...allMenuClasses);
 
-            // 2. Apply chosen style
             if (style === 'blur') {
                 navElement.classList.add(...navBlurClasses);
                 mobileMenu.classList.add(...menuBlurClasses);
