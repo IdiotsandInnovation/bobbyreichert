@@ -71,60 +71,68 @@
 </head>
 <body class="min-h-screen flex flex-col items-center transition-colors duration-300 bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
 
-    <!-- NAV -->
-    <nav class="w-full bg-white/10 backdrop-blur-md shadow-lg sticky top-0 z-20 dark:bg-gray-800/30 dark:shadow-xl transition-colors duration-300">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex items-center justify-between h-16">
-                <div class="flex-shrink-0">
-                    <span class="text-xl font-bold text-primary dark:text-primary-dark">Bobby Reichert</span>
-                </div>
-                <div class="hidden md:flex items-center space-x-3 md:space-x-4 text-sm md:text-base">
-                    <a href="home.html" class="text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary-dark font-medium p-2 rounded-md transition duration-150">Home</a>
-                    <a href="about.html" class="text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary-dark font-medium p-2 rounded-md transition duration-150">Bio</a>
-                    <a href="#" class="text-gray-900 dark:text-gray-100 font-bold p-2 rounded-md bg-blue-500 dark:bg-blue-800 hover:bg-indigo-200 dark:hover:bg-indigo-700 transition">Blog</a>
-                    <a href="contact.html" class="text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary-dark font-medium p-2 rounded-md transition duration-150">Contact</a>
-                    <div id="more-dropdown" class="relative group">
-                        <button type="button" class="text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary-dark font-medium p-2 rounded-md transition duration-150 flex items-center" aria-expanded="false" aria-controls="more-menu-items">
-                            More
-                            <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-                        </button>
-                        <div id="more-menu-items" class="dropdown-menu absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white dark:bg-gray-700 ring-1 ring-black ring-opacity-5 dark:ring-gray-600 z-30">
-                            <div class="py-1" role="menu" aria-orientation="vertical" aria-labelledby="more-dropdown">
-                                <a href="archived-blogs.html" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 hover:text-primary transition duration-150" role="menuitem">Archived Blogs</a>
-                                <a href="changelog.html" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 hover:text-primary transition duration-150" role="menuitem">Changelog</a>
-                                <a href="planned-features.html" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 hover:text-primary transition duration-150" role="menuitem">Future Features</a>
-                                <a href="settings.html" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 hover:text-primary transition duration-150" role="menuitem">Settings</a>
-                            </div>
+    <!-- 🔴 START: NAVIGATION BAR 🔴 -->
+<nav id="main-nav" class="w-full shadow-lg sticky top-0 z-50 dark:shadow-xl transition-colors duration-300">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex items-center justify-between h-16">
+            <div class="flex-shrink-0">
+                <span class="text-xl font-bold text-primary">Bobby Reichert</span>
+            </div>
+
+            <div id="desktop-nav" class="hidden md:flex items-center space-x-3 md:space-x-4 text-sm md:text-base">
+                <a href="home.html" class="text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary-dark font-medium p-2 rounded-md transition">Home</a>
+                <a href="about.html" class="text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary-dark font-medium p-2 rounded-md transition">Bio</a>
+                <a href="blog.html" class="text-gray-900 dark:text-gray-100 font-bold p-2 rounded-md bg-indigo-100 dark:bg-indigo-700 hover:bg-indigo-200 dark:hover:bg-indigo-600 transition">Blog</a>
+                <a href="contact.html" class="text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary-dark font-medium p-2 rounded-md transition">Contact</a>
+
+                <div id="more-dropdown" class="relative group">
+                    <button type="button" class="text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary-dark font-medium p-2 rounded-md transition flex items-center">
+                        More
+                        <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </button>
+
+                    <div id="more-menu-items" class="dropdown-menu absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white dark:bg-gray-700 ring-1 ring-black ring-opacity-5 dark:ring-gray-600 z-30">
+                        <div class="py-1">
+                            <a href="archived-blogs.html" class="block px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-600">Archived Blogs</a>
+                            <a href="changelog.html" class="block px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-600">Changelog</a>
+                            <a href="planned-features.html" class="block px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-600">Future Features</a>
+                            <a href="settings.html" class="block px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-600">Settings</a>
                         </div>
                     </div>
                 </div>
-                <div class="md:hidden">
-                    <button id="mobile-menu-button" type="button" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 inline-flex items-center justify-center p-2 rounded-md transition duration-150" aria-controls="mobile-menu" aria-expanded="false">
-                        <span class="sr-only">Open main menu</span>
-                        <svg id="hamburger-icon" class="block h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" /></svg>
-                        <svg id="close-icon" class="hidden h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
-                    </button>
-                </div>
+            </div>
+
+            <div id="mobile-toggle" class="md:hidden">
+                <button id="mobile-menu-button" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 p-2 rounded-md transition">
+                    <svg id="hamburger-icon" class="block h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" /></svg>
+                    <svg id="close-icon" class="hidden h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                </button>
             </div>
         </div>
-    </nav>
-
-    <!-- MOBILE MENU -->
-    <div id="mobile-menu" class="fixed inset-0 top-16 w-full h-full md:hidden z-10 bg-white dark:bg-gray-900 overflow-y-auto">
-        <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3 flex flex-col">
-            <a href="home.html" class="text-lg font-medium block px-3 py-2 rounded-md text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-primary transition duration-150">Home</a>
-            <a href="about.html" class="text-lg font-medium block px-3 py-2 rounded-md text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-primary transition duration-150">Bio</a>
-            <a href="#" class="text-lg block px-3 py-2 rounded-md text-primary dark:text-primary-dark bg-indigo-500 dark:bg-blue-800 font-semibold transition duration-150">Blog (Current)</a>
-            <a href="contact.html" class="text-lg font-medium block px-3 py-2 rounded-md text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-primary transition duration-150">Contact</a>
-            <div class="h-px w-full my-2 bg-gray-200 dark:bg-gray-700"></div>
-            <a href="archived-blogs.html" class="text-md block px-3 py-2 rounded-md text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-primary transition duration-150">Archived Blogs</a>
-            <a href="changelog.html" class="text-md block px-3 py-2 rounded-md text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-primary transition duration-150">Changelog</a>
-            <a href="planned-features.html" class="text-md block px-3 py-2 rounded-md text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-primary transition duration-150">Future Features</a>
-            <a href="settings.html" class="text-md block px-3 py-2 rounded-md text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-primary transition duration-150">Settings</a>
-        </div>
     </div>
+</nav>
+<!-- 🔴 END: NAVIGATION BAR 🔴 -->
 
-    <!-- MAIN CONTENT (posts omitted here to keep file size down in canvas preview) -->
+
+<!-- 🔴 START: MOBILE MENU PANEL 🔴 -->
+<div id="mobile-menu" class="fixed inset-0 top-16 w-full h-full md:hidden z-40">
+    <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3 flex flex-col">
+        <a href="home.html" class="text-lg px-3 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800">Home</a>
+        <a href="about.html" class="text-lg px-3 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800">Bio</a>
+        <a href="blog.html" class="text-lg px-3 py-2 rounded-md bg-indigo-50 dark:bg-indigo-900 font-semibold text-indigo-700 dark:text-primary-dark">Blog (Current)</a>
+        <a href="contact.html" class="text-lg px-3 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800">Contact</a>
+
+        <div class="h-px w-full my-2 bg-gray-200 dark:bg-gray-700"></div>
+
+        <a href="archived-blogs.html" class="text-md px-3 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800">Archived Blogs</a>
+        <a href="changelog.html" class="text-md px-3 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800">Changelog</a>
+        <a href="planned-features.html" class="text-md px-3 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800">Future Features</a>
+        <a href="settings.html" class="text-md px-3 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800">Settings</a>
+    </div>
+</div>
+<!-- 🔴 END: MOBILE MENU PANEL 🔴 -->
+
+    <!-- MAIN CONTENT -->
     <main class="w-full max-w-8xl flex-grow p-4 md:p-8">
         <div class="bg-white dark:bg-gray-800 shadow-xl rounded-2xl p-6 md:p-10 w-full dark:shadow-2xl">
             <h1 class="text-4xl font-extrabold text-gray-900 dark:text-gray-100 tracking-tight mb-4 text-center">Blog Posts</h1>
