@@ -154,7 +154,8 @@
     <!-- 🔴 START: NAVIGATION BAR 🔴 -->
     
     <!-- Nav classes are now managed entirely by JS -->
-    <nav id="main-nav" class="w-full shadow-lg sticky top-0 z-20 dark:shadow-xl transition-colors duration-300">
+    <!-- UPDATED: z-index increased to 50 to stay above mobile menu -->
+    <nav id="main-nav" class="w-full shadow-lg sticky top-0 z-50 dark:shadow-xl transition-colors duration-300">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16">
                 <!-- Logo/Name -->
@@ -221,7 +222,8 @@
     
     <!-- 🔴 START: MOBILE MENU PANEL 🔴 -->
     <!-- Mobile menu classes are now managed entirely by JS -->
-    <div id="mobile-menu" class="fixed inset-0 top-16 w-full h-full md:hidden z-10">
+    <!-- UPDATED: z-index increased to 40 to cover page content (z-10 toggles) but sit under nav (z-50) -->
+    <div id="mobile-menu" class="fixed inset-0 top-16 w-full h-full md:hidden z-40">
         <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3 flex flex-col">
             <!-- Main Links -->
             <a href="home.html" class="text-lg font-medium block px-3 py-2 rounded-md text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-primary dark:hover:text-primary-dark transition duration-150">Home</a>
@@ -452,8 +454,8 @@
             const navSolidClasses = ['bg-white', 'dark:bg-gray-800'];
 
             // Classes specific to the Mobile Menu (#mobile-menu)
-            // Using higher opacity for the full-screen mobile menu for better readability
-            const menuBlurClasses = ['bg-white/95', 'backdrop-blur-sm', 'dark:bg-gray-900/95'];
+            // UPDATED: Lowered opacity from 95% to 80% and increased blur to 'md'
+            const menuBlurClasses = ['bg-white/80', 'backdrop-blur-md', 'dark:bg-gray-900/80'];
             const menuSolidClasses = ['bg-white', 'dark:bg-gray-900'];
             
             // Combine all possible classes to be removed first for a clean switch
@@ -707,3 +709,5 @@
     </script>
 </body>
 </html>
+
+
