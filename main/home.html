@@ -166,6 +166,9 @@
                         To Christmas 2025: <span id="christmas-countdown" class="font-bold text-primary dark:text-primary-dark">--</span> days
                     </p>
                     <p>
+                        To SAT Score Release (Dec 19, 2025): <span id="sat-countdown" class="font-bold text-primary dark:text-primary-dark">--</span> days
+                    </p>
+                    <p>
                         Since June 19th, 2025: <span id="june-countup" class="font-bold text-primary dark:text-primary-dark">--</span> days
                     </p>
                 </div>
@@ -223,7 +226,7 @@
         // Match Media Query for OS preference
         const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
 
-        // --- COUNTDOWN LOGIC (NEW) ---
+        // --- COUNTDOWN LOGIC ---
         /**
          * Updates the date countdowns and count-ups on the page.
          * The function is designed to run once per minute to keep the "days" count accurate.
@@ -234,7 +237,6 @@
             // 1. Christmas 2025 Countdown
             const christmas2025 = new Date('2025-12-25T00:00:00');
             const diffToChristmas = christmas2025.getTime() - now.getTime();
-            // Use Math.ceil to round up, ensuring 1 day remaining until the last minute
             const daysToChristmas = Math.ceil(diffToChristmas / MS_PER_DAY);
             
             const christmasEl = document.getElementById('christmas-countdown');
@@ -243,10 +245,20 @@
                 christmasEl.textContent = daysToChristmas > 0 ? daysToChristmas : 0;
             }
 
-            // 2. Since June 19th, 2025 Count-up
+            // 2. SAT Score Release Countdown (Dec 19, 2025)
+            const satRelease = new Date('2025-12-19T00:00:00');
+            const diffToSAT = satRelease.getTime() - now.getTime();
+            const daysToSAT = Math.ceil(diffToSAT / MS_PER_DAY);
+            
+            const satEl = document.getElementById('sat-countdown');
+            if (satEl) {
+                // Display 0 if the date has passed
+                satEl.textContent = daysToSAT > 0 ? daysToSAT : 0;
+            }
+
+            // 3. Since June 19th, 2025 Count-up
             const june19th2025 = new Date('2025-06-19T00:00:00');
             const diffSinceJune = now.getTime() - june19th2025.getTime();
-            // Use Math.floor to round down for elapsed days
             const daysSinceJune = Math.floor(diffSinceJune / MS_PER_DAY);
             
             const juneEl = document.getElementById('june-countup');
@@ -379,3 +391,4 @@
     </script>
 </body>
 </html>
+
