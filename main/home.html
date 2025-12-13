@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <!-- Google Analytics (Original code preserved) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-J4PE57KXDN"></script>
     <script>
         window.dataLayer = window.dataLayer || [];
@@ -31,79 +32,42 @@
     <style>
         /* Set the Inter font globally and ensure a smooth background */
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
-        body {
-            font-family: 'Inter', sans-serif;
-            
-        }
+        body { font-family: 'Inter', sans-serif; }
         
         /* Custom scrollbar for a cleaner look */
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
+        ::-webkit-scrollbar { width: 8px; }
         /* Light Mode Scrollbar */
-        ::-webkit-scrollbar-thumb {
-            background: #d1d5db; /* Gray-400 */
-            border-radius: 4px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #f7f9fc;
-        }
+        ::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 4px; }
+        ::-webkit-scrollbar-track { background: #f7f9fc; }
         /* Dark Mode Scrollbar Overrides */
-        .dark ::-webkit-scrollbar-thumb {
-            background: #4b5563; /* Gray-600 */
-        }
-        .dark ::-webkit-scrollbar-track {
-            background: #111827; /* Gray-900 background */
-        }
+        .dark ::-webkit-scrollbar-thumb { background: #4b5563; }
+        .dark ::-webkit-scrollbar-track { background: #111827; }
 
-        .fade-out {
-            opacity: 0 !important;
-            transform: translateY(100%) !important;
-            pointer-events: none;
-        }
+        .fade-out { opacity: 0 !important; transform: translateY(100%) !important; pointer-events: none; }
+        
         /* CSS to hide the dropdown by default and manage transitions */
-        .dropdown-menu {
-            opacity: 0;
-            visibility: hidden;
-            transform: translateY(-10px);
-            transition: all 0.2s ease-out;
-        }
-
-        .dropdown-menu.visible {
-            opacity: 1;
-            visibility: visible;
-            transform: translateY(0);
-        }
+        .dropdown-menu { opacity: 0; visibility: hidden; transform: translateY(-10px); transition: all 0.2s ease-out; }
+        .dropdown-menu.visible { opacity: 1; visibility: visible; transform: translateY(0); }
 
         /* 🔴 MOBILE MENU STYLES 🔴 */
-        #mobile-menu {
-            transform: translateX(100%);
-            transition: transform 0.3s ease-out;
-            pointer-events: none;
-        }
-        #mobile-menu.open {
-            transform: translateX(0);
-            pointer-events: auto;
-        }
+        #mobile-menu { transform: translateX(100%); transition: transform 0.3s ease-out; pointer-events: none; }
+        #mobile-menu.open { transform: translateX(0); pointer-events: auto; }
     </style>
 </head>
 <!-- Body now uses responsive dark/light mode classes -->
 <body class="min-h-screen flex flex-col items-center transition-colors duration-300 bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
 
     <!-- 🔴 START: NAVIGATION BAR 🔴 -->
-    <!-- Nav uses responsive dark/light mode classes -->
     <nav class="w-full bg-white/30 backdrop-blur-md shadow-lg sticky top-0 z-20 dark:bg-gray-800/30 dark:shadow-xl transition-colors duration-300">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16">
                 <!-- Logo/Name -->
                 <div class="flex-shrink-0">
-                    <!-- Logo color defined using theme primary color -->
                     <span class="text-xl font-bold text-primary dark:text-primary-dark">Bobby Reichert</span>
                 </div>
                 
                 <!-- Desktop Links & Dropdown (Hidden on Mobile) -->
                 <div class="hidden md:flex items-center space-x-3 md:space-x-4 text-sm md:text-base">
-                    <!-- Main Links with dark mode text support -->
                     <a href="#" class="text-gray-900 dark:text-gray-100 font-bold p-2 rounded-md bg-indigo-100 dark:bg-indigo-800 hover:bg-indigo-200 dark:hover:bg-indigo-700 transition">Home</a>
                     <a href="about.html" class="text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary-dark font-medium p-2 rounded-md transition duration-150">Bio</a>
                     <a href="blog.html" class="text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary-dark font-medium p-2 rounded-md transition duration-150">Blog</a>
@@ -140,7 +104,6 @@
 
                 <!-- Mobile Menu Button (Visible on Mobile) -->
                 <div class="md:hidden">
-                    <!-- Button text/icon colors updated for dark mode -->
                     <button id="mobile-menu-button" type="button" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 inline-flex items-center justify-center p-2 rounded-md transition duration-150" aria-controls="mobile-menu" aria-expanded="false">
                         <span class="sr-only">Open main menu</span>
                         <!-- Hamburger Icon -->
@@ -159,7 +122,6 @@
     <!-- 🔴 END: NAVIGATION BAR 🔴 -->
     
     <!-- 🔴 START: MOBILE MENU PANEL 🔴 -->
-    <!-- Mobile menu uses responsive dark/light mode classes -->
     <div id="mobile-menu" class="fixed inset-0 top-16 w-full h-full md:hidden z-10 bg-white dark:bg-gray-900">
         <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3 flex flex-col">
             <!-- Highlighted item -->
@@ -196,7 +158,20 @@
             </p>
 
             
-            <!-- Information blocks updated for dark mode -->
+            <!-- 🔴 START: AUTOMATIC COUNTDOWNS SECTION 🔴 -->
+            <section class="mt-8 p-6 bg-gray-50 dark:bg-gray-700 rounded-lg border border-dashed border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200">
+                <h3 class="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-4">Countdowns</h3>
+                <div class="space-y-2 text-lg">
+                    <p>
+                        To Christmas 2025: <span id="christmas-countdown" class="font-bold text-primary dark:text-primary-dark">--</span> days
+                    </p>
+                    <p>
+                        Since June 19th, 2025: <span id="june-countup" class="font-bold text-primary dark:text-primary-dark">--</span> days
+                    </p>
+                </div>
+            </section>
+            <!-- 🔴 END: AUTOMATIC COUNTDOWNS SECTION 🔴 -->
+
             <section class="mt-8 p-6 bg-gray-50 dark:bg-gray-700 rounded-lg border border-dashed border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200">
                 <p>
                     Please <u><a href="contact.html" class="text-blue-600 dark:text-blue-400 hover:text-primary dark:hover:text-primary-dark transition">notify me</a></u> of any bugs on this website so I can fix them ASAP.
@@ -218,9 +193,10 @@
 
     <!-- Footer uses responsive dark/light mode classes -->
     <footer class="w-full bg-gray-100 dark:bg-gray-900 text-gray-500 dark:text-gray-400 text-center text-sm py-4 border-t dark:border-gray-700">
-        <p>Last Updated: 11/17/2025</p>
+        <p>Last Updated: 12/12/2025</p>
     </footer>
 
+    <!-- Cookie Banner (Original code preserved) -->
     <div id="cookie-banner" class="fixed bottom-0 left-0 right-0 p-4 md:p-6 bg-gray-800/40 backdrop-blur-md text-white shadow-2xl transition-all duration-500 transform translate-y-0 z-50 opacity-100">
         <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between">
             <p class="text-sm mb-3 md:mb-0 md:mr-6">
@@ -234,8 +210,9 @@
 
     <script>
         // --- CONSTANTS ---
-        const THEME_KEY = 'app-theme-mode'; // Key used to store theme preference
+        const THEME_KEY = 'app-theme-mode';
         const COOKIE_KEY = 'cookiesAccepted';
+        const MS_PER_DAY = 1000 * 60 * 60 * 24; // Milliseconds in a day
         
         // --- DOM Elements ---
         let mobileMenuButton;
@@ -246,20 +223,46 @@
         // Match Media Query for OS preference
         const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
 
-        // --- THEME MODE LOGIC ---
-
+        // --- COUNTDOWN LOGIC (NEW) ---
         /**
-         * Applies the 'dark' class to the HTML element based on the resolved theme.
-         * @param {string} theme 'light', 'dark', or 'system'.
+         * Updates the date countdowns and count-ups on the page.
+         * The function is designed to run once per minute to keep the "days" count accurate.
          */
+        function updateCountdowns() {
+            const now = new Date();
+
+            // 1. Christmas 2025 Countdown
+            const christmas2025 = new Date('2025-12-25T00:00:00');
+            const diffToChristmas = christmas2025.getTime() - now.getTime();
+            // Use Math.ceil to round up, ensuring 1 day remaining until the last minute
+            const daysToChristmas = Math.ceil(diffToChristmas / MS_PER_DAY);
+            
+            const christmasEl = document.getElementById('christmas-countdown');
+            if (christmasEl) {
+                // Display 0 if the date has passed
+                christmasEl.textContent = daysToChristmas > 0 ? daysToChristmas : 0;
+            }
+
+            // 2. Since June 19th, 2025 Count-up
+            const june19th2025 = new Date('2025-06-19T00:00:00');
+            const diffSinceJune = now.getTime() - june19th2025.getTime();
+            // Use Math.floor to round down for elapsed days
+            const daysSinceJune = Math.floor(diffSinceJune / MS_PER_DAY);
+            
+            const juneEl = document.getElementById('june-countup');
+            if (juneEl) {
+                // Display 0 if the date is in the future
+                juneEl.textContent = daysSinceJune > 0 ? daysSinceJune : 0;
+            }
+        }
+        
+        // --- THEME MODE LOGIC (Original code preserved) ---
         function applyTheme(theme) {
             const html = document.documentElement;
             let resolvedTheme = theme;
-
             if (theme === 'system') {
                 resolvedTheme = mediaQuery.matches ? 'dark' : 'light';
             }
-
             if (resolvedTheme === 'dark') {
                 html.classList.add('dark');
             } else {
@@ -267,7 +270,6 @@
             }
         }
         
-        // Sets up listener for OS theme changes if 'system' is selected.
         function setupSystemThemeListener() {
             mediaQuery.addEventListener('change', () => {
                 const currentPreference = localStorage.getItem(THEME_KEY) || 'system';
@@ -277,11 +279,7 @@
             });
         }
         
-        // --- MOBILE MENU LOGIC ---
-
-        /**
-         * Toggles the mobile navigation menu open and closed.
-         */
+        // --- MOBILE MENU LOGIC (Original code preserved) ---
         function toggleMobileMenu() {
             if (!mobileMenu || !mobileMenuButton) return; 
 
@@ -301,14 +299,18 @@
         }
         
         // --- INITIALIZATION ---
-
         document.addEventListener('DOMContentLoaded', () => {
             // 1. Initialize Theme Mode
             const initialThemeMode = localStorage.getItem(THEME_KEY) || 'system';
             applyTheme(initialThemeMode);
             setupSystemThemeListener();
 
-            // 2. Initialize mobile menu elements
+            // 2. Start Automatic Countdowns
+            updateCountdowns();
+            // Set interval to update the count every minute for accuracy
+            setInterval(updateCountdowns, 60000); 
+
+            // 3. Initialize mobile menu elements
             mobileMenuButton = document.getElementById('mobile-menu-button');
             mobileMenu = document.getElementById('mobile-menu');
             hamburgerIcon = document.getElementById('hamburger-icon');
@@ -317,27 +319,18 @@
             // --- Cookie Consent Logic ---
             const banner = document.getElementById('cookie-banner');
             const acceptButton = document.getElementById('accept-cookies');
-
-            // Check if cookies have been accepted previously
             const accepted = localStorage.getItem(COOKIE_KEY);
 
             if (accepted === 'true') {
-                if (banner) {
-                    banner.style.display = 'none';
-                }
+                if (banner) { banner.style.display = 'none'; }
             } else {
-                if (banner) {
-                    banner.style.display = 'block'; 
-                }
-
+                if (banner) { banner.style.display = 'block'; }
                 if (acceptButton) {
                     acceptButton.addEventListener('click', () => {
                         localStorage.setItem(COOKIE_KEY, 'true');
                         if (banner) {
                             banner.classList.add('fade-out');
-                            setTimeout(() => {
-                                banner.style.display = 'none';
-                            }, 500); 
+                            setTimeout(() => { banner.style.display = 'none'; }, 500); 
                         }
                     });
                 }
@@ -345,12 +338,11 @@
 
             // --- Dropdown Toggle Logic (More Menu) ---
             const dropdown = document.getElementById('more-dropdown');
-            const button = dropdown.querySelector('button');
             const menu = document.getElementById('more-menu-items');
             
             const hideMenu = () => {
                 menu.classList.remove('visible');
-                button.setAttribute('aria-expanded', 'false');
+                dropdown.querySelector('button').setAttribute('aria-expanded', 'false');
             };
 
             // Hover Listeners (for desktop)
@@ -385,5 +377,5 @@
             }
         });
     </script>
-    </body>
+</body>
 </html>
