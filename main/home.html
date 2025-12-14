@@ -161,7 +161,12 @@
             <!-- 🔴 START: AUTOMATIC COUNTDOWNS SECTION 🔴 -->
             <section class="mt-8 p-6 bg-gray-50 dark:bg-gray-700 rounded-lg border border-dashed border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200">
                 <h3 class="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-4">Countdowns</h3>
-                <div class="space-y-2 text-lg">
+                <!-- Changed space-y-2 to space-y-3 to accommodate the new item gracefully -->
+                <div class="space-y-3 text-lg">
+                    <!-- NEW YEAR'S COUNTDOWN (Precise) -->
+                    <p>
+                        To New Year's Day: <span id="new-year-countdown" class="font-extrabold text-primary dark:text-primary-dark">--</span>
+                    </p>
                     <p>
                         To Christmas 2025: <span id="christmas-countdown" class="font-bold text-primary dark:text-primary-dark">--</span> days
                     </p>
@@ -196,7 +201,7 @@
 
     <!-- Footer uses responsive dark/light mode classes -->
     <footer class="w-full bg-gray-100 dark:bg-gray-900 text-gray-500 dark:text-gray-400 text-center text-sm py-4 border-t dark:border-gray-700">
-        <p>Last Updated: 12/12/2025</p>
+        <p>Last Updated: 12/13/2025</p>
     </footer>
 
     <!-- Cookie Banner (Original code preserved) -->
@@ -229,14 +234,60 @@
         // --- COUNTDOWN LOGIC ---
         /**
          * Updates the date countdowns and count-ups on the page.
-         * The function is designed to run once per minute to keep the "days" count accurate.
+         * Runs every second to ensure the New Year's countdown is accurate.
          */
         function updateCountdowns() {
             const now = new Date();
 
-            // 1. Christmas 2025 Countdown
+            // --- NEW YEAR'S COUNTDOWN (Days, Hours, Minutes, Seconds) ---
+            const newYearCountdownEl = document.getElementById('new-year-countdown');
+
+            if (newYearCountdownEl) {
+                const currentYear = now.getFullYear();
+                // Target is January 1st of the next year
+                let nextNewYear = new Date(`${currentYear + 1}-01-01T00:00:00`); 
+                let timeDifference = nextNewYear.getTime() - now.getTime();
+                
+                // If the target has passed, aim for the year after next
+                if (timeDifference < 0) {
+                    newYearCountdownEl.textContent = "Happy New Year!";
+                    nextNewYear = new Date(`${currentYear + 2}-01-01T00:00:00`);
+                    timeDifference = nextNewYear.getTime() - now.getTime();
+                }
+
+                // Time constants for precise calculation
+                const MS_PER_SECOND = 1000;
+                const MS_PER_MINUTE = MS_PER_SECOND * 60;
+                const MS_PER_HOUR = MS_PER_MINUTE * 60;
+                // MS_PER_DAY is already defined globally
+
+                // Calculate components (using timeDifference for remaining ms)
+                const days = Math.floor(timeDifference / MS_PER_DAY);
+                timeDifference %= MS_PER_DAY;
+
+                const hours = Math.floor(timeDifference / MS_PER_HOUR);
+                timeDifference %= MS_PER_HOUR;
+
+                const minutes = Math.floor(timeDifference / MS_PER_MINUTE);
+                timeDifference %= MS_PER_MINUTE;
+
+                const seconds = Math.floor(timeDifference / MS_PER_SECOND);
+                
+                // Helper to pad numbers with leading zeros
+                const pad = (num) => String(num).padStart(2, '0');
+
+                if (days >= 0) {
+                    newYearCountdownEl.textContent = 
+                        `${days}d ${pad(hours)}h ${pad(minutes)}m ${pad(seconds)}s`;
+                }
+            }
+            // --- END NEW YEAR'S COUNTDOWN ---
+
+
+            // 1. Christmas 2025 Countdown (Day-only)
             const christmas2025 = new Date('2025-12-25T00:00:00');
             const diffToChristmas = christmas2025.getTime() - now.getTime();
+            // Using Math.ceil to round up to the next full day
             const daysToChristmas = Math.ceil(diffToChristmas / MS_PER_DAY);
             
             const christmasEl = document.getElementById('christmas-countdown');
@@ -245,7 +296,7 @@
                 christmasEl.textContent = daysToChristmas > 0 ? daysToChristmas : 0;
             }
 
-            // 2. SAT Score Release Countdown (Dec 19, 2025)
+            // 2. SAT Score Release Countdown (Dec 19, 2025) (Day-only)
             const satRelease = new Date('2025-12-19T00:00:00');
             const diffToSAT = satRelease.getTime() - now.getTime();
             const daysToSAT = Math.ceil(diffToSAT / MS_PER_DAY);
@@ -256,9 +307,10 @@
                 satEl.textContent = daysToSAT > 0 ? daysToSAT : 0;
             }
 
-            // 3. Since June 19th, 2025 Count-up
+            // 3. Since June 19th, 2025 Count-up (Day-only)
             const june19th2025 = new Date('2025-06-19T00:00:00');
             const diffSinceJune = now.getTime() - june19th2025.getTime();
+            // Using Math.floor for count-up (completed days)
             const daysSinceJune = Math.floor(diffSinceJune / MS_PER_DAY);
             
             const juneEl = document.getElementById('june-countup');
@@ -319,8 +371,8 @@
 
             // 2. Start Automatic Countdowns
             updateCountdowns();
-            // Set interval to update the count every minute for accuracy
-            setInterval(updateCountdowns, 60000); 
+            // CHANGED: Set interval to update the count every second (1000ms) for the New Year's countdown accuracy
+            setInterval(updateCountdowns, 1000); 
 
             // 3. Initialize mobile menu elements
             mobileMenuButton = document.getElementById('mobile-menu-button');
@@ -391,4 +443,3 @@
     </script>
 </body>
 </html>
-
