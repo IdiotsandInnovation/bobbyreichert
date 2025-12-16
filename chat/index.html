@@ -71,11 +71,19 @@
         let currentChatId = null;
         let unsubscribeChats = null;
         let unsubscribeMessages = null;
+        // NEW STATE FOR REPLY/EDIT
+        let replyingToMessage = null;
+        let editingMessage = null;
 
         // DOM ELEMENTS
         const loginView = document.getElementById('login-view');
         const mainView = document.getElementById('main-view');
         const rootElement = document.documentElement;
+        // NEW DOM ELEMENTS
+        const replyPanel = document.getElementById('reply-panel');
+        const replyContent = document.getElementById('reply-content');
+        const messageInput = document.getElementById('message-input');
+
 
         // --- AUTH FUNCTIONS ---
 
@@ -136,7 +144,7 @@
             const userRef = doc(db, 'artifacts', APP_ID, 'public', 'data', 'users', currentUser.uid);
             await updateDoc(userRef, updates);
         }
-
+        
         // --- CHAT LOGIC ---
 
         // Start listening to chats relevant to current user
@@ -189,11 +197,7 @@
             const email = emailInput.value.trim();
             if (!email) return;
 
-            // 1. Find user by email (We need to query the public users collection)
-            // Note: This requires a composite index or simple scan. For this app structure, we assume we can find them.
-            // If strict rules prevent listing, we simply add the email to the participants blindly and let them join later, 
-            // but for a better UX we try to find the UID.
-            
+            // 1. Find user by email
             showToast("Searching for user...", "info");
 
             const usersRef = collection(db, 'artifacts', APP_ID, 'public', 'data', 'users');
@@ -213,9 +217,7 @@
                 return;
             }
 
-            // 2. Check if chat already exists with these exact 2 users (Optional optimization, skipping for simplicity)
-
-            // 3. Create Chat
+            // 2. Create Chat
             const chatData = {
                 userIds: [currentUser.uid, targetUser.uid],
                 participants: [
@@ -285,6 +287,41 @@
             // Reload header
             document.getElementById('chat-header-name').textContent = updatedParticipants.map(p => p.username).join(', ');
         }
+        
+        // --- NEW FUNCTION: Open Rename Modal ---
+        window.openRenameModal = () => {
+            if (!currentChatId) return;
+            // Get current name from the header
+            const currentName = document.getElementById('chat-header-name').textContent;
+            document.getElementById('rename-chat-input').value = currentName;
+            openModal('rename-chat-modal');
+        }
+
+        // --- NEW FUNCTION: Rename Chat ---
+        window.renameChat = async () => {
+            if (!currentChatId) return;
+
+            const newName = document.getElementById('rename-chat-input').value.trim();
+            if (!newName) {
+                showToast("Chat name cannot be empty.", "error");
+                return;
+            }
+
+            try {
+                const chatRef = doc(db, 'artifacts', APP_ID, 'public', 'data', 'chats', currentChatId);
+                await updateDoc(chatRef, {
+                    name: newName,
+                    updatedAt: serverTimestamp()
+                });
+
+                document.getElementById('chat-header-name').textContent = newName;
+                closeModal('rename-chat-modal');
+                showToast("Chat renamed!", "success");
+            } catch (e) {
+                console.error("Rename error", e);
+                showToast("Failed to rename chat.", "error");
+            }
+        }
 
         function loadChat(chatId, chatData) {
             currentChatId = chatId;
@@ -301,10 +338,14 @@
             document.getElementById('chat-interface').classList.remove('hidden');
 
             // Update Header
-            const otherNames = chatData.participants 
-                ? chatData.participants.map(p => p.username || p.email.split('@')[0]).join(', ')
-                : "Chat";
-            document.getElementById('chat-header-name').textContent = otherNames;
+            const displayName = chatData.name || (chatData.participants 
+                ? chatData.participants.filter(p => p.uid !== currentUser.uid).map(p => p.username || p.email.split('@')[0]).join(', ')
+                : "Chat");
+            document.getElementById('chat-header-name').textContent = displayName;
+            
+            // Reset edit/reply state
+            cancelEdit();
+            cancelReply();
 
             // Listen to messages
             if (unsubscribeMessages) unsubscribeMessages();
@@ -324,6 +365,46 @@
                 container.scrollTop = container.scrollHeight;
             });
         }
+
+        // --- NEW FUNCTION: Set Reply Target ---
+        window.setReplyTarget = (messageId, senderName, content) => {
+            if (editingMessage) cancelEdit(); // Cancel edit if active
+            replyingToMessage = { id: messageId, senderName: senderName, content: content };
+            replyContent.innerHTML = `Replying to **${senderName}**: ${content.length > 50 ? content.substring(0, 50) + '...' : content}`;
+            replyPanel.classList.remove('hidden');
+            messageInput.focus();
+        }
+
+        // --- NEW FUNCTION: Clear Reply Target ---
+        window.cancelReply = () => {
+            replyingToMessage = null;
+            replyPanel.classList.add('hidden');
+            replyContent.innerHTML = '';
+        }
+        
+        // --- NEW FUNCTION: Set Edit Target ---
+        window.setEditTarget = (messageId, content) => {
+            if (replyingToMessage) cancelReply(); // Cancel reply if active
+            
+            editingMessage = { id: messageId };
+            messageInput.value = content;
+            
+            // Visually indicate edit mode
+            document.getElementById('send-button-icon').style.display = 'none';
+            document.getElementById('edit-button-icon').style.display = 'block';
+            document.getElementById('cancel-edit-button').style.display = 'block';
+            messageInput.focus();
+        }
+
+        // --- NEW FUNCTION: Cancel Edit ---
+        window.cancelEdit = () => {
+            editingMessage = null;
+            messageInput.value = '';
+            document.getElementById('send-button-icon').style.display = 'block';
+            document.getElementById('edit-button-icon').style.display = 'none';
+            document.getElementById('cancel-edit-button').style.display = 'none';
+        }
+
 
         function renderMessage(msg, id, container) {
             const isMe = msg.senderId === currentUser.uid;
@@ -346,9 +427,31 @@
                         ${msg.fileName || 'Download File'}
                     </a>`;
             }
+            
+            // REPLY UI
+            let replyHtml = '';
+            if (msg.replyTo) {
+                replyHtml = `
+                    <div class="border-l-4 border-blue-400 pl-3 mb-2 pt-1 pb-1 bg-gray-100 dark:bg-gray-600 rounded-r text-xs ${isMe ? 'text-white/80' : 'text-gray-600 dark:text-gray-300'}">
+                        <p class="font-bold text-blue-600 dark:text-blue-300">${msg.replyTo.senderName}</p>
+                        <p class="truncate">${msg.replyTo.content}</p>
+                    </div>
+                `;
+            }
+
+            // EDIT UI (for my own messages)
+            let editButtonHtml = '';
+            if (isMe && msg.type === 'text') {
+                editButtonHtml = `
+                    <button onclick="setEditTarget('${id}', \`${msg.content.replace(/`/g, '\\`')}\`)" 
+                            class="text-gray-400 hover:text-yellow-500 opacity-0 group-hover:opacity-100 transition-opacity ml-1">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                    </button>
+                `;
+            }
 
             div.innerHTML = `
-                <div class="max-w-[75%]">
+                <div class="max-w-[75%] group">
                     <div class="text-xs mb-1 flex items-center ${isMe ? 'justify-end' : 'justify-start'} gap-2">
                         ${isMe ? 
                             // Right-aligned (My message): [Time] [Name]
@@ -360,8 +463,20 @@
                              <span class="text-gray-500 dark:text-gray-400">${timeString}</span>`
                         }
                     </div>
-                    <div class="p-3 rounded-2xl ${isMe ? 'bg-blue-500 text-white rounded-br-none' : 'bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-100 rounded-bl-none'}">
-                        ${contentHtml}
+                    <div class="flex items-end ${isMe ? 'flex-row-reverse' : 'flex-row'} gap-1">
+                        <div class="p-3 rounded-2xl ${isMe ? 'bg-blue-500 text-white rounded-br-none' : 'bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-100 rounded-bl-none'}">
+                            ${replyHtml}
+                            ${contentHtml}
+                            ${msg.editedAt ? '<span class="text-xs opacity-75 mt-1 block"> (Edited)</span>' : ''}
+                        </div>
+                        
+                        <div class="flex items-center self-center">
+                            <button onclick="setReplyTarget('${id}', '${msg.senderName}', \`${msg.content.replace(/`/g, '\\`')}\`)" 
+                                    class="text-gray-400 hover:text-blue-500 opacity-0 group-hover:opacity-100 transition-opacity ${isMe ? 'order-2' : 'order-1'}">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a5 5 0 015 5v2m-5-2V7a5 5 0 00-5 5H3"></path></svg>
+                            </button>
+                            ${editButtonHtml}
+                        </div>
                     </div>
                 </div>
             `;
@@ -377,24 +492,48 @@
             input.value = ''; // clear immediately
             
             try {
-                const messagesRef = collection(db, 'artifacts', APP_ID, 'public', 'data', 'chats', currentChatId, 'messages');
-                await addDoc(messagesRef, {
-                    content: text,
-                    type: 'text',
-                    senderId: currentUser.uid,
-                    senderName: currentUser.displayName || currentUser.email.split('@')[0],
-                    createdAt: serverTimestamp()
-                });
-                
-                // Update chat last message
-                const chatRef = doc(db, 'artifacts', APP_ID, 'public', 'data', 'chats', currentChatId);
-                await updateDoc(chatRef, {
-                    lastMessage: text,
-                    updatedAt: serverTimestamp()
-                });
+                if (editingMessage) {
+                    // EDIT MESSAGE LOGIC
+                    const messageRef = doc(db, 'artifacts', APP_ID, 'public', 'data', 'chats', currentChatId, 'messages', editingMessage.id);
+                    await updateDoc(messageRef, {
+                        content: text,
+                        editedAt: serverTimestamp() // Add a timestamp for 'Edited' status
+                    });
+                    cancelEdit(); // Exit edit mode
+                    showToast("Message edited!", "success");
+
+                } else {
+                    // STANDARD SEND MESSAGE LOGIC
+                    const messageData = {
+                        content: text,
+                        type: 'text',
+                        senderId: currentUser.uid,
+                        senderName: currentUser.displayName || currentUser.email.split('@')[0],
+                        createdAt: serverTimestamp()
+                    };
+                    
+                    if (replyingToMessage) {
+                        messageData.replyTo = {
+                            messageId: replyingToMessage.id,
+                            senderName: replyingToMessage.senderName,
+                            content: replyingToMessage.content
+                        };
+                        cancelReply();
+                    }
+
+                    const messagesRef = collection(db, 'artifacts', APP_ID, 'public', 'data', 'chats', currentChatId, 'messages');
+                    await addDoc(messagesRef, messageData);
+                    
+                    // Update chat last message
+                    const chatRef = doc(db, 'artifacts', APP_ID, 'public', 'data', 'chats', currentChatId);
+                    await updateDoc(chatRef, {
+                        lastMessage: text,
+                        updatedAt: serverTimestamp()
+                    });
+                }
             } catch (e) {
-                console.error("Send error", e);
-                showToast("Failed to send", "error");
+                console.error("Action error", e);
+                showToast("Failed to send/edit", "error");
             }
         }
 
@@ -506,6 +645,7 @@
                     currentUser.displayName = snap.data().username;
                     document.getElementById('settings-username').value = snap.data().username;
                     document.getElementById('user-display-name').textContent = snap.data().username;
+                    document.getElementById('user-avatar-initial').textContent = snap.data().username.substring(0,1).toUpperCase();
                 }
 
                 initChatListener();
@@ -621,23 +761,40 @@
                         </div>
                         <h3 id="chat-header-name" class="font-bold text-gray-800 dark:text-gray-100">Chat Name</h3>
                     </div>
-                    <button onclick="openModal('add-user-modal')" class="text-gray-500 hover:text-blue-500 transition tooltip" title="Add person">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path></svg>
-                    </button>
+                    <div>
+                        <button onclick="openModal('add-user-modal')" class="text-gray-500 hover:text-blue-500 transition tooltip" title="Add person">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path></svg>
+                        </button>
+                        <button onclick="openRenameModal()" class="text-gray-500 hover:text-blue-500 transition tooltip ml-2" title="Rename chat">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                        </button>
+                        </div>
                 </div>
 
                 <div id="messages-container" class="flex-1 overflow-y-auto p-6 space-y-2 custom-scroll bg-gray-50 dark:bg-gray-900">
                     </div>
 
                 <div class="p-4 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
+                    <div id="reply-panel" class="hidden mb-2 p-2 border-l-4 border-blue-500 bg-gray-50 dark:bg-gray-700/50 rounded-r flex justify-between items-center text-sm">
+                        <span id="reply-content" class="text-gray-600 dark:text-gray-300 font-medium truncate"></span>
+                        <button onclick="cancelReply()" class="text-gray-400 hover:text-red-500 ml-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                        </button>
+                    </div>
                     <div class="flex items-center gap-2 bg-gray-100 dark:bg-gray-700 px-4 py-2 rounded-xl">
                         <label class="cursor-pointer text-gray-400 hover:text-blue-500">
                             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path></svg>
                             <input type="file" class="hidden" onchange="handleFileUpload(event)">
                         </label>
                         <input id="message-input" type="text" placeholder="Type a message (or paste an image)..." class="flex-1 bg-transparent border-none focus:ring-0 text-gray-800 dark:text-white placeholder-gray-500">
+                        
+                        <button id="cancel-edit-button" onclick="cancelEdit()" class="text-gray-400 hover:text-red-500" style="display: none;">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                        </button>
+                        
                         <button onclick="sendMessage()" class="bg-blue-600 hover:bg-blue-700 text-white rounded-lg p-2 transition shadow-md">
-                            <svg class="w-5 h-5 transform rotate-90" fill="currentColor" viewBox="0 0 20 20"><path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z"></path></svg>
+                            <svg id="send-button-icon" class="w-5 h-5 transform rotate-90" fill="currentColor" viewBox="0 0 20 20"><path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z"></path></svg>
+                            <svg id="edit-button-icon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="display: none;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
                         </button>
                     </div>
                 </div>
@@ -667,7 +824,17 @@
             </div>
         </div>
     </div>
-
+    
+    <div id="rename-chat-modal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-sm w-full p-6">
+            <h3 class="text-lg font-bold mb-4">Rename Chat</h3>
+            <input type="text" id="rename-chat-input" placeholder="New chat name" class="w-full mb-4 p-3 bg-gray-50 dark:bg-gray-700 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+            <div class="flex justify-end gap-2">
+                <button onclick="closeModal('rename-chat-modal')" class="px-4 py-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">Cancel</button>
+                <button onclick="renameChat()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Rename</button>
+            </div>
+        </div>
+    </div>
     <div id="settings-modal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
         <div class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-sm w-full p-6">
             <div class="flex justify-between items-center mb-6">
