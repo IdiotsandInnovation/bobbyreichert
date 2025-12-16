@@ -1,0 +1,1155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Google Analytics (Original code preserved) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-J4PE57KXDN"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-J4PE57KXDN');
+    </script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bobby Reichert | Chat</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Configure Tailwind - Dark mode ENABLED -->
+    <script>
+        tailwind.config = {
+            darkMode: 'class', // Enable dark mode via the 'dark' class on <html>
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        'primary': '#4f46e5', // Indigo-600
+                        'primary-dark': '#a5b4fc' // Indigo-300 for dark mode accent
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Set the Inter font globally and ensure a smooth background */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        
+        /* Custom scrollbar for a cleaner look */
+        ::-webkit-scrollbar { width: 8px; }
+        /* Light Mode Scrollbar */
+        ::-webkit-scrollbar-thumb { background: #9ca3af; border-radius: 4px; }
+        ::-webkit-scrollbar-track { background: #f3f4f6; }
+        /* Dark Mode Scrollbar Overrides */
+        .dark ::-webkit-scrollbar-thumb { background: #4b5563; }
+        .dark ::-webkit-scrollbar-track { background: #1f2937; }
+
+        .fade-out { opacity: 0 !important; transform: translateY(100%) !important; pointer-events: none; }
+        
+        /* CSS to hide the dropdown by default and manage transitions */
+        .dropdown-menu { opacity: 0; visibility: hidden; transform: translateY(-10px); transition: all 0.2s ease-out; }
+        .dropdown-menu.visible { opacity: 1; visibility: visible; transform: translateY(0); }
+
+        /* 🔴 MOBILE MENU STYLES 🔴 */
+        #mobile-menu { transform: translateX(100%); transition: transform 0.3s ease-out; pointer-events: none; }
+        #mobile-menu.open { transform: translateX(0); pointer-events: auto; }
+
+        /* Custom chat layout to ensure full height and message scrollability */
+        #chat-container {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            min-height: 80vh; /* Minimum height for the chat box */
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+
+        #messages-container {
+            flex-grow: 1; /* Messages take up remaining space */
+            overflow-y: auto; /* Enable scrolling for messages */
+            padding: 1rem;
+            max-height: calc(80vh - 120px); /* Adjust based on input/header height */
+        }
+    </style>
+</head>
+<!-- Body now uses responsive dark/light mode classes -->
+<body class="min-h-screen flex flex-col items-center transition-colors duration-300 bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+
+    <!-- 🔴 START: NAVIGATION BAR 🔴 -->
+    <nav class="w-full bg-white/30 backdrop-blur-md shadow-lg sticky top-0 z-20 dark:bg-gray-800/30 dark:shadow-xl transition-colors duration-300">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <!-- Logo/Name -->
+                <div class="flex-shrink-0">
+                    <span class="text-xl font-bold text-primary dark:text-primary-dark">Bobby Reichert</span>
+                </div>
+                
+                <!-- Desktop Links & Dropdown (Hidden on Mobile) -->
+                <div class="hidden md:flex items-center space-x-3 md:space-x-4 text-sm md:text-base">
+                    <a href="#" class="text-gray-900 dark:text-gray-100 font-bold p-2 rounded-md bg-indigo-100 dark:bg-indigo-800 hover:bg-indigo-200 dark:hover:bg-indigo-700 transition">Chat</a>
+                    <a href="/forum" class="text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary-dark font-medium p-2 rounded-md transition duration-150">Forum</a>
+                    <a href="/wiki" class="text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary-dark font-medium p-2 rounded-md transition duration-150">Wiki</a>
+                    
+                    <!-- DROPDOWN MENU - Will be populated with user's chats -->
+                    <div id="more-dropdown" class="relative group">
+                        <button type="button" class="text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary-dark font-medium p-2 rounded-md transition duration-150 flex items-center" aria-expanded="false" aria-controls="more-menu-items">
+                            Chats
+                            <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                        </button>
+                        
+                        <div id="more-menu-items" class="dropdown-menu absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white dark:bg-gray-700 ring-1 ring-black ring-opacity-5 dark:ring-gray-600 z-30">
+                            <div id="desktop-chat-list" class="py-1" role="menu" aria-orientation="vertical" aria-labelledby="more-dropdown">
+                                <!-- Dynamic Chat Links will go here -->
+                                <a href="#" id="new-chat-desktop" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 hover:text-primary transition duration-150 font-semibold" role="menuitem">
+                                    + New Chat
+                                </a>
+                                <div class="h-px w-full my-1 bg-gray-200 dark:bg-gray-700"></div>
+                                <p id="desktop-list-placeholder" class="px-4 py-2 text-xs text-gray-400 dark:text-gray-500">No active chats.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Logout button (Visible when authenticated) -->
+                    <button id="logout-button-desktop" class="hidden px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg text-sm transition duration-150">Logout</button>
+                    <!-- User ID Display -->
+                    <span id="user-id-display-desktop" class="text-xs text-gray-500 dark:text-gray-400 hidden"></span>
+                </div>
+
+                <!-- Mobile Menu Button (Visible on Mobile) -->
+                <div class="md:hidden">
+                    <button id="mobile-menu-button" type="button" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 inline-flex items-center justify-center p-2 rounded-md transition duration-150" aria-controls="mobile-menu" aria-expanded="false">
+                        <span class="sr-only">Open main menu</span>
+                        <!-- Hamburger Icon -->
+                        <svg id="hamburger-icon" class="block h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                        </svg>
+                        <!-- Close Icon (X) -->
+                        <svg id="close-icon" class="hidden h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+    <!-- 🔴 END: NAVIGATION BAR 🔴 -->
+    
+    <!-- 🔴 START: MOBILE MENU PANEL 🔴 -->
+    <div id="mobile-menu" class="fixed inset-0 top-16 w-full h-full md:hidden z-10 bg-white dark:bg-gray-900 overflow-y-auto">
+        <div class="px-4 pt-4 pb-3 space-y-2 flex flex-col">
+            <h3 class="text-lg font-bold border-b pb-2 mb-2 border-gray-200 dark:border-gray-700">Navigation</h3>
+            <a href="#" class="text-lg block px-3 py-2 rounded-md text-primary dark:text-primary-dark bg-indigo-50 dark:bg-indigo-900 font-semibold transition duration-150">Chat</a>
+            <a href="/forum/" class="text-lg font-medium block px-3 py-2 rounded-md text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-primary transition duration-150">Forum</a>
+            <a href="/wiki/" class="text-lg font-medium block px-3 py-2 rounded-md text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-primary transition duration-150">Wiki</a>
+            
+            <!-- Separator -->
+            <div class="h-px w-full my-2 bg-gray-200 dark:bg-gray-700"></div>
+
+            <h3 class="text-lg font-bold border-b pb-2 mb-2 border-gray-200 dark:border-gray-700">My Chats</h3>
+            <!-- Mobile Chat List -->
+            <a href="#" id="new-chat-mobile" class="text-lg block px-3 py-2 rounded-md text-primary dark:text-primary-dark hover:bg-indigo-50 dark:hover:bg-indigo-900 font-semibold transition duration-150">+ Start New Chat</a>
+            <div id="mobile-chat-list" class="space-y-1">
+                <p id="mobile-list-placeholder" class="px-3 py-2 text-sm text-gray-500 dark:text-gray-400">No active chats.</p>
+                <!-- Dynamic Chat Links will go here -->
+            </div>
+            
+            <button id="logout-button-mobile" class="mt-4 px-3 py-2 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg text-lg transition duration-150 hidden">Logout</button>
+        </div>
+    </div>
+    <!-- 🔴 END: MOBILE MENU PANEL 🔴 -->
+
+    <main class="flex-grow flex justify-center w-full p-4 md:p-8">
+        
+        <!-- Main Application Card -->
+        <div id="app-card" class="w-full max-w-7xl bg-white dark:bg-gray-800 shadow-xl rounded-2xl transform transition duration-300 ease-in-out dark:shadow-2xl flex flex-col md:flex-row min-h-[80vh]">
+
+            <!-- Auth Screen (Initial View) -->
+            <div id="auth-view" class="w-full flex justify-center items-center p-8 transition-opacity duration-500">
+                <div class="w-full max-w-md space-y-6 text-center">
+                    <h2 id="auth-title" class="text-3xl font-extrabold text-gray-900 dark:text-gray-100">Sign In</h2>
+                    <form id="auth-form" class="space-y-4">
+                        <div>
+                            <input id="auth-email" name="email" type="email" autocomplete="email" required class="appearance-none relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-primary focus:border-primary focus:z-10 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100" placeholder="Email address">
+                        </div>
+                        <div>
+                            <input id="auth-password" name="password" type="password" autocomplete="current-password" required class="appearance-none relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-primary focus:border-primary focus:z-10 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100" placeholder="Password">
+                        </div>
+                        <div id="auth-error-message" class="text-sm text-red-500 hidden"></div>
+                        <div>
+                            <button type="submit" id="auth-submit-btn" class="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-primary hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition duration-150">
+                                Sign In
+                            </button>
+                        </div>
+                    </form>
+                    <!--<button id="toggle-auth-mode" class="text-sm text-primary hover:text-indigo-400 dark:text-primary-dark dark:hover:text-indigo-300 transition duration-150">
+                        Need an account? Sign Up
+                    </button>-->
+                </div>
+            </div>
+
+            <!-- Chat View (Authenticated View) -->
+            <div id="chat-view" class="w-full hidden flex-col md:flex-row h-full">
+                
+                <!-- Chat List Sidebar (Visible on desktop, hidden on mobile by default) -->
+                <div id="chat-sidebar" class="w-full md:w-80 border-r dark:border-gray-700 bg-gray-50 dark:bg-gray-700 flex flex-col p-4 transition-all duration-300 ease-in-out md:static absolute inset-0 z-10 hidden md:flex">
+                    <div class="flex justify-between items-center mb-4 border-b pb-3 dark:border-gray-600">
+                        <h2 class="text-xl font-bold">Chats</h2>
+                        <button id="new-chat-btn" class="p-2 bg-primary text-white rounded-full shadow-lg hover:bg-indigo-700 transition duration-150" title="Start New Chat">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                        </button>
+                    </div>
+                    <div id="sidebar-chat-list" class="space-y-2 overflow-y-auto flex-grow">
+                        <!-- Dynamic Chat List Items -->
+                        <div id="sidebar-list-placeholder" class="text-sm text-gray-500 dark:text-gray-400 p-2 text-center">Loading chats...</div>
+                    </div>
+                    <!-- User Info at the bottom of the sidebar -->
+                    <div class="mt-4 pt-3 border-t dark:border-gray-600 text-sm">
+                        <p class="font-semibold text-gray-700 dark:text-gray-200">You are logged in as:</p>
+                        <p id="user-email-display" class="truncate text-gray-600 dark:text-gray-400"></p>
+                    </div>
+                </div>
+
+                <!-- Chat Window -->
+                <div id="chat-window" class="flex-grow flex flex-col bg-white dark:bg-gray-800 p-0">
+                    <!-- Chat Header -->
+                    <div id="chat-header" class="p-4 border-b dark:border-gray-700 flex items-center justify-between">
+                        <h3 id="current-chat-name" class="text-lg font-bold">Select a Chat</h3>
+                        <button id="invite-user-btn" class="p-2 text-primary dark:text-primary-dark hover:text-indigo-700 dark:hover:text-indigo-300 transition duration-150 rounded-full hidden" title="Invite User">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-4v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2h5a2 2 0 012 2z"></path></svg>
+                        </button>
+                    </div>
+                    
+                    <!-- Messages Container -->
+                    <div id="messages-container" class="flex-grow overflow-y-auto space-y-4">
+                        <div id="chat-intro-message" class="text-center text-gray-500 dark:text-gray-400 p-8">
+                            Start a conversation by selecting a chat on the left, or click the '+' button to create a new one!
+                        </div>
+                        <!-- Dynamic Messages will go here -->
+                    </div>
+
+                    <!-- Message Input -->
+                    <div id="chat-input-area" class="p-4 border-t dark:border-gray-700 hidden">
+                        <form id="message-form" class="flex space-x-3">
+                            <input id="message-input" type="text" placeholder="Type your message..." required class="flex-grow px-4 py-2 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-primary dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100">
+                            <button type="submit" id="send-button" class="px-6 py-2 bg-primary text-white font-semibold rounded-full hover:bg-indigo-700 transition duration-150 shadow-md">
+                                Send
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Modal for New Chat / Invite User -->
+    <div id="modal" class="fixed inset-0 bg-gray-900 bg-opacity-75 z-50 flex items-center justify-center hidden">
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl p-6 w-11/12 max-w-lg transform scale-100 transition-all duration-300">
+            <h3 id="modal-title" class="text-2xl font-bold mb-4 border-b pb-2 dark:border-gray-700">New Chat</h3>
+            <form id="new-chat-form" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Chat Name (Optional)
+                    </label>
+                    <input type="text" id="chat-name-input" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100" placeholder="e.g., Project Team">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Invite User Email
+                    </label>
+                    <div class="flex items-center space-x-2">
+                        <input type="email" id="invite-email-input" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100" placeholder="user@example.com" required>
+                        <button type="button" id="add-email-btn" class="p-2 bg-gray-200 dark:bg-gray-700 rounded-full hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 transition duration-150" title="Add Email">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                        </button>
+                    </div>
+                </div>
+
+                <div id="invited-emails-list" class="space-y-2 p-3 bg-gray-100 dark:bg-gray-700 rounded-lg max-h-40 overflow-y-auto">
+                    <p class="text-sm text-gray-500 dark:text-gray-400">Members: You (<span id="current-user-email-in-modal"></span>)</p>
+                    <!-- Added emails will appear here -->
+                </div>
+                
+                <div id="modal-error-message" class="text-sm text-red-500 hidden"></div>
+
+                <div class="flex justify-end space-x-3 pt-2">
+                    <button type="button" id="modal-close-btn" class="px-4 py-2 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400 transition duration-150 dark:bg-gray-600 dark:text-gray-100 dark:hover:bg-gray-500">
+                        Cancel
+                    </button>
+                    <button type="submit" id="modal-submit-btn" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-indigo-700 transition duration-150">
+                        Create Chat
+                    </button>
+                </div>
+            </form>
+
+            <form id="invite-user-form" class="space-y-4 hidden">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Invite User Email
+                    </label>
+                    <input type="email" id="invite-email-single" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100" placeholder="user@example.com" required>
+                </div>
+                <div id="invite-error-message" class="text-sm text-red-500 hidden"></div>
+                <div class="flex justify-end space-x-3 pt-2">
+                    <button type="button" id="modal-close-invite-btn" class="px-4 py-2 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400 transition duration-150 dark:bg-gray-600 dark:text-gray-100 dark:hover:bg-gray-500">
+                        Cancel
+                    </button>
+                    <button type="submit" id="modal-submit-invite-btn" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-indigo-700 transition duration-150">
+                        Invite
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <!-- End Modal -->
+
+    <!-- Footer uses responsive dark/light mode classes -->
+    <footer class="w-full bg-gray-100 dark:bg-gray-900 text-gray-500 dark:text-gray-400 text-center text-sm py-4 border-t dark:border-gray-700">
+        <p>Last Updated: 12/13/2025</p>
+    </footer>
+
+    <!-- Cookie Banner (Original code preserved) -->
+    <div id="cookie-banner" class="fixed bottom-0 left-0 right-0 p-4 md:p-6 bg-gray-800/40 backdrop-blur-md text-white shadow-2xl transition-all duration-500 transform translate-y-0 z-50 opacity-100">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between">
+            <p class="text-sm mb-3 md:mb-0 md:mr-6">
+                This website uses cookies to ensure you get the best experience and to track web traffic. By continuing to use this site, you agree to our use of cookies.
+            </p>
+            <button id="accept-cookies" class="w-full md:w-auto px-6 py-2 bg-indigo-500 hover:bg-indigo-600 text-white font-semibold rounded-lg shadow-md transition duration-300 text-sm">
+                Got it!
+            </button>
+        </div>
+    </div>
+
+    <script type="module">
+        // --- FIREBASE IMPORTS ---
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { 
+            getAuth, 
+            signInAnonymously, 
+            signInWithCustomToken, 
+            onAuthStateChanged, 
+            createUserWithEmailAndPassword, 
+            signInWithEmailAndPassword, 
+            signOut 
+        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { 
+            getFirestore, 
+            doc, 
+            setDoc, 
+            addDoc, 
+            onSnapshot, 
+            collection, 
+            query, 
+            where, 
+            getDocs, 
+            serverTimestamp,
+            setLogLevel
+        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // --- GLOBAL VARIABLES (Provided by Canvas Environment) ---
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = {
+            apiKey: "AIzaSyA9GsP72R_43JW7rG8Dpvcvt_n2FbQe5SM",
+            authDomain: "bobbyreichert-chat.firebaseapp.com",
+            projectId: "bobbyreichert-chat",
+            storageBucket: "bobbyreichert-chat.appspot.com",
+            messagingSenderId: "743766854322",
+            appId: "1:743766854322:web:a492e9eb137d903a7b17ab",
+            measurementId: "G-H5ZNQ9L4ME"
+        };
+
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+        // --- FIREBASE GLOBALS ---
+        app = initializeApp(firebaseConfig);
+        db = getFirestore(app);
+        auth = getAuth(app);
+
+        let currentUserId = null;
+        let currentUserEmail = null;
+        let currentChatId = null;
+        let unsubscribeChats = null;
+        let unsubscribeMessages = null;
+
+        // --- AUTH STATE ---
+        //let isLoginMode = true;
+
+        // --- CHAT STATE ---
+        let activeChatId = null;
+        let activeChatName = "Select a Chat";
+        let invitedEmails = [];
+
+        // --- CONSTANTS ---
+        const THEME_KEY = 'app-theme-mode';
+        const COOKIE_KEY = 'cookiesAccepted';
+        const CHAT_COLLECTION = `artifacts/${appId}/public/data/chats`;
+        const USERS_COLLECTION = `artifacts/${appId}/public/data/users`;
+
+        // --- DOM Elements ---
+        const authView = document.getElementById('auth-view');
+        const chatView = document.getElementById('chat-view');
+        const authForm = document.getElementById('auth-form');
+        const authTitle = document.getElementById('auth-title');
+        const authEmailInput = document.getElementById('auth-email');
+        const authPasswordInput = document.getElementById('auth-password');
+        const authSubmitBtn = document.getElementById('auth-submit-btn');
+        const toggleAuthModeBtn = document.getElementById('toggle-auth-mode');
+        const authErrorMessage = document.getElementById('auth-error-message');
+        const logoutButtonDesktop = document.getElementById('logout-button-desktop');
+        const logoutButtonMobile = document.getElementById('logout-button-mobile');
+        const userIdDisplayDesktop = document.getElementById('user-id-display-desktop');
+        const userEmailDisplay = document.getElementById('user-email-display');
+        const mobileMenu = document.getElementById('mobile-menu');
+        const hamburgerIcon = document.getElementById('hamburger-icon');
+        const closeIcon = document.getElementById('close-icon');
+
+        const sidebarChatList = document.getElementById('sidebar-chat-list');
+        const desktopChatList = document.getElementById('desktop-chat-list');
+        const mobileChatList = document.getElementById('mobile-chat-list');
+        const sidebarListPlaceholder = document.getElementById('sidebar-list-placeholder');
+        const desktopListPlaceholder = document.getElementById('desktop-list-placeholder');
+        const mobileListPlaceholder = document.getElementById('mobile-list-placeholder');
+        const currentChatName = document.getElementById('current-chat-name');
+        const messagesContainer = document.getElementById('messages-container');
+        const chatIntroMessage = document.getElementById('chat-intro-message');
+        const chatInputArea = document.getElementById('chat-input-area');
+        const messageForm = document.getElementById('message-form');
+        const messageInput = document.getElementById('message-input');
+        const newChatBtn = document.getElementById('new-chat-btn');
+        const newChatDesktopLink = document.getElementById('new-chat-desktop');
+        const newChatMobileLink = document.getElementById('new-chat-mobile');
+        const inviteUserBtn = document.getElementById('invite-user-btn');
+
+        // Modal elements
+        const modal = document.getElementById('modal');
+        const modalTitle = document.getElementById('modal-title');
+        const newChatForm = document.getElementById('new-chat-form');
+        const inviteUserForm = document.getElementById('invite-user-form');
+        const chatNameInput = document.getElementById('chat-name-input');
+        const inviteEmailInput = document.getElementById('invite-email-input');
+        const addEmailBtn = document.getElementById('add-email-btn');
+        const invitedEmailsList = document.getElementById('invited-emails-list');
+        const modalCloseBtn = document.getElementById('modal-close-btn');
+        const modalCloseInviteBtn = document.getElementById('modal-close-invite-btn');
+        const modalSubmitBtn = document.getElementById('modal-submit-btn');
+        const modalErrorMessage = document.getElementById('modal-error-message');
+        const inviteEmailSingle = document.getElementById('invite-email-single');
+        const inviteErrorMessage = document.getElementById('invite-error-message');
+        const currentUserEmailInModal = document.getElementById('current-user-email-in-modal');
+
+
+        // --- UTILITY FUNCTIONS (Original code preserved) ---
+        function applyTheme(theme) {
+            const html = document.documentElement;
+            let resolvedTheme = theme;
+            const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+
+            if (theme === 'system') {
+                resolvedTheme = mediaQuery.matches ? 'dark' : 'light';
+            }
+            if (resolvedTheme === 'dark') {
+                html.classList.add('dark');
+            } else {
+                html.classList.remove('dark');
+            }
+        }
+        
+        function setupSystemThemeListener() {
+            const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+            mediaQuery.addEventListener('change', () => {
+                const currentPreference = localStorage.getItem(THEME_KEY) || 'system';
+                if (currentPreference === 'system') {
+                    applyTheme('system');
+                }
+            });
+        }
+
+        function toggleMobileMenu() {
+            if (!mobileMenu) return; 
+
+            const isOpen = mobileMenu.classList.contains('open');
+            mobileMenu.classList.toggle('open');
+            
+            if (isOpen) {
+                hamburgerIcon.classList.remove('hidden');
+                closeIcon.classList.add('hidden');
+            } else {
+                hamburgerIcon.classList.add('hidden');
+                closeIcon.classList.remove('hidden');
+            }
+        }
+
+        // Dummy countdown function to satisfy original code structure
+        function updateCountdowns() {
+            // Placeholder for original countdown logic
+        }
+
+        /**
+         * Closes the mobile menu when a link inside is clicked.
+         */
+        function setupMobileMenuListeners() {
+            if (document.getElementById('mobile-menu-button')) {
+                document.getElementById('mobile-menu-button').addEventListener('click', toggleMobileMenu);
+
+                if (mobileMenu) {
+                    mobileMenu.querySelectorAll('a').forEach(link => {
+                        link.addEventListener('click', () => {
+                            if (mobileMenu.classList.contains('open')) {
+                                toggleMobileMenu();
+                            }
+                        });
+                    });
+                }
+            }
+        }
+
+
+        // --- UI STATE MANAGEMENT ---
+
+        /**
+         * Switches the application view between authentication and chat mode.
+         * @param {boolean} isAuthenticated 
+         */
+        function updateAppView(isAuthenticated) {
+            if (isAuthenticated) {
+                authView.classList.add('hidden');
+                chatView.classList.remove('hidden');
+                logoutButtonDesktop.classList.remove('hidden');
+                logoutButtonMobile.classList.remove('hidden');
+                userIdDisplayDesktop.classList.remove('hidden');
+                userEmailDisplay.textContent = currentUserEmail;
+                userIdDisplayDesktop.textContent = `UID: ${currentUserId}`;
+
+                // Force open the sidebar on initial load for desktop
+                if (window.innerWidth >= 768) {
+                    document.getElementById('chat-sidebar').classList.remove('hidden');
+                }
+            } else {
+                authView.classList.remove('hidden');
+                chatView.classList.add('hidden');
+                logoutButtonDesktop.classList.add('hidden');
+                logoutButtonMobile.classList.add('hidden');
+                userIdDisplayDesktop.classList.add('hidden');
+                // Clear state
+                userEmailDisplay.textContent = '';
+                currentUserId = null;
+                currentUserEmail = null;
+                setActiveChat(null);
+            }
+        }
+
+        /**
+         * Toggles the UI between Login and Registration.
+         
+        function toggleAuthUI() {
+            isLoginMode = !isLoginMode;
+            authTitle.textContent = isLoginMode ? 'Sign In' : 'Create Account';
+            authSubmitBtn.textContent = isLoginMode ? 'Sign In' : 'Sign Up';
+            toggleAuthModeBtn.textContent = isLoginMode ? 'Need an account? Sign Up' : 'Already have an account? Sign In';
+            authErrorMessage.classList.add('hidden');
+        }*/
+
+        /**
+         * Shows the custom modal with the specified content mode.
+         * @param {'new-chat' | 'invite-user'} mode 
+         */
+        function showModal(mode, currentChat) {
+            modal.classList.remove('hidden');
+            modalErrorMessage.classList.add('hidden');
+            inviteErrorMessage.classList.add('hidden');
+            
+            // Reset forms
+            newChatForm.reset();
+            inviteUserForm.reset();
+            invitedEmails = [];
+            
+            if (mode === 'new-chat') {
+                modalTitle.textContent = 'Start New Conversation';
+                newChatForm.classList.remove('hidden');
+                inviteUserForm.classList.add('hidden');
+                modalSubmitBtn.textContent = 'Create Chat';
+                
+                // Display current user email in the list
+                currentUserEmailInModal.textContent = currentUserEmail;
+                updateInvitedEmailsList();
+
+            } else if (mode === 'invite-user' && currentChat) {
+                modalTitle.textContent = `Invite to ${currentChat.name}`;
+                newChatForm.classList.add('hidden');
+                inviteUserForm.classList.remove('hidden');
+                modalSubmitBtn.textContent = 'Invite';
+            }
+        }
+
+        function hideModal() {
+            modal.classList.add('hidden');
+            newChatForm.reset();
+            inviteUserForm.reset();
+            invitedEmails = [];
+            modalErrorMessage.classList.add('hidden');
+            inviteErrorMessage.classList.add('hidden');
+        }
+
+        // --- FIREBASE AUTHENTICATION ---
+
+        /**
+         * Handles user registration or login.
+         * @param {Event} e 
+         */
+        async function handleAuthSubmit(e) {
+            e.preventDefault();
+            authErrorMessage.classList.add('hidden');
+            authSubmitBtn.disabled = true;
+            authSubmitBtn.textContent = 'Signing in...';
+
+            const email = authEmailInput.value.trim();
+            const password = authPasswordInput.value;
+
+            try {
+                await signInWithEmailAndPassword(auth, email, password);
+                // onAuthStateChanged will handle UI switch
+            } catch (error) {
+                console.error("Auth error:", error.code, error.message);
+
+                if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
+                authErrorMessage.textContent = 'Invalid email or password.';
+                } else if (error.code === 'auth/too-many-requests') {
+                authErrorMessage.textContent = 'Too many attempts. Try again later.';
+                } else {
+                authErrorMessage.textContent = error.message;
+                }
+
+                authErrorMessage.classList.remove('hidden');
+            } finally {
+                authSubmitBtn.disabled = false;
+                authSubmitBtn.textContent = 'Sign In';
+            }
+        }
+
+
+        /**
+         * Signs out the current user.
+         */
+        function handleSignOut() {
+            signOut(auth).catch((error) => console.error("Sign Out Error:", error));
+        }
+
+
+        // --- FIREBASE FIRESTORE DATA FUNCTIONS ---
+
+        /**
+         * Finds the UID for a given email address.
+         * @param {string} email 
+         * @returns {Promise<string | null>} The user's UID or null if not found.
+         */
+        async function findUidByEmail(email) {
+            try {
+                const q = query(collection(db, USERS_COLLECTION), where('email', '==', email.toLowerCase()));
+                const querySnapshot = await getDocs(q);
+                if (!querySnapshot.empty) {
+                    return querySnapshot.docs[0].id;
+                }
+                return null;
+            } catch (error) {
+                console.error("Error finding user by email:", error);
+                return null;
+            }
+        }
+
+        /**
+         * Creates a new chat document and adds the current user and invited members.
+         * @param {string} chatName 
+         * @param {string[]} invitedEmails 
+         */
+        async function createNewChat(chatName, memberEmails) {
+            modalSubmitBtn.disabled = true;
+            modalSubmitBtn.textContent = 'Creating...';
+            modalErrorMessage.classList.add('hidden');
+
+            const allMembersEmails = [...new Set([currentUserEmail.toLowerCase(), ...memberEmails])];
+            const memberUids = [currentUserId];
+
+            try {
+                // 1. Find UIDs for all invited members
+                for (const email of allMembersEmails) {
+                    if (email === currentUserEmail.toLowerCase()) continue;
+                    const uid = await findUidByEmail(email);
+                    if (uid) {
+                        memberUids.push(uid);
+                    } else {
+                        throw new Error(`User not found for email: ${email}. Please ensure they are registered.`);
+                    }
+                }
+
+                // 2. Create the new chat document
+                const newChatRef = await addDoc(collection(db, CHAT_COLLECTION), {
+                    name: chatName.trim() || `Chat with ${memberEmails.length} other(s)`,
+                    members: [...new Set(memberUids)], // ensure unique UIDs
+                    memberEmails: [...new Set(allMembersEmails)], // ensure unique emails
+                    createdAt: serverTimestamp(),
+                    lastMessage: { text: 'Conversation started.', sender: 'System', timestamp: serverTimestamp() }
+                });
+
+                // 3. Auto-send a welcome message
+                await addDoc(collection(db, CHAT_COLLECTION, newChatRef.id, 'messages'), {
+                    senderId: 'system',
+                    senderName: 'System',
+                    text: `${currentUserEmail} started this chat and invited ${memberEmails.join(', ')}`,
+                    timestamp: serverTimestamp()
+                });
+
+                hideModal();
+                setActiveChat(newChatRef.id, chatName.trim() || `Chat with ${memberEmails.length} other(s)`);
+
+            } catch (error) {
+                modalErrorMessage.textContent = error.message;
+                modalErrorMessage.classList.remove('hidden');
+            } finally {
+                modalSubmitBtn.disabled = false;
+                modalSubmitBtn.textContent = 'Create Chat';
+            }
+        }
+
+        /**
+         * Adds a single user to the active chat.
+         */
+        async function inviteUserToChat(emailToInvite) {
+            if (!activeChatId) return;
+
+            modalSubmitBtn.disabled = true;
+            modalSubmitBtn.textContent = 'Inviting...';
+            inviteErrorMessage.classList.add('hidden');
+
+            try {
+                const invitedUid = await findUidByEmail(emailToInvite.toLowerCase());
+                
+                if (!invitedUid) {
+                    throw new Error(`User not found for email: ${emailToInvite}. Please ensure they are registered.`);
+                }
+
+                const chatRef = doc(db, CHAT_COLLECTION, activeChatId);
+                const chatSnapshot = await getDocs(query(collection(db, CHAT_COLLECTION), where('__name__', '==', activeChatId)));
+                const chatData = chatSnapshot.docs[0].data();
+
+                if (chatData.members.includes(invitedUid)) {
+                    throw new Error(`${emailToInvite} is already a member of this chat.`);
+                }
+                
+                // Update chat document with new member
+                const newMembers = [...chatData.members, invitedUid];
+                const newMemberEmails = [...chatData.memberEmails, emailToInvite.toLowerCase()];
+                await setDoc(chatRef, { members: newMembers, memberEmails: newMemberEmails }, { merge: true });
+
+                // Send a system message
+                await addDoc(collection(db, CHAT_COLLECTION, activeChatId, 'messages'), {
+                    senderId: 'system',
+                    senderName: 'System',
+                    text: `${currentUserEmail} invited ${emailToInvite} to the chat.`,
+                    timestamp: serverTimestamp()
+                });
+
+                hideModal();
+
+            } catch (error) {
+                inviteErrorMessage.textContent = error.message;
+                inviteErrorMessage.classList.remove('hidden');
+            } finally {
+                modalSubmitBtn.disabled = false;
+                modalSubmitBtn.textContent = 'Invite';
+            }
+        }
+
+        /**
+         * Sends a message to the currently active chat.
+         */
+        async function sendMessage(e) {
+            e.preventDefault();
+            const text = messageInput.value.trim();
+            if (!activeChatId || !text) return;
+
+            try {
+                // 1. Add message to messages subcollection
+                await addDoc(collection(db, CHAT_COLLECTION, activeChatId, 'messages'), {
+                    senderId: currentUserId,
+                    senderName: currentUserEmail.split('@')[0], // Use part of email as display name
+                    text: text,
+                    timestamp: serverTimestamp()
+                });
+
+                // 2. Update last message field in the main chat document
+                const chatRef = doc(db, CHAT_COLLECTION, activeChatId);
+                await setDoc(chatRef, { 
+                    lastMessage: { 
+                        text: text, 
+                        sender: currentUserEmail.split('@')[0], 
+                        timestamp: serverTimestamp() 
+                    }
+                }, { merge: true });
+
+                messageInput.value = ''; // Clear input field
+                messageInput.focus();
+            } catch (error) {
+                console.error("Error sending message:", error);
+                // In a real app, show a message box here
+            }
+        }
+
+        /**
+         * Sets the active chat, loads messages, and updates UI.
+         * @param {string | null} chatId 
+         * @param {string} chatName 
+         */
+        function setActiveChat(chatId, chatName) {
+            if (unsubscribeMessages) {
+                unsubscribeMessages(); // Stop listening to old chat
+            }
+            activeChatId = chatId;
+            activeChatName = chatName;
+
+            if (!chatId) {
+                currentChatName.textContent = 'Select a Chat';
+                chatInputArea.classList.add('hidden');
+                chatIntroMessage.classList.remove('hidden');
+                messagesContainer.innerHTML = '';
+                inviteUserBtn.classList.add('hidden');
+                return;
+            }
+
+            chatIntroMessage.classList.add('hidden');
+            chatInputArea.classList.remove('hidden');
+            currentChatName.textContent = chatName;
+            inviteUserBtn.classList.remove('hidden');
+            messagesContainer.innerHTML = '<div class="text-center text-gray-400 p-8">Loading messages...</div>';
+            
+            // Set active class in the sidebar
+            document.querySelectorAll('[data-chat-id]').forEach(el => {
+                if (el.dataset.chatId === chatId) {
+                    el.classList.add('bg-indigo-100', 'dark:bg-indigo-700', 'font-semibold');
+                    el.classList.remove('hover:bg-gray-100', 'dark:hover:bg-gray-600');
+                } else {
+                    el.classList.remove('bg-indigo-100', 'dark:bg-indigo-700', 'font-semibold');
+                    el.classList.add('hover:bg-gray-100', 'dark:hover:bg-gray-600');
+                }
+            });
+
+            // Start listening for new messages
+            const messagesQuery = query(
+                collection(db, CHAT_COLLECTION, chatId, 'messages')
+            );
+            
+            unsubscribeMessages = onSnapshot(messagesQuery, (snapshot) => {
+                renderMessages(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+            }, (error) => {
+                console.error("Error fetching messages:", error);
+                messagesContainer.innerHTML = '<div class="text-center text-red-500 p-8">Error loading messages.</div>';
+            });
+        }
+
+        /**
+         * Renders the chat messages.
+         * @param {Array<Object>} messages 
+         */
+        function renderMessages(messages) {
+            // Sort messages by timestamp
+            messages.sort((a, b) => a.timestamp.toDate() - b.timestamp.toDate());
+
+            messagesContainer.innerHTML = ''; // Clear existing messages
+            
+            if (messages.length === 0) {
+                messagesContainer.innerHTML = '<div class="text-center text-gray-500 dark:text-gray-400 p-8">No messages yet. Say hi!</div>';
+                return;
+            }
+
+            messages.forEach(msg => {
+                const isMine = msg.senderId === currentUserId;
+                const alignment = isMine ? 'justify-end' : 'justify-start';
+                const bubbleColor = isMine ? 'bg-primary text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-100';
+                const senderDisplay = isMine ? 'You' : (msg.senderName || msg.senderId.substring(0, 8));
+
+                const msgElement = document.createElement('div');
+                msgElement.className = `flex ${alignment}`;
+                msgElement.innerHTML = `
+                    <div class="max-w-xs md:max-w-md lg:max-w-lg">
+                        <p class="text-xs ${isMine ? 'text-right' : 'text-left'} text-gray-500 dark:text-gray-400 mb-1">${senderDisplay}</p>
+                        <div class="px-4 py-2 rounded-xl ${bubbleColor} shadow-md break-words">
+                            ${msg.text}
+                        </div>
+                    </div>
+                `;
+                messagesContainer.appendChild(msgElement);
+            });
+
+            // Scroll to the bottom of the messages container
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        /**
+         * Renders the list of chats in all three locations (sidebar, desktop dropdown, mobile menu).
+         * @param {Array<Object>} chats 
+         */
+        function renderChatLists(chats) {
+            const createChatLink = (chat, isMobile) => {
+                const el = document.createElement('a');
+                el.href = '#';
+                el.dataset.chatId = chat.id;
+                el.textContent = chat.name;
+                el.className = isMobile
+                    ? 'text-md block px-3 py-2 rounded-md text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition duration-150'
+                    : 'block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 transition duration-150';
+                
+                // Add click listener
+                el.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    setActiveChat(chat.id, chat.name);
+                    // Close mobile menu if open
+                    if (mobileMenu.classList.contains('open')) {
+                        toggleMobileMenu();
+                    }
+                });
+                return el;
+            };
+
+            const createSidebarItem = (chat) => {
+                const el = document.createElement('div');
+                el.dataset.chatId = chat.id;
+                el.className = 'p-3 rounded-lg cursor-pointer transition duration-150 border border-transparent hover:border-indigo-400 dark:hover:border-indigo-600';
+                
+                el.innerHTML = `
+                    <div class="font-semibold truncate">${chat.name}</div>
+                    <div class="text-xs text-gray-500 dark:text-gray-400 truncate mt-0.5">
+                        ${chat.lastMessage ? chat.lastMessage.sender + ': ' + chat.lastMessage.text : 'New chat'}
+                    </div>
+                `;
+
+                el.addEventListener('click', () => setActiveChat(chat.id, chat.name));
+                return el;
+            };
+
+            // 1. Clear existing lists and hide placeholders
+            sidebarChatList.innerHTML = '';
+            mobileChatList.innerHTML = '';
+            
+            // Re-insert New Chat link for desktop dropdown
+            const desktopNewChat = desktopChatList.querySelector('#new-chat-desktop');
+            const desktopSeparator = desktopChatList.querySelector('.h-px');
+            desktopChatList.innerHTML = '';
+            if (desktopNewChat) desktopChatList.appendChild(desktopNewChat);
+            if (desktopSeparator) desktopChatList.appendChild(desktopSeparator);
+
+            if (chats.length === 0) {
+                sidebarChatList.appendChild(sidebarListPlaceholder);
+                mobileChatList.appendChild(mobileListPlaceholder);
+                desktopChatList.appendChild(desktopListPlaceholder);
+                return;
+            }
+            
+            // Remove placeholders if chats exist
+            sidebarListPlaceholder.remove();
+            mobileListPlaceholder.remove();
+            desktopListPlaceholder.remove();
+
+            // Sort chats by last message timestamp (latest first)
+            chats.sort((a, b) => b.lastMessage.timestamp.toDate() - a.lastMessage.timestamp.toDate());
+
+            // 2. Populate lists
+            chats.forEach(chat => {
+                // Sidebar
+                sidebarChatList.appendChild(createSidebarItem(chat));
+
+                // Desktop Dropdown
+                desktopChatList.appendChild(createChatLink(chat, false));
+                
+                // Mobile Menu
+                mobileChatList.appendChild(createChatLink(chat, true));
+            });
+            
+            // Re-apply active state if a chat is currently selected
+            if (activeChatId) {
+                setActiveChat(activeChatId, activeChatName);
+            }
+        }
+
+        /**
+         * Sets up the real-time listener for the user's chats.
+         */
+        function setupChatListener() {
+            if (!currentUserId || !db) return;
+
+            if (unsubscribeChats) {
+                unsubscribeChats(); // Stop listening to old user's chats
+            }
+
+            // Query for chats where the current user is in the 'members' array
+            const chatsQuery = query(
+                collection(db, CHAT_COLLECTION),
+                where('members', 'array-contains', currentUserId)
+            );
+
+            unsubscribeChats = onSnapshot(chatsQuery, (snapshot) => {
+                const chats = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                renderChatLists(chats);
+            }, (error) => {
+                console.error("Error fetching chats:", error);
+                sidebarChatList.innerHTML = '<div class="text-center text-red-500 p-8">Error loading chats.</div>';
+            });
+        }
+        
+        // --- CHAT MODAL LOGIC ---
+
+        function updateInvitedEmailsList() {
+            const listContent = `
+                <p class="text-sm text-gray-500 dark:text-gray-400">
+                    Members: You (<span id="current-user-email-in-modal">${currentUserEmail}</span>)${invitedEmails.length > 0 ? ', ' : ''}
+                </p>
+                <div class="flex flex-wrap gap-2">
+                ${invitedEmails.map(email => `
+                    <span class="inline-flex items-center px-3 py-1 text-sm font-medium bg-indigo-200 dark:bg-indigo-600 text-indigo-800 dark:text-indigo-100 rounded-full">
+                        ${email}
+                        <button type="button" data-email="${email}" class="remove-email-btn ml-1.5 -mr-1 h-4 w-4 text-indigo-600 dark:text-indigo-200 hover:text-indigo-800 dark:hover:text-indigo-50" title="Remove">
+                            <svg class="w-full h-full" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
+                        </button>
+                    </span>
+                `).join('')}
+                </div>
+            `;
+            invitedEmailsList.innerHTML = listContent;
+
+            // Re-attach listeners for remove buttons
+            invitedEmailsList.querySelectorAll('.remove-email-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const email = btn.dataset.email;
+                    invitedEmails = invitedEmails.filter(e => e !== email);
+                    updateInvitedEmailsList();
+                });
+            });
+        }
+
+        // --- INITIALIZATION ---
+        document.addEventListener('DOMContentLoaded', () => {
+            // 1. Initialize Theme Mode & Listeners
+            const initialThemeMode = localStorage.getItem(THEME_KEY) || 'system';
+            applyTheme(initialThemeMode);
+            setupSystemThemeListener();
+            updateCountdowns(); // Dummy call
+            setInterval(updateCountdowns, 1000); // Dummy interval
+
+            // 2. Initialize mobile menu elements and listeners
+            setupMobileMenuListeners();
+
+            // --- Cookie Consent Logic ---
+            const banner = document.getElementById('cookie-banner');
+            const acceptButton = document.getElementById('accept-cookies');
+
+            if (localStorage.getItem(COOKIE_KEY) === 'true') {
+                banner.remove();
+            }
+
+            acceptButton.addEventListener('click', () => {
+                localStorage.setItem(COOKIE_KEY, 'true');
+                banner.classList.add('fade-out');
+                setTimeout(() => banner.remove(), 500);
+            });
+
+            
+            // 4. Dropdown Toggle Logic (More Menu) - Simplified for functionality
+            const dropdown = document.getElementById('more-dropdown');
+            const menu = document.getElementById('more-menu-items');
+            
+            const toggleMenu = () => {
+                 if (window.innerWidth >= 768) { // Only allow click on desktop
+                    const isVisible = menu.classList.toggle('visible');
+                    dropdown.querySelector('button').setAttribute('aria-expanded', isVisible ? 'true' : 'false');
+                 }
+            };
+            dropdown.querySelector('button').addEventListener('click', (e) => {
+                e.stopPropagation();
+                toggleMenu();
+            });
+ // Use click for desktop dropdown
+            document.addEventListener('click', (event) => {
+                if (window.innerWidth >= 768 && !dropdown.contains(event.target) && menu.classList.contains('visible')) {
+                    menu.classList.remove('visible');
+                }
+            });
+
+            // --- FIREBASE SETUP ---
+            try {
+                
+
+                // 5. Authentication State Listener
+                onAuthStateChanged(auth, (user) => {
+                if (user) {
+                    currentUserId = user.uid;
+                    currentUserEmail = user.email;
+                    updateAppView(true);
+                    setupChatListener();
+                } else {
+                    updateAppView(false);
+                }
+                });
+
+
+                // --- EVENT LISTENERS ---
+                
+                // Auth Forms
+                authForm.addEventListener('submit', handleAuthSubmit);
+                //toggleAuthModeBtn.addEventListener('click', toggleAuthUI);
+                logoutButtonDesktop.addEventListener('click', handleSignOut);
+                logoutButtonMobile.addEventListener('click', handleSignOut);
+
+                // Chat Forms
+                messageForm.addEventListener('submit', sendMessage);
+                newChatBtn.addEventListener('click', () => showModal('new-chat'));
+                newChatDesktopLink.addEventListener('click', (e) => { e.preventDefault(); showModal('new-chat'); });
+                newChatMobileLink.addEventListener('click', (e) => { e.preventDefault(); showModal('new-chat'); });
+                inviteUserBtn.addEventListener('click', () => showModal('invite-user', { id: activeChatId, name: activeChatName }));
+
+                // Modal
+                modalCloseBtn.addEventListener('click', hideModal);
+                modalCloseInviteBtn.addEventListener('click', hideModal);
+
+                newChatForm.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    if (invitedEmails.length === 0) {
+                        modalErrorMessage.textContent = "Please add at least one other user to start a chat.";
+                        modalErrorMessage.classList.remove('hidden');
+                        return;
+                    }
+                    createNewChat(chatNameInput.value, invitedEmails);
+                });
+
+                inviteUserForm.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    inviteUserToChat(inviteEmailSingle.value);
+                });
+
+                addEmailBtn.addEventListener('click', () => {
+                    const email = inviteEmailInput.value.toLowerCase().trim();
+                    modalErrorMessage.classList.add('hidden');
+
+                    if (!email || !email.includes('@')) {
+                        modalErrorMessage.textContent = "Please enter a valid email address.";
+                        modalErrorMessage.classList.remove('hidden');
+                        return;
+                    }
+
+                    if (email === currentUserEmail.toLowerCase()) {
+                        modalErrorMessage.textContent = "You are already a member of this chat.";
+                        modalErrorMessage.classList.remove('hidden');
+                        return;
+                    }
+
+                    if (!invitedEmails.includes(email)) {
+                        invitedEmails.push(email);
+                        updateInvitedEmailsList();
+                        inviteEmailInput.value = '';
+                    }
+                });
+
+
+            } catch (error) {
+                console.error("Firebase Initialization Error:", error);
+                authView.innerHTML = `<div class="p-8 text-red-500">Error loading application. Check console for Firebase config issues.</div>`;
+            }
+        });
+
+    </script>
+</body>
+</html>
