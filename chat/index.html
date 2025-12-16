@@ -41,7 +41,6 @@
             background-color: #475569;
         }
     </style>
-    <!-- Firebase Imports -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
@@ -350,12 +349,19 @@
 
             div.innerHTML = `
                 <div class="max-w-[75%]">
-                    <div class="text-xs text-gray-500 mb-1 ${isMe ? 'text-right' : 'text-left'}">${msg.senderName}</div>
+                    <div class="text-xs mb-1 flex items-center ${isMe ? 'justify-end' : 'justify-start'} gap-2">
+                        ${isMe ? 
+                            // Right-aligned (My message): [Time] [Name]
+                            `<span class="text-gray-500 dark:text-gray-400">${timeString}</span>
+                             <span class="font-medium text-gray-800 dark:text-gray-100">${msg.senderName}</span>` 
+                            : 
+                            // Left-aligned (Other's message): [Name] [Time]
+                            `<span class="font-medium text-gray-800 dark:text-gray-100">${msg.senderName}</span>
+                             <span class="text-gray-500 dark:text-gray-400">${timeString}</span>`
+                        }
+                    </div>
                     <div class="p-3 rounded-2xl ${isMe ? 'bg-blue-500 text-white rounded-br-none' : 'bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-100 rounded-bl-none'}">
-                        <div class="flex items-end justify-between gap-4">
-                            ${contentHtml}
-                            <span class="text-xs opacity-80 ${isMe ? 'text-blue-200' : 'text-gray-500 dark:text-gray-400'} flex-shrink-0">${timeString}</span>
-                        </div>
+                        ${contentHtml}
                     </div>
                 </div>
             `;
@@ -539,7 +545,6 @@
 </head>
 <body class="bg-gray-50 dark:bg-gray-900 transition-colors duration-200 h-screen overflow-hidden font-sans text-gray-800 dark:text-gray-200">
 
-    <!-- LOGIN VIEW -->
     <div id="login-view" class="h-full flex items-center justify-center p-4">
         <div class="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-xl w-full max-w-md border border-gray-100 dark:border-gray-700">
             <div class="text-center mb-8">
@@ -569,12 +574,9 @@
         </div>
     </div>
 
-    <!-- MAIN APP VIEW -->
     <div id="main-view" class="hidden h-full flex flex-col md:flex-row">
         
-        <!-- SIDEBAR -->
         <div class="w-full md:w-80 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col z-10">
-            <!-- Sidebar Header -->
             <div class="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
                 <div class="flex items-center gap-3 cursor-pointer" onclick="openModal('settings-modal')">
                     <div class="h-10 w-10 rounded-full bg-gradient-to-tr from-blue-500 to-purple-500 flex items-center justify-center text-white font-bold text-lg">
@@ -590,7 +592,6 @@
                 </button>
             </div>
 
-            <!-- Chat List Area -->
             <div class="p-3">
                 <button onclick="openModal('new-chat-modal')" class="w-full bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 py-2 rounded-lg font-medium text-sm flex items-center justify-center gap-2 hover:bg-blue-100 dark:hover:bg-blue-900/50 transition">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
@@ -599,14 +600,11 @@
             </div>
 
             <div id="chat-list" class="flex-1 overflow-y-auto custom-scroll px-3 space-y-1">
-                <!-- Chats will load here -->
-            </div>
+                </div>
         </div>
 
-        <!-- MAIN CHAT AREA -->
         <div class="flex-1 flex flex-col bg-gray-50 dark:bg-gray-900 relative">
             
-            <!-- Empty State -->
             <div id="empty-state" class="absolute inset-0 flex flex-col items-center justify-center text-gray-400 p-8 text-center z-0">
                 <div class="w-24 h-24 bg-gray-200 dark:bg-gray-800 rounded-full flex items-center justify-center mb-4">
                     <svg class="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-3.582 8-8 8a8.013 8.013 0 01-5.699-2.399l-5.102 1.488 1.488-5.102A8.013 8.013 0 014 12c0-4.418 3.582-8 8-8s8 3.582 8 8z"></path></svg>
@@ -615,9 +613,7 @@
                 <p class="max-w-xs mt-2 text-sm">Or click 'New Chat' to start a conversation</p>
             </div>
 
-            <!-- Active Chat Interface -->
             <div id="chat-interface" class="hidden flex flex-col h-full z-10 bg-white dark:bg-gray-900/50 backdrop-blur-sm">
-                <!-- Chat Header -->
                 <div class="h-16 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between px-6 bg-white dark:bg-gray-800 shadow-sm">
                     <div class="flex items-center gap-3">
                         <div class="h-10 w-10 rounded-full bg-indigo-100 dark:bg-indigo-900 flex items-center justify-center text-indigo-600 dark:text-indigo-300 font-bold">
@@ -630,12 +626,9 @@
                     </button>
                 </div>
 
-                <!-- Messages -->
                 <div id="messages-container" class="flex-1 overflow-y-auto p-6 space-y-2 custom-scroll bg-gray-50 dark:bg-gray-900">
-                    <!-- Messages render here -->
-                </div>
+                    </div>
 
-                <!-- Input Area -->
                 <div class="p-4 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
                     <div class="flex items-center gap-2 bg-gray-100 dark:bg-gray-700 px-4 py-2 rounded-xl">
                         <label class="cursor-pointer text-gray-400 hover:text-blue-500">
@@ -652,9 +645,6 @@
         </div>
     </div>
 
-    <!-- MODALS -->
-
-    <!-- New Chat Modal -->
     <div id="new-chat-modal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
         <div class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-sm w-full p-6">
             <h3 class="text-lg font-bold mb-4">Start New Chat</h3>
@@ -667,7 +657,6 @@
         </div>
     </div>
 
-    <!-- Add User Modal -->
     <div id="add-user-modal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
         <div class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-sm w-full p-6">
             <h3 class="text-lg font-bold mb-4">Add Person to Chat</h3>
@@ -679,7 +668,6 @@
         </div>
     </div>
 
-    <!-- Settings Modal -->
     <div id="settings-modal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
         <div class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-sm w-full p-6">
             <div class="flex justify-between items-center mb-6">
