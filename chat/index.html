@@ -47,7 +47,7 @@
         const CLOUDINARY_UPLOAD_PRESET = "bobbyreichert-chat";
 
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
+        import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
         import { getFirestore, collection, doc, setDoc, getDoc, getDocs, addDoc, onSnapshot, query, where, orderBy, updateDoc, arrayUnion, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
         
         // CONFIGURATION
@@ -356,8 +356,14 @@
 
         window.setReplyTarget = (messageId, senderName, content) => {
             if (editingMessage) cancelEdit(); 
+            // Sanitize content for preview
+            const sanitizedContent = content
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;");
+            
             replyingToMessage = { id: messageId, senderName: senderName, content: content };
-            replyContent.innerHTML = `Replying to **${senderName}**: ${content.length > 50 ? content.substring(0, 50) + '...' : content}`;
+            replyContent.innerHTML = `Replying to **${senderName}**: ${sanitizedContent.length > 50 ? sanitizedContent.substring(0, 50) + '...' : sanitizedContent}`;
             replyPanel.classList.remove('hidden');
             messageInput.focus();
         }
@@ -430,6 +436,32 @@
             previewContent.innerHTML = '';
         }
 
+        // --- LINKIFY UTILITY ---
+        function linkify(text, isMe) {
+            if (!text) return '';
+            
+            // 1. Escape HTML Characters to prevent XSS
+            const escaped = text
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+
+            // 2. Regex for URL recognition (http, https, ftp, file)
+            // Matches protocol://domain... until space or end of string
+            const urlRegex = /(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig;
+            
+            return escaped.replace(urlRegex, (url) => {
+                // Style links differently based on who sent the message (white vs blue)
+                const linkClass = isMe 
+                    ? 'underline text-white font-medium hover:opacity-80' 
+                    : 'underline text-blue-600 dark:text-blue-400 hover:opacity-80';
+                
+                return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="${linkClass} break-all" onclick="event.stopPropagation();">${url}</a>`;
+            });
+        }
+
         function renderMessage(msg, id, container) {
             const isMe = msg.senderId === currentUser.uid;
             const timeString = msg.createdAt ? new Date(msg.createdAt.toDate()).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : '';
@@ -442,11 +474,13 @@
             
             // Helper for caption logic
             if (msg.content && msg.content !== 'Sent an image' && msg.content !== 'Sent a file') {
-                captionHtml = `<p class="mt-2 text-sm ${isMe ? 'text-white/90' : 'text-gray-600 dark:text-gray-300'} whitespace-pre-wrap border-t ${isMe ? 'border-white/20' : 'border-gray-300 dark:border-gray-600'} pt-2">${msg.content}</p>`;
+                const linkedContent = linkify(msg.content, isMe);
+                captionHtml = `<p class="mt-2 text-sm ${isMe ? 'text-white/90' : 'text-gray-600 dark:text-gray-300'} whitespace-pre-wrap border-t ${isMe ? 'border-white/20' : 'border-gray-300 dark:border-gray-600'} pt-2">${linkedContent}</p>`;
             }
 
             if (msg.type === 'text') {
-                contentHtml = `<p class="whitespace-pre-wrap">${msg.content}</p>`;
+                // Use linkify function here
+                contentHtml = `<p class="whitespace-pre-wrap">${linkify(msg.content, isMe)}</p>`;
             } else if (msg.type === 'image') {
                 contentHtml = `
                     <div class="relative">
@@ -471,10 +505,16 @@
             
             let replyHtml = '';
             if (msg.replyTo) {
+                // Also escape reply content content to be safe
+                const safeReplyContent = msg.replyTo.content
+                    .replace(/&/g, "&amp;")
+                    .replace(/</g, "&lt;")
+                    .replace(/>/g, "&gt;");
+
                 replyHtml = `
                     <div class="border-l-4 border-blue-400 pl-3 mb-2 pt-1 pb-1 bg-gray-100 dark:bg-gray-600 rounded-r text-xs ${isMe ? 'text-white/80' : 'text-gray-600 dark:text-gray-300'}">
                         <p class="font-bold text-blue-600 dark:text-blue-300">${msg.replyTo.senderName}</p>
-                        <p class="truncate">${msg.replyTo.content}</p>
+                        <p class="truncate">${safeReplyContent}</p>
                     </div>
                 `;
             }
@@ -694,6 +734,21 @@
                 showToast("Profile updated!", "success");
                 closeModal('settings-modal');
             }
+        }
+
+        window.resetPassword = async () => {
+             if (!currentUser || !currentUser.email) return;
+
+             const confirmed = confirm(`Send password reset email to ${currentUser.email}?`);
+             if (!confirmed) return;
+
+             try {
+                 await sendPasswordResetEmail(auth, currentUser.email);
+                 showToast("Reset email sent. Check your inbox.", "success");
+             } catch (e) {
+                 console.error("Reset password error", e);
+                 showToast("Error sending reset email.", "error");
+             }
         }
 
         // --- AUTH OBSERVER ---
@@ -940,6 +995,11 @@
 
             <div class="mt-6 flex flex-col gap-3">
                 <button onclick="saveSettings()" class="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700">Save Changes</button>
+                
+                <button onclick="resetPassword()" class="w-full border border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-300 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                    Reset Password
+                </button>
+
                 <button onclick="handleLogout(); closeModal('settings-modal')" class="w-full border border-red-200 text-red-500 py-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20">Sign Out</button>
             </div>
         </div>
