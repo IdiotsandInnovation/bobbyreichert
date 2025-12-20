@@ -170,13 +170,6 @@
                     <p>
                         To Christmas 2025: <span id="christmas-countdown" class="font-bold text-primary dark:text-primary-dark">--</span> days
                     </p>
-                    
-                    <p>
-                        To SAT Score Release (Dec 19, 2025): <span id="sat-countdown" class="font-bold text-primary dark:text-primary-dark">--</span> days
-                    </p>
-                    <p>
-                        To Epstein Files Release: <span id="epstein-countdown" class="font-bold text-primary dark:text-primary-dark">--</span> days
-                    </p>
                     <p>
                         Since June 19th, 2025: <span id="june-countup" class="font-bold text-primary dark:text-primary-dark">--</span> days
                     </p>
@@ -300,21 +293,7 @@
                 christmasEl.textContent = daysToChristmas > 0 ? daysToChristmas : 0;
             }
 
-            // 2. SAT Score Release Countdown (Dec 19, 2025) (Day-only)
-            const satRelease = new Date('2025-12-19T00:00:00');
-            const diffToSAT = satRelease.getTime() - now.getTime();
-            const daysToSAT = Math.ceil(diffToSAT / MS_PER_DAY);
             
-            const satEl = document.getElementById('sat-countdown');
-            if (satEl) {
-                // Display 0 if the date has passed
-                satEl.textContent = daysToSAT > 0 ? daysToSAT : 0;
-            }
-            const epsteinEl = document.getElementById('epstein-countdown');
-            if (epsteinEl) {
-                // Display 0 if the date has passed
-                epsteinEl.textContent = daysToSAT > 0 ? daysToSAT : 0;
-            }
 
             // 3. Since June 19th, 2025 Count-up (Day-only)
             const june19th2025 = new Date('2025-06-19T00:00:00');
