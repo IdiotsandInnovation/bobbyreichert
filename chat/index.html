@@ -49,6 +49,8 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
         import { getFirestore, collection, doc, setDoc, getDoc, getDocs, addDoc, onSnapshot, query, where, orderBy, updateDoc, arrayUnion, arrayRemove, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
+        import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-messaging.js";
+
         
         // CONFIGURATION
         const firebaseConfig = {
@@ -64,6 +66,8 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
+        const messaging = getMessaging(app);
+
         
         // Use a fixed App ID for the public data path requirement
         const APP_ID = "chat-v1"; 
@@ -156,6 +160,19 @@
                 }
                 return data.theme || 'light';
             }
+        }
+        async function registerServiceWorker() {
+          if (!('serviceWorker' in navigator)) return;
+        
+          try {
+            const registration = await navigator.serviceWorker.register(
+              '/firebase-messaging-sw.js'
+            );
+            console.log('[FCM] Service Worker registered');
+            return registration;
+          } catch (e) {
+            console.error('[FCM] SW registration failed', e);
+          }
         }
 
         async function updateUserProfile(updates) {
@@ -696,6 +713,16 @@
             `;
             container.appendChild(div);
         }
+        onMessage(messaging, (payload) => {
+          console.log('[FCM] Foreground message:', payload);
+        
+          if (Notification.permission !== 'granted') return;
+        
+          new Notification(payload.notification?.title || 'New Message', {
+            body: payload.notification?.body,
+            icon: payload.notification?.icon
+          });
+        });
 
         window.sendMessage = async () => {
             const input = document.getElementById('message-input');
@@ -849,6 +876,37 @@
                 }, 1000);
             }
         }
+        async function registerForPushNotifications() {
+          try {
+            const permission = await Notification.requestPermission();
+                if (permission !== 'granted') {
+                  console.log('[FCM] Permission denied');
+                  return;
+                }
+            
+                const swReg = await registerServiceWorker();
+                if (!swReg) return;
+            
+                const token = await getToken(messaging, {
+                  vapidKey: "BNXnkuaVm9HAkn22sCwwuejVBDCuj5kqm1PWHdqZxgcR4ARzn2D4jXe_PYVqV5K957JivEUCHBsPSdEpdSU9TGA",
+                  serviceWorkerRegistration: swReg
+                });
+            
+                if (token && currentUser) {
+                  await updateDoc(
+                    doc(db, 'artifacts', APP_ID, 'public', 'data', 'users', currentUser.uid),
+                    {
+                      fcmToken: token,
+                      fcmUpdatedAt: serverTimestamp()
+                    }
+                  );
+            
+                  console.log('[FCM] Token saved');
+                }
+              } catch (err) {
+                console.error('[FCM] Registration failed', err);
+              }
+            }
 
         // --- SETTINGS & THEME ---
 
@@ -909,6 +967,8 @@
                 }
 
                 initChatListener();
+                registerForPushNotifications();
+
             } else {
                 currentUser = null;
                 loginView.classList.remove('hidden');
