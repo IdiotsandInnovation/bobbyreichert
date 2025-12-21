@@ -422,16 +422,18 @@
                             // Debug logs to help user verify why notifications fire or don't fire
                             console.log('[DEBUG] New message event:', msg.content);
                             console.log('[DEBUG] Visibility:', document.visibilityState);
+                            console.log('[DEBUG] Has Focus:', document.hasFocus());
                             console.log('[DEBUG] Is Muted:', isCurrentChatMuted);
                             console.log('[DEBUG] Is My Message:', msg.senderId === currentUser.uid);
 
                             // Check visibility AND mute status
-                            if (document.visibilityState === 'hidden' && msg.senderId !== currentUser.uid) {
+                            // Check if document is hidden OR not focused (covers side-by-side windows)
+                            if ((document.visibilityState === 'hidden' || !document.hasFocus()) && msg.senderId !== currentUser.uid) {
                                 if (!isCurrentChatMuted) {
                                     sendNotification(msg);
                                 }
                             } else {
-                                console.log('[DEBUG] Notification skipped. (Tab visible or Own Message)');
+                                console.log('[DEBUG] Notification skipped. (Tab visible+focused or Own Message)');
                             }
                         }
                     });
