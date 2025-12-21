@@ -445,7 +445,8 @@
 
                             // Check visibility AND mute status
                             // Check if document is hidden OR not focused (covers side-by-side windows)
-                            if ((document.visibilityState === 'hidden' || !document.hasFocus()) && msg.senderId !== currentUser.uid) {
+                            if (!isCurrentChatMuted && msg.senderId !== currentUser.uid) {
+
                                 if (!isCurrentChatMuted) {
                                     sendNotification(msg);
                                 }
