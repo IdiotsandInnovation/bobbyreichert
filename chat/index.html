@@ -48,7 +48,9 @@
 
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
-        import { getFirestore, collection, doc, setDoc, getDoc, getDocs, addDoc, onSnapshot, query, where, orderBy, updateDoc, arrayUnion, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
+        import { getFirestore, collection, doc, setDoc, getDoc, getDocs, addDoc, onSnapshot, query, where, orderBy, updateDoc, arrayUnion, arrayRemove, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
+        import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-messaging.js";
+
         
         // CONFIGURATION
         const firebaseConfig = {
@@ -64,6 +66,8 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
+        const messaging = getMessaging(app);
+
         
         // Use a fixed App ID for the public data path requirement
         const APP_ID = "chat-v1"; 
@@ -73,6 +77,11 @@
         let currentChatId = null;
         let unsubscribeChats = null;
         let unsubscribeMessages = null;
+        let unsubscribeChatMetadata = null; // New listener for chat metadata
+        
+        // NOTIFICATION STATE
+        let isCurrentChatMuted = false;
+
         // EDIT/REPLY STATE
         let replyingToMessage = null;
         let editingMessage = null;
@@ -91,12 +100,19 @@
         const messageInput = document.getElementById('message-input');
         const progressBar = document.getElementById('upload-progress-bar');
         const progressContainer = document.getElementById('upload-progress-container');
+        const notificationBtn = document.getElementById('toggle-notifications-btn');
 
 
         // --- AUTH FUNCTIONS ---
 
         window.handleLogin = async (e) => {
             e.preventDefault();
+            
+            // Request Notification Permission on Login Interaction
+            if (Notification.permission === 'default') {
+                Notification.requestPermission();
+            }
+
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
             const errorMsg = document.getElementById('login-error');
@@ -145,6 +161,19 @@
                 return data.theme || 'light';
             }
         }
+        async function registerServiceWorker() {
+          if (!('serviceWorker' in navigator)) return;
+        
+          try {
+            const registration = await navigator.serviceWorker.register(
+              '/firebase-messaging-sw.js'
+            );
+            console.log('[FCM] Service Worker registered');
+            return registration;
+          } catch (e) {
+            console.error('[FCM] SW registration failed', e);
+          }
+        }
 
         async function updateUserProfile(updates) {
             if (!currentUser) return;
@@ -173,6 +202,8 @@
                     
                     const otherEmails = chat.participants ? chat.participants.filter(p => p.email !== currentUser.email).map(p => p.username || p.email.split('@')[0]).join(', ') : "Unknown";
                     const displayName = chat.name || otherEmails || "New Chat";
+                    
+                    // Check if muted to show icon in list? (Optional, skipping for simplicity to keep list clean)
                     
                     const div = document.createElement('div');
                     div.className = `p-3 rounded-lg cursor-pointer flex items-center gap-3 transition-colors ${currentChatId === chatId ? 'bg-blue-100 dark:bg-blue-900' : 'hover:bg-gray-100 dark:hover:bg-gray-700'}`;
@@ -225,6 +256,7 @@
                     { email: currentUser.email, uid: currentUser.uid, username: currentUser.displayName || currentUser.email.split('@')[0] },
                     { email: targetUser.email, uid: targetUser.uid, username: targetUser.username || targetUser.email.split('@')[0] }
                 ],
+                mutedUserIds: [], // Initialize empty
                 createdAt: serverTimestamp(),
                 updatedAt: serverTimestamp(),
                 lastMessage: "Chat created"
@@ -282,7 +314,7 @@
             closeModal('add-user-modal');
             emailInput.value = '';
             showToast("User added!", "success");
-            document.getElementById('chat-header-name').textContent = updatedParticipants.map(p => p.username).join(', ');
+            // Header will update automatically via listener now
         }
         
         window.openRenameModal = () => {
@@ -308,12 +340,43 @@
                     updatedAt: serverTimestamp()
                 });
 
-                document.getElementById('chat-header-name').textContent = newName;
                 closeModal('rename-chat-modal');
                 showToast("Chat renamed!", "success");
             } catch (e) {
                 console.error("Rename error", e);
                 showToast("Failed to rename chat.", "error");
+            }
+        }
+
+        window.toggleChatMute = async () => {
+            if (!currentChatId) return;
+
+            const chatRef = doc(db, 'artifacts', APP_ID, 'public', 'data', 'chats', currentChatId);
+            const action = isCurrentChatMuted ? arrayRemove(currentUser.uid) : arrayUnion(currentUser.uid);
+            const toastMsg = isCurrentChatMuted ? "Notifications enabled" : "Notifications muted";
+
+            try {
+                await updateDoc(chatRef, {
+                    mutedUserIds: action
+                });
+                showToast(toastMsg, "success");
+                // State updates via onSnapshot
+            } catch (e) {
+                console.error("Mute error", e);
+                showToast("Failed to update settings", "error");
+            }
+        }
+
+        function updateMuteButtonUI() {
+            const btn = document.getElementById('toggle-notifications-btn');
+            if (isCurrentChatMuted) {
+                // Show Muted Icon (Bell Slash)
+                btn.innerHTML = `<svg class="w-6 h-6 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" clip-rule="evenodd"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2"></path></svg>`;
+                btn.title = "Unmute Chat";
+            } else {
+                // Show Active Icon (Bell)
+                btn.innerHTML = `<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>`;
+                btn.title = "Mute Chat";
             }
         }
 
@@ -328,17 +391,34 @@
             document.getElementById('empty-state').classList.add('hidden');
             document.getElementById('chat-interface').classList.remove('hidden');
 
-            const displayName = chatData.name || (chatData.participants 
-                ? chatData.participants.filter(p => p.uid !== currentUser.uid).map(p => p.username || p.email.split('@')[0]).join(', ')
-                : "Chat");
-            document.getElementById('chat-header-name').textContent = displayName;
-            
             cancelEdit();
             cancelReply();
-            cancelAttachment(); // Clear any pending uploads
+            cancelAttachment();
 
+            // CLEAN UP PREVIOUS LISTENERS
             if (unsubscribeMessages) unsubscribeMessages();
-            
+            if (unsubscribeChatMetadata) unsubscribeChatMetadata();
+
+            // 1. CHAT METADATA LISTENER (Real-time updates for Name & Mute status)
+            const chatRef = doc(db, 'artifacts', APP_ID, 'public', 'data', 'chats', chatId);
+            unsubscribeChatMetadata = onSnapshot(chatRef, (docSnap) => {
+                if (!docSnap.exists()) return;
+                const data = docSnap.data();
+                
+                // Update Name
+                const displayName = data.name || (data.participants 
+                    ? data.participants.filter(p => p.uid !== currentUser.uid).map(p => p.username || p.email.split('@')[0]).join(', ')
+                    : "Chat");
+                document.getElementById('chat-header-name').textContent = displayName;
+
+                // Update Mute Status
+                const mutedUsers = data.mutedUserIds || [];
+                isCurrentChatMuted = mutedUsers.includes(currentUser.uid);
+                updateMuteButtonUI();
+            });
+
+            // 2. MESSAGES LISTENER
+            let isChatInitialLoad = true;
             const messagesRef = collection(db, 'artifacts', APP_ID, 'public', 'data', 'chats', chatId, 'messages');
             const q = query(messagesRef, orderBy('createdAt', 'asc'));
 
@@ -350,6 +430,34 @@
                     renderMessage(doc.data(), doc.id, container);
                 });
                 
+                // NOTIFICATION LOGIC
+                if (!isChatInitialLoad) {
+                    snapshot.docChanges().forEach(change => {
+                        if (change.type === 'added') {
+                            const msg = change.doc.data();
+                            
+                            // Debug logs to help user verify why notifications fire or don't fire
+                            console.log('[DEBUG] New message event:', msg.content);
+                            console.log('[DEBUG] Visibility:', document.visibilityState);
+                            console.log('[DEBUG] Has Focus:', document.hasFocus());
+                            console.log('[DEBUG] Is Muted:', isCurrentChatMuted);
+                            console.log('[DEBUG] Is My Message:', msg.senderId === currentUser.uid);
+
+                            // Check visibility AND mute status
+                            // Check if document is hidden OR not focused (covers side-by-side windows)
+                            if (!isCurrentChatMuted && msg.senderId !== currentUser.uid) {
+
+                                if (!isCurrentChatMuted) {
+                                    sendNotification(msg);
+                                }
+                            } else {
+                                console.log('[DEBUG] Notification skipped. (Tab visible+focused or Own Message)');
+                            }
+                        }
+                    });
+                }
+                
+                isChatInitialLoad = false;
                 container.scrollTop = container.scrollHeight;
             });
         }
@@ -436,7 +544,54 @@
             previewContent.innerHTML = '';
         }
 
-        // --- LINKIFY UTILITY ---
+        // --- UTILITY FUNCTIONS ---
+
+        function sendNotification(msg) {
+            // Check if permission is granted
+            if (Notification.permission !== "granted") {
+                console.log("[DEBUG] Notification permission not granted.");
+                return;
+            }
+            
+            // Determine body text based on message type
+            const body = msg.type === 'image' ? '📷 Sent an image' : 
+                         msg.type === 'file' ? '📎 Sent a file' : 
+                         msg.content;
+            
+            // Try to create notification
+            try {
+                const notification = new Notification(`New message from ${msg.senderName}`, {
+                    body: body,
+                    icon: `https://ui-avatars.com/api/?name=${msg.senderName}&background=random`,
+                    tag: 'chat-message' 
+                });
+                
+                notification.onclick = () => {
+                    window.focus();
+                    notification.close();
+                };
+            } catch (e) {
+                console.error("[DEBUG] Notification creation failed:", e);
+            }
+        }
+        
+        // Manual Test Function
+        window.testNotification = async () => {
+            if (Notification.permission === 'default') {
+                await Notification.requestPermission();
+            }
+            
+            if (Notification.permission === 'granted') {
+                new Notification("Test Notification", {
+                    body: "This is a test message to verify notifications work.",
+                    icon: "https://ui-avatars.com/api/?name=Test+User"
+                });
+                showToast("Notification sent! (Check background)", "success");
+            } else {
+                showToast("Notifications are denied or blocked.", "error");
+            }
+        }
+
         function linkify(text, isMe) {
             if (!text) return '';
             
@@ -559,6 +714,16 @@
             `;
             container.appendChild(div);
         }
+        onMessage(messaging, (payload) => {
+          console.log('[FCM] Foreground message:', payload);
+        
+          if (Notification.permission !== 'granted') return;
+        
+          new Notification(payload.notification?.title || 'New Message', {
+            body: payload.notification?.body,
+            icon: payload.notification?.icon
+          });
+        });
 
         window.sendMessage = async () => {
             const input = document.getElementById('message-input');
@@ -712,6 +877,37 @@
                 }, 1000);
             }
         }
+        async function registerForPushNotifications() {
+          try {
+            const permission = await Notification.requestPermission();
+                if (permission !== 'granted') {
+                  console.log('[FCM] Permission denied');
+                  return;
+                }
+            
+                const swReg = await registerServiceWorker();
+                if (!swReg) return;
+            
+                const token = await getToken(messaging, {
+                  vapidKey: "BNXnkuaVm9HAkn22sCwwuejVBDCuj5kqm1PWHdqZxgcR4ARzn2D4jXe_PYVqV5K957JivEUCHBsPSdEpdSU9TGA",
+                  serviceWorkerRegistration: swReg
+                });
+            
+                if (token && currentUser) {
+                  await updateDoc(
+                    doc(db, 'artifacts', APP_ID, 'public', 'data', 'users', currentUser.uid),
+                    {
+                      fcmToken: token,
+                      fcmUpdatedAt: serverTimestamp()
+                    }
+                  );
+            
+                  console.log('[FCM] Token saved');
+                }
+              } catch (err) {
+                console.error('[FCM] Registration failed', err);
+              }
+            }
 
         // --- SETTINGS & THEME ---
 
@@ -772,6 +968,8 @@
                 }
 
                 initChatListener();
+                registerForPushNotifications();
+
             } else {
                 currentUser = null;
                 loginView.classList.remove('hidden');
@@ -893,6 +1091,10 @@
                         <button onclick="openRenameModal()" class="text-gray-500 hover:text-blue-500 transition tooltip ml-2" title="Rename chat">
                             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
                         </button>
+                        <button id="toggle-notifications-btn" onclick="toggleChatMute()" class="text-gray-500 hover:text-blue-500 transition tooltip ml-2" title="Mute/Unmute">
+                            <!-- Icon set dynamically -->
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
+                        </button>
                     </div>
                 </div>
 
@@ -994,6 +1196,8 @@
             </div>
 
             <div class="mt-6 flex flex-col gap-3">
+                <button onclick="testNotification()" class="w-full border border-blue-200 text-blue-600 py-2 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20">Test Notification</button>
+
                 <button onclick="saveSettings()" class="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700">Save Changes</button>
                 
                 <button onclick="resetPassword()" class="w-full border border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-300 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
