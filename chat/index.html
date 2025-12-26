@@ -46,6 +46,10 @@
                 height: -webkit-fill-available;
             }
         }
+        /* Video Mirroring for Local User */
+        #localVideo {
+            transform: scaleX(-1);
+        }
     </style>
     <script type="module">
         // CLOUDINARY CONFIGURATION
@@ -74,8 +78,7 @@
         const db = getFirestore(app);
         const messaging = getMessaging(app);
 
-        
-        // Use a fixed App ID for the public data path requirement
+        // APP ID
         const APP_ID = "chat-v1"; 
 
         // STATE
@@ -83,7 +86,7 @@
         let currentChatId = null;
         let unsubscribeChats = null;
         let unsubscribeMessages = null;
-        let unsubscribeChatMetadata = null; // New listener for chat metadata
+        let unsubscribeChatMetadata = null;
         
         // NOTIFICATION STATE
         let isCurrentChatMuted = false;
@@ -93,13 +96,16 @@
         let editingMessage = null;
         // FILE UPLOAD STATE
         let selectedFile = null;
-        // CALL STATE
+        
+        // --- CALL STATE ---
         let pc = null;
         let localStream = null;
         let remoteStream = null;
+        let currentCallId = null;
         let unsubscribeCall = null;
         let unsubscribeAnswerCandidates = null;
         let unsubscribeOfferCandidates = null;
+        let candidateQueue = []; // Queue for ICE candidates to prevent race conditions
 
         const servers = {
             iceServers: [
@@ -130,7 +136,6 @@
         window.handleLogin = async (e) => {
             e.preventDefault();
             
-            // Request Notification Permission on Login Interaction
             if (Notification.permission === 'default') {
                 Notification.requestPermission();
             }
@@ -145,7 +150,6 @@
 
             try {
                 await signInWithEmailAndPassword(auth, email, password);
-                // Auth state listener handles the transition
             } catch (error) {
                 console.error(error);
                 errorMsg.textContent = "Invalid email or password.";
@@ -157,7 +161,6 @@
 
         window.handleLogout = () => {
             signOut(auth);
-            // Reset views on logout
             document.getElementById('sidebar-view').classList.remove('hidden');
             document.getElementById('chat-view-container').classList.add('hidden');
             document.getElementById('chat-view-container').classList.remove('flex');
@@ -170,7 +173,6 @@
             const snap = await getDoc(userRef);
 
             if (!snap.exists()) {
-                // Create default profile
                 await setDoc(userRef, {
                     email: user.email,
                     username: user.email.split('@')[0],
@@ -187,6 +189,7 @@
                 return data.theme || 'light';
             }
         }
+        
         async function registerServiceWorker() {
           if (!('serviceWorker' in navigator)) return;
         
@@ -228,8 +231,6 @@
                     
                     const otherEmails = chat.participants ? chat.participants.filter(p => p.email !== currentUser.email).map(p => p.username || p.email.split('@')[0]).join(', ') : "Unknown";
                     const displayName = chat.name || otherEmails || "New Chat";
-                    
-                    // Check if muted to show icon in list? (Optional, skipping for simplicity to keep list clean)
                     
                     const div = document.createElement('div');
                     div.className = `p-3 rounded-lg cursor-pointer flex items-center gap-3 transition-colors ${currentChatId === chatId ? 'bg-blue-100 dark:bg-blue-900' : 'hover:bg-gray-100 dark:hover:bg-gray-700'}`;
@@ -282,7 +283,7 @@
                     { email: currentUser.email, uid: currentUser.uid, username: currentUser.displayName || currentUser.email.split('@')[0] },
                     { email: targetUser.email, uid: targetUser.uid, username: targetUser.username || targetUser.email.split('@')[0] }
                 ],
-                mutedUserIds: [], // Initialize empty
+                mutedUserIds: [],
                 createdAt: serverTimestamp(),
                 updatedAt: serverTimestamp(),
                 lastMessage: "Chat created"
@@ -340,7 +341,6 @@
             closeModal('add-user-modal');
             emailInput.value = '';
             showToast("User added!", "success");
-            // Header will update automatically via listener now
         }
         
         window.openRenameModal = () => {
@@ -386,7 +386,6 @@
                     mutedUserIds: action
                 });
                 showToast(toastMsg, "success");
-                // State updates via onSnapshot
             } catch (e) {
                 console.error("Mute error", e);
                 showToast("Failed to update settings", "error");
@@ -396,11 +395,9 @@
         function updateMuteButtonUI() {
             const btn = document.getElementById('toggle-notifications-btn');
             if (isCurrentChatMuted) {
-                // Show Muted Icon (Bell Slash)
                 btn.innerHTML = `<svg class="w-6 h-6 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" clip-rule="evenodd"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2"></path></svg>`;
                 btn.title = "Unmute Chat";
             } else {
-                // Show Active Icon (Bell)
                 btn.innerHTML = `<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>`;
                 btn.title = "Mute Chat";
             }
@@ -411,9 +408,8 @@
             const sidebar = document.getElementById('sidebar-view');
             const chatView = document.getElementById('chat-view-container');
             
-            // Hide Sidebar, Show Chat (Mobile Only)
-            sidebar.classList.add('hidden', 'md:flex'); // Ensure flex is restored on desktop
-            sidebar.classList.remove('flex'); // Remove flex for mobile
+            sidebar.classList.add('hidden', 'md:flex'); 
+            sidebar.classList.remove('flex'); 
             
             chatView.classList.remove('hidden');
             chatView.classList.add('flex');
@@ -423,15 +419,11 @@
             const sidebar = document.getElementById('sidebar-view');
             const chatView = document.getElementById('chat-view-container');
             
-            // Show Sidebar, Hide Chat (Mobile Only)
             sidebar.classList.remove('hidden');
             sidebar.classList.add('flex');
             
             chatView.classList.add('hidden');
             chatView.classList.remove('flex');
-            
-            // Reset state
-            // currentChatId = null; // Optional: keep active if they return
         }
 
         function loadChat(chatId, chatData) {
@@ -449,32 +441,26 @@
             cancelReply();
             cancelAttachment();
             
-            // Switch view on mobile
             openMobileChat();
 
-            // CLEAN UP PREVIOUS LISTENERS
             if (unsubscribeMessages) unsubscribeMessages();
             if (unsubscribeChatMetadata) unsubscribeChatMetadata();
 
-            // 1. CHAT METADATA LISTENER (Real-time updates for Name & Mute status)
             const chatRef = doc(db, 'artifacts', APP_ID, 'public', 'data', 'chats', chatId);
             unsubscribeChatMetadata = onSnapshot(chatRef, (docSnap) => {
                 if (!docSnap.exists()) return;
                 const data = docSnap.data();
                 
-                // Update Name
                 const displayName = data.name || (data.participants 
                     ? data.participants.filter(p => p.uid !== currentUser.uid).map(p => p.username || p.email.split('@')[0]).join(', ')
                     : "Chat");
                 document.getElementById('chat-header-name').textContent = displayName;
 
-                // Update Mute Status
                 const mutedUsers = data.mutedUserIds || [];
                 isCurrentChatMuted = mutedUsers.includes(currentUser.uid);
                 updateMuteButtonUI();
             });
 
-            // 2. MESSAGES LISTENER
             let isChatInitialLoad = true;
             const messagesRef = collection(db, 'artifacts', APP_ID, 'public', 'data', 'chats', chatId, 'messages');
             const q = query(messagesRef, orderBy('createdAt', 'asc'));
@@ -487,28 +473,12 @@
                     renderMessage(doc.data(), doc.id, container);
                 });
                 
-                // NOTIFICATION LOGIC
                 if (!isChatInitialLoad) {
                     snapshot.docChanges().forEach(change => {
                         if (change.type === 'added') {
                             const msg = change.doc.data();
-                            
-                            // Debug logs to help user verify why notifications fire or don't fire
-                            console.log('[DEBUG] New message event:', msg.content);
-                            console.log('[DEBUG] Visibility:', document.visibilityState);
-                            console.log('[DEBUG] Has Focus:', document.hasFocus());
-                            console.log('[DEBUG] Is Muted:', isCurrentChatMuted);
-                            console.log('[DEBUG] Is My Message:', msg.senderId === currentUser.uid);
-
-                            // Check visibility AND mute status
-                            // Check if document is hidden OR not focused (covers side-by-side windows)
                             if (!isCurrentChatMuted && msg.senderId !== currentUser.uid) {
-
-                                if (!isCurrentChatMuted) {
-                                    sendNotification(msg);
-                                }
-                            } else {
-                                console.log('[DEBUG] Notification skipped. (Tab visible+focused or Own Message)');
+                                sendNotification(msg);
                             }
                         }
                     });
@@ -521,7 +491,6 @@
 
         window.setReplyTarget = (messageId, senderName, content) => {
             if (editingMessage) cancelEdit(); 
-            // Sanitize content for preview
             const sanitizedContent = content
                 .replace(/&/g, "&amp;")
                 .replace(/</g, "&lt;")
@@ -567,7 +536,6 @@
             
             selectedFile = file;
             
-            // Show preview
             previewPanel.classList.remove('hidden');
             const isImage = file.type.startsWith('image/');
             
@@ -592,7 +560,7 @@
                 `;
             }
             
-            e.target.value = ''; // reset so same file can be selected again
+            e.target.value = ''; 
         }
 
         window.cancelAttachment = () => {
@@ -601,10 +569,16 @@
             previewContent.innerHTML = '';
         }
 
-        // --- VIDEO CALL LOGIC (WebRTC) ---
+        // --- CUSTOM P2P VIDEO CALL LOGIC (WebRTC + Firestore) ---
 
         window.startVideoCall = async () => {
             if (!currentChatId) return;
+
+            // Check API support
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                showToast("Video calling not supported in this browser/context.", "error");
+                return;
+            }
             
             const chatRef = doc(db, 'artifacts', APP_ID, 'public', 'data', 'chats', currentChatId);
             const chatSnap = await getDoc(chatRef);
@@ -615,17 +589,42 @@
                 return;
             }
             
-            // Create call document
+            // 1. Initialize Call Doc
             const callsCollection = collection(db, 'artifacts', APP_ID, 'public', 'data', 'calls');
-            const callDocRef = await addDoc(callsCollection, { chatId: currentChatId });
-            const callId = callDocRef.id;
+            const callDocRef = await addDoc(callsCollection, { 
+                chatId: currentChatId,
+                status: 'active', // 'active' or 'ended'
+                initiatorId: currentUser.uid
+            });
+            currentCallId = callDocRef.id;
             
-            const offerCandidates = collection(db, 'artifacts', APP_ID, 'public', 'data', 'calls', callId, 'offerCandidates');
-            const answerCandidates = collection(db, 'artifacts', APP_ID, 'public', 'data', 'calls', callId, 'answerCandidates');
+            const offerCandidates = collection(db, 'artifacts', APP_ID, 'public', 'data', 'calls', currentCallId, 'offerCandidates');
+            const answerCandidates = collection(db, 'artifacts', APP_ID, 'public', 'data', 'calls', currentCallId, 'answerCandidates');
             
+            // 2. Setup Peer Connection
             pc = new RTCPeerConnection(servers);
             
-            localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+            // 3. Get Media (With Error Handling)
+            try {
+                localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+            } catch (err) {
+                console.error("Error accessing media devices:", err);
+                
+                // Friendly Error Messages
+                if (err.name === 'NotFoundError') {
+                    showToast("No camera or microphone found.", "error");
+                } else if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+                    showToast("Permission to use camera/mic was denied.", "error");
+                } else {
+                    showToast("Error accessing media devices: " + err.message, "error");
+                }
+
+                // Cleanup: Mark call as ended since we couldn't start media
+                await updateDoc(callDocRef, { status: 'ended' });
+                window.endCallLocalOnly();
+                return;
+            }
+
             localStream.getTracks().forEach((track) => {
                 pc.addTrack(track, localStream);
             });
@@ -634,18 +633,21 @@
             remoteStream = new MediaStream();
             document.getElementById('remoteVideo').srcObject = remoteStream;
             
+            // 4. Handle Tracks
             pc.ontrack = (event) => {
                 event.streams[0].getTracks().forEach((track) => {
                     remoteStream.addTrack(track);
                 });
             };
             
+            // 5. Handle ICE Candidates
             pc.onicecandidate = (event) => {
                 if (event.candidate) {
                     addDoc(offerCandidates, event.candidate.toJSON());
                 }
             };
             
+            // 6. Create Offer
             const offerDescription = await pc.createOffer();
             await pc.setLocalDescription(offerDescription);
             
@@ -655,48 +657,91 @@
             };
             await setDoc(callDocRef, { offer }, { merge: true });
             
-            // Listen for remote answer
+            // 7. Listen for Answer AND End signals
             unsubscribeCall = onSnapshot(callDocRef, (snapshot) => {
                 const data = snapshot.data();
+                
+                // Check if call ended
+                if (data?.status === 'ended') {
+                    showToast("Call ended", "info");
+                    window.endCallLocalOnly(); // Clean up without writing to DB again
+                    return;
+                }
+
+                // Check for answer
                 if (!pc.currentRemoteDescription && data?.answer) {
                     const answerDescription = new RTCSessionDescription(data.answer);
-                    pc.setRemoteDescription(answerDescription);
+                    pc.setRemoteDescription(answerDescription)
+                        .then(() => {
+                            // Process queued candidates
+                            while (candidateQueue.length > 0) {
+                                pc.addIceCandidate(candidateQueue.shift());
+                            }
+                        });
                 }
             });
             
-            // When answered, add candidate to peer connection
+            // 8. Listen for Remote ICE Candidates (Queue them if remote desc not set)
             unsubscribeAnswerCandidates = onSnapshot(answerCandidates, (snapshot) => {
                 snapshot.docChanges().forEach((change) => {
                     if (change.type === 'added') {
                         const candidate = new RTCIceCandidate(change.doc.data());
-                        pc.addIceCandidate(candidate);
+                        if (pc.remoteDescription) {
+                            pc.addIceCandidate(candidate);
+                        } else {
+                            candidateQueue.push(candidate);
+                        }
                     }
                 });
             });
             
-            // Send system message to chat
+            // 9. Send notification to chat
             const messagesRef = collection(db, 'artifacts', APP_ID, 'public', 'data', 'chats', currentChatId, 'messages');
             await addDoc(messagesRef, {
                 content: "Video call started",
                 type: 'call',
-                callId: callId,
+                callId: currentCallId,
                 senderId: currentUser.uid,
                 senderName: currentUser.displayName || currentUser.email.split('@')[0],
                 createdAt: serverTimestamp()
             });
 
-            // Show modal
+            // 10. Show UI
             document.getElementById('call-modal').classList.remove('hidden');
         }
 
         window.joinCall = async (callId) => {
+            currentCallId = callId;
+            
+            // Check API support
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                showToast("Video calling not supported in this browser/context.", "error");
+                return;
+            }
+
             const callDocRef = doc(db, 'artifacts', APP_ID, 'public', 'data', 'calls', callId);
             const offerCandidates = collection(db, 'artifacts', APP_ID, 'public', 'data', 'calls', callId, 'offerCandidates');
             const answerCandidates = collection(db, 'artifacts', APP_ID, 'public', 'data', 'calls', callId, 'answerCandidates');
             
             pc = new RTCPeerConnection(servers);
             
-            localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+            // Get Media (With Error Handling)
+            try {
+                localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+            } catch (err) {
+                console.error("Error accessing media devices:", err);
+                if (err.name === 'NotFoundError') {
+                    showToast("No camera or microphone found.", "error");
+                } else if (err.name === 'NotAllowedError') {
+                    showToast("Permission to use camera/mic was denied.", "error");
+                } else {
+                    showToast("Error accessing media devices: " + err.message, "error");
+                }
+                
+                window.endCallLocalOnly();
+                return;
+            }
+
             localStream.getTracks().forEach((track) => {
                 pc.addTrack(track, localStream);
             });
@@ -719,9 +764,20 @@
             
             const callSnap = await getDoc(callDocRef);
             const callData = callSnap.data();
+            
+            // Listen for End Call signal (active listener for callee)
+             unsubscribeCall = onSnapshot(callDocRef, (snapshot) => {
+                const data = snapshot.data();
+                if (data?.status === 'ended') {
+                    showToast("Call ended", "info");
+                    window.endCallLocalOnly();
+                }
+            });
+
             const offerDescription = callData.offer;
             
             await pc.setRemoteDescription(new RTCSessionDescription(offerDescription));
+            
             const answerDescription = await pc.createAnswer();
             await pc.setLocalDescription(answerDescription);
             
@@ -743,7 +799,23 @@
             document.getElementById('call-modal').classList.remove('hidden');
         }
 
-        window.endCall = () => {
+        // Triggered by the "End Call" button (Updates DB)
+        window.endCall = async () => {
+            if (currentCallId) {
+                // Notify other peer
+                try {
+                     await updateDoc(doc(db, 'artifacts', APP_ID, 'public', 'data', 'calls', currentCallId), {
+                         status: 'ended'
+                     });
+                } catch(e) {
+                    console.log("Error updating call status", e);
+                }
+            }
+            endCallLocalOnly();
+        }
+
+        // Internal Cleanup function (Does NOT update DB, used when receiving end signal)
+        window.endCallLocalOnly = () => {
             if (pc) {
                 pc.close();
                 pc = null;
@@ -772,6 +844,8 @@
                 unsubscribeOfferCandidates = null;
             }
             
+            currentCallId = null;
+            candidateQueue = [];
             document.getElementById('call-modal').classList.add('hidden');
         }
 
@@ -779,19 +853,13 @@
         // --- UTILITY FUNCTIONS ---
 
         function sendNotification(msg) {
-            // Check if permission is granted
-            if (Notification.permission !== "granted") {
-                console.log("[DEBUG] Notification permission not granted.");
-                return;
-            }
+            if (Notification.permission !== "granted") return;
             
-            // Determine body text based on message type
             const body = msg.type === 'image' ? '胴 Sent an image' : 
                          msg.type === 'file' ? '梼 Sent a file' : 
                          msg.type === 'call' ? 'T Incoming Video Call' :
                          msg.content;
             
-            // Try to create notification
             try {
                 const notification = new Notification(`New message from ${msg.senderName}`, {
                     body: body,
@@ -804,11 +872,10 @@
                     notification.close();
                 };
             } catch (e) {
-                console.error("[DEBUG] Notification creation failed:", e);
+                console.error("Notification failed", e);
             }
         }
         
-        // Manual Test Function
         window.testNotification = async () => {
             if (Notification.permission === 'default') {
                 await Notification.requestPermission();
@@ -819,7 +886,7 @@
                     body: "This is a test message to verify notifications work.",
                     icon: "https://ui-avatars.com/api/?name=Test+User"
                 });
-                showToast("Notification sent! (Check background)", "success");
+                showToast("Notification sent!", "success");
             } else {
                 showToast("Notifications are denied or blocked.", "error");
             }
@@ -828,7 +895,6 @@
         function linkify(text, isMe) {
             if (!text) return '';
             
-            // 1. Escape HTML Characters to prevent XSS
             const escaped = text
                 .replace(/&/g, "&amp;")
                 .replace(/</g, "&lt;")
@@ -836,12 +902,9 @@
                 .replace(/"/g, "&quot;")
                 .replace(/'/g, "&#039;");
 
-            // 2. Regex for URL recognition (http, https, ftp, file)
-            // Matches protocol://domain... until space or end of string
             const urlRegex = /(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig;
             
             return escaped.replace(urlRegex, (url) => {
-                // Style links differently based on who sent the message (white vs blue)
                 const linkClass = isMe 
                     ? 'underline text-white font-medium hover:opacity-80' 
                     : 'underline text-blue-600 dark:text-blue-400 hover:opacity-80';
@@ -860,14 +923,12 @@
             let contentHtml = '';
             let captionHtml = '';
             
-            // Helper for caption logic
             if (msg.content && msg.content !== 'Sent an image' && msg.content !== 'Sent a file' && msg.type !== 'call') {
                 const linkedContent = linkify(msg.content, isMe);
                 captionHtml = `<p class="mt-2 text-sm ${isMe ? 'text-white/90' : 'text-gray-600 dark:text-gray-300'} whitespace-pre-wrap border-t ${isMe ? 'border-white/20' : 'border-gray-300 dark:border-gray-600'} pt-2">${linkedContent}</p>`;
             }
 
             if (msg.type === 'text') {
-                // Use linkify function here
                 contentHtml = `<p class="whitespace-pre-wrap">${linkify(msg.content, isMe)}</p>`;
             } else if (msg.type === 'image') {
                 contentHtml = `
@@ -911,7 +972,6 @@
             
             let replyHtml = '';
             if (msg.replyTo) {
-                // Also escape reply content content to be safe
                 const safeReplyContent = msg.replyTo.content
                     .replace(/&/g, "&amp;")
                     .replace(/</g, "&lt;")
@@ -966,10 +1026,7 @@
             container.appendChild(div);
         }
         onMessage(messaging, (payload) => {
-          console.log('[FCM] Foreground message:', payload);
-        
           if (Notification.permission !== 'granted') return;
-        
           new Notification(payload.notification?.title || 'New Message', {
             body: payload.notification?.body,
             icon: payload.notification?.icon
@@ -980,19 +1037,16 @@
             const input = document.getElementById('message-input');
             const text = input.value.trim();
             
-            // Don't send if empty AND no file
             if ((!text && !selectedFile) || !currentChatId) return;
             
             try {
-                // If there's a file, handle upload logic
                 if (selectedFile) {
                     await uploadAndSend(selectedFile, text);
                     input.value = '';
                     cancelAttachment();
-                    return; // Done
+                    return; 
                 }
 
-                // If text only...
                 if (editingMessage) {
                     const messageRef = doc(db, 'artifacts', APP_ID, 'public', 'data', 'chats', currentChatId, 'messages', editingMessage.id);
                     await updateDoc(messageRef, {
@@ -1044,7 +1098,6 @@
                 const item = items[index];
                 if (item.kind === 'file') {
                     const blob = item.getAsFile();
-                    // Mock event structure for handleFileUpload
                     window.handleFileUpload({ target: { files: [blob], value: '' } });
                 }
             }
@@ -1060,7 +1113,6 @@
         async function uploadAndSend(file, caption) {
             if (!currentChatId) return;
             
-            // Show progress bar
             progressContainer.classList.remove('hidden');
             progressBar.style.width = '0%';
             
@@ -1070,7 +1122,6 @@
             formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
 
             try {
-                // XHR for Progress Tracking
                 const url = await new Promise((resolve, reject) => {
                     const xhr = new XMLHttpRequest();
                     xhr.open('POST', `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/upload`, true);
@@ -1095,11 +1146,9 @@
                     xhr.send(formData);
                 });
 
-                // Default captions if none provided
                 const defaultText = isImage ? 'Sent an image' : 'Sent a file';
                 const finalContent = caption || defaultText;
 
-                // Save to Firestore
                 const messagesRef = collection(db, 'artifacts', APP_ID, 'public', 'data', 'chats', currentChatId, 'messages');
                 await addDoc(messagesRef, {
                     content: finalContent,
@@ -1121,7 +1170,6 @@
                 console.error("Upload failed", e);
                 showToast("Upload failed", "error");
             } finally {
-                // Hide progress bar
                 setTimeout(() => {
                     progressContainer.classList.add('hidden');
                     progressBar.style.width = '0%';
@@ -1131,10 +1179,7 @@
         async function registerForPushNotifications() {
           try {
             const permission = await Notification.requestPermission();
-                if (permission !== 'granted') {
-                  console.log('[FCM] Permission denied');
-                  return;
-                }
+                if (permission !== 'granted') return;
             
                 const swReg = await registerServiceWorker();
                 if (!swReg) return;
@@ -1152,8 +1197,6 @@
                       fcmUpdatedAt: serverTimestamp()
                     }
                   );
-            
-                  console.log('[FCM] Token saved');
                 }
               } catch (err) {
                 console.error('[FCM] Registration failed', err);
@@ -1473,14 +1516,30 @@
     </div>
     
     <!-- Video Call Modal -->
-    <div id="call-modal" class="hidden fixed inset-0 z-[60] bg-black/90 flex flex-col items-center justify-center">
-        <div class="w-full h-full flex flex-col md:flex-row gap-4 p-4">
-            <video id="localVideo" autoplay playsinline muted class="w-full h-1/2 md:h-full md:w-1/2 rounded-lg bg-black"></video>
-            <video id="remoteVideo" autoplay playsinline class="w-full h-1/2 md:h-full md:w-1/2 rounded-lg bg-black"></video>
+    <div id="call-modal" class="hidden fixed inset-0 z-[60] bg-black/95 flex flex-col items-center justify-center p-4">
+        <div class="w-full h-full max-w-6xl mx-auto flex flex-col md:flex-row gap-4 items-center justify-center relative">
+            
+            <!-- Remote Video (Large) -->
+            <div class="w-full md:w-2/3 h-2/3 md:h-full bg-gray-900 rounded-2xl overflow-hidden shadow-2xl relative border border-gray-800">
+                <video id="remoteVideo" autoplay playsinline class="w-full h-full object-cover"></video>
+                <div class="absolute bottom-4 left-4 bg-black/50 px-3 py-1 rounded text-white text-sm">Remote</div>
+            </div>
+
+            <!-- Local Video (Small on Mobile, Side on Desktop) -->
+            <div class="w-1/3 md:w-1/3 aspect-video md:aspect-auto md:h-full bg-gray-800 rounded-2xl overflow-hidden shadow-xl border border-gray-700 relative">
+                <video id="localVideo" autoplay playsinline muted class="w-full h-full object-cover"></video>
+                <div class="absolute bottom-4 left-4 bg-black/50 px-3 py-1 rounded text-white text-sm">You</div>
+            </div>
+
         </div>
-        <button onclick="endCall()" class="absolute top-4 right-4 bg-red-600 hover:bg-red-700 text-white p-3 rounded-full shadow-lg z-[70] transition-transform hover:scale-110">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-        </button>
+        
+        <!-- Controls -->
+        <div class="absolute bottom-8 left-0 right-0 flex justify-center gap-4">
+            <button onclick="endCall()" class="bg-red-600 hover:bg-red-700 text-white px-8 py-4 rounded-full shadow-lg transition-transform hover:scale-105 flex items-center gap-2 font-bold">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 8l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2M5 3a2 2 0 00-2 2v1c0 8.284 6.716 15 15 15h1a2 2 0 002-2v-3.28a1 1 0 00-.684-.948l-5-1.08a1 1 0 00-1.056.544l-1.204 1.126a12.92 12.92 0 01-4.706-4.706l1.126-1.204a1 1 0 00.544-1.056l-1.08-5A1 1 0 008 3H5z"></path></svg>
+                End Call
+            </button>
+        </div>
     </div>
 
 </body>
