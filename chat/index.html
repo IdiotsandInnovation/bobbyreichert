@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Chat | Bobby Reichert</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src='https://meet.jit.si/external_api.js'></script>
     <script>
         tailwind.config = {
             darkMode: 'class',
@@ -95,7 +94,21 @@
         // FILE UPLOAD STATE
         let selectedFile = null;
         // CALL STATE
-        let jitsiApi = null;
+        let pc = null;
+        let localStream = null;
+        let remoteStream = null;
+        let unsubscribeCall = null;
+        let unsubscribeAnswerCandidates = null;
+        let unsubscribeOfferCandidates = null;
+
+        const servers = {
+            iceServers: [
+                {
+                    urls: ['stun:stun1.l.google.com:19302', 'stun:stun2.l.google.com:19302']
+                }
+            ],
+            iceCandidatePoolSize: 10,
+        };
 
         // DOM ELEMENTS
         const loginView = document.getElementById('login-view');
@@ -588,77 +601,178 @@
             previewContent.innerHTML = '';
         }
 
-        // --- VIDEO CALL LOGIC (JITSI) ---
+        // --- VIDEO CALL LOGIC (WebRTC) ---
 
         window.startVideoCall = async () => {
             if (!currentChatId) return;
             
-            // Create a unique room name
-            const roomId = `chat_app_${currentChatId}_${Date.now()}`;
+            const chatRef = doc(db, 'artifacts', APP_ID, 'public', 'data', 'chats', currentChatId);
+            const chatSnap = await getDoc(chatRef);
+            const chatData = chatSnap.data();
+            
+            if (chatData.userIds.length > 2) {
+                showToast("Video calls are currently supported for 1:1 chats only", "error");
+                return;
+            }
+            
+            // Create call document
+            const callsCollection = collection(db, 'artifacts', APP_ID, 'public', 'data', 'calls');
+            const callDocRef = await addDoc(callsCollection, { chatId: currentChatId });
+            const callId = callDocRef.id;
+            
+            const offerCandidates = collection(db, 'artifacts', APP_ID, 'public', 'data', 'calls', callId, 'offerCandidates');
+            const answerCandidates = collection(db, 'artifacts', APP_ID, 'public', 'data', 'calls', callId, 'answerCandidates');
+            
+            pc = new RTCPeerConnection(servers);
+            
+            localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+            localStream.getTracks().forEach((track) => {
+                pc.addTrack(track, localStream);
+            });
+            document.getElementById('localVideo').srcObject = localStream;
+            
+            remoteStream = new MediaStream();
+            document.getElementById('remoteVideo').srcObject = remoteStream;
+            
+            pc.ontrack = (event) => {
+                event.streams[0].getTracks().forEach((track) => {
+                    remoteStream.addTrack(track);
+                });
+            };
+            
+            pc.onicecandidate = (event) => {
+                if (event.candidate) {
+                    addDoc(offerCandidates, event.candidate.toJSON());
+                }
+            };
+            
+            const offerDescription = await pc.createOffer();
+            await pc.setLocalDescription(offerDescription);
+            
+            const offer = {
+                sdp: offerDescription.sdp,
+                type: offerDescription.type,
+            };
+            await setDoc(callDocRef, { offer }, { merge: true });
+            
+            // Listen for remote answer
+            unsubscribeCall = onSnapshot(callDocRef, (snapshot) => {
+                const data = snapshot.data();
+                if (!pc.currentRemoteDescription && data?.answer) {
+                    const answerDescription = new RTCSessionDescription(data.answer);
+                    pc.setRemoteDescription(answerDescription);
+                }
+            });
+            
+            // When answered, add candidate to peer connection
+            unsubscribeAnswerCandidates = onSnapshot(answerCandidates, (snapshot) => {
+                snapshot.docChanges().forEach((change) => {
+                    if (change.type === 'added') {
+                        const candidate = new RTCIceCandidate(change.doc.data());
+                        pc.addIceCandidate(candidate);
+                    }
+                });
+            });
             
             // Send system message to chat
             const messagesRef = collection(db, 'artifacts', APP_ID, 'public', 'data', 'chats', currentChatId, 'messages');
             await addDoc(messagesRef, {
                 content: "Video call started",
                 type: 'call',
-                roomId: roomId,
+                callId: callId,
                 senderId: currentUser.uid,
                 senderName: currentUser.displayName || currentUser.email.split('@')[0],
                 createdAt: serverTimestamp()
             });
 
-            // Immediately join the call as the initiator
-            joinCall(roomId);
+            // Show modal
+            document.getElementById('call-modal').classList.remove('hidden');
         }
 
-        window.joinCall = (roomId) => {
-            const modal = document.getElementById('call-modal');
-            const container = document.getElementById('jitsi-container');
+        window.joinCall = async (callId) => {
+            const callDocRef = doc(db, 'artifacts', APP_ID, 'public', 'data', 'calls', callId);
+            const offerCandidates = collection(db, 'artifacts', APP_ID, 'public', 'data', 'calls', callId, 'offerCandidates');
+            const answerCandidates = collection(db, 'artifacts', APP_ID, 'public', 'data', 'calls', callId, 'answerCandidates');
             
-            modal.classList.remove('hidden');
+            pc = new RTCPeerConnection(servers);
             
-            const domain = 'meet.jit.si';
-            const options = {
-                roomName: roomId,
-                width: '100%',
-                height: '100%',
-                parentNode: container,
-                userInfo: {
-                    displayName: currentUser.displayName || currentUser.email.split('@')[0]
-                },
-                configOverwrite: { 
-                    startWithAudioMuted: false, 
-                    startWithVideoMuted: false 
-                },
-                interfaceConfigOverwrite: {
-                    TOOLBAR_BUTTONS: [
-                        'microphone', 'camera', 'closedcaptions', 'desktop', 'fullscreen',
-                        'fodeviceselection', 'hangup', 'profile', 'chat', 'recording',
-                        'livestreaming', 'etherpad', 'sharedvideo', 'settings', 'raisehand',
-                        'videoquality', 'filmstrip', 'invite', 'feedback', 'stats', 'shortcuts',
-                        'tileview', 'videobackgroundblur', 'download', 'help', 'mute-everyone',
-                        'security'
-                    ]
+            localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+            localStream.getTracks().forEach((track) => {
+                pc.addTrack(track, localStream);
+            });
+            document.getElementById('localVideo').srcObject = localStream;
+            
+            remoteStream = new MediaStream();
+            document.getElementById('remoteVideo').srcObject = remoteStream;
+            
+            pc.ontrack = (event) => {
+                event.streams[0].getTracks().forEach((track) => {
+                    remoteStream.addTrack(track);
+                });
+            };
+            
+            pc.onicecandidate = (event) => {
+                if (event.candidate) {
+                    addDoc(answerCandidates, event.candidate.toJSON());
                 }
             };
             
-            jitsiApi = new JitsiMeetExternalAPI(domain, options);
+            const callSnap = await getDoc(callDocRef);
+            const callData = callSnap.data();
+            const offerDescription = callData.offer;
             
-            // Handle hangup event from Jitsi interface
-            jitsiApi.addEventListeners({
-                videoConferenceLeft: function () {
-                    endCall();
-                }
+            await pc.setRemoteDescription(new RTCSessionDescription(offerDescription));
+            const answerDescription = await pc.createAnswer();
+            await pc.setLocalDescription(answerDescription);
+            
+            const answer = {
+                type: answerDescription.type,
+                sdp: answerDescription.sdp,
+            };
+            await updateDoc(callDocRef, { answer });
+            
+            unsubscribeOfferCandidates = onSnapshot(offerCandidates, (snapshot) => {
+                snapshot.docChanges().forEach((change) => {
+                    if (change.type === 'added') {
+                        const data = change.doc.data();
+                        pc.addIceCandidate(new RTCIceCandidate(data));
+                    }
+                });
             });
+            
+            document.getElementById('call-modal').classList.remove('hidden');
         }
 
         window.endCall = () => {
-            if (jitsiApi) {
-                jitsiApi.dispose();
-                jitsiApi = null;
+            if (pc) {
+                pc.close();
+                pc = null;
             }
+            if (localStream) {
+                localStream.getTracks().forEach(track => track.stop());
+                localStream = null;
+            }
+            if (remoteStream) {
+                remoteStream.getTracks().forEach(track => track.stop());
+                remoteStream = null;
+            }
+            document.getElementById('localVideo').srcObject = null;
+            document.getElementById('remoteVideo').srcObject = null;
+            
+            if (unsubscribeCall) {
+                unsubscribeCall();
+                unsubscribeCall = null;
+            }
+            if (unsubscribeAnswerCandidates) {
+                unsubscribeAnswerCandidates();
+                unsubscribeAnswerCandidates = null;
+            }
+            if (unsubscribeOfferCandidates) {
+                unsubscribeOfferCandidates();
+                unsubscribeOfferCandidates = null;
+            }
+            
             document.getElementById('call-modal').classList.add('hidden');
-            document.getElementById('jitsi-container').innerHTML = '';
         }
 
 
@@ -787,7 +901,7 @@
                             <span class="font-bold">Video Call</span>
                         </div>
                         <p class="text-sm opacity-90 text-center mb-2">Click below to join the call</p>
-                        <button onclick="joinCall('${msg.roomId}')" class="w-full bg-white text-blue-600 dark:bg-gray-800 dark:text-blue-400 font-bold py-2 px-4 rounded shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition flex items-center justify-center gap-2">
+                        <button onclick="joinCall('${msg.callId}')" class="w-full bg-white text-blue-600 dark:bg-gray-800 dark:text-blue-400 font-bold py-2 px-4 rounded shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition flex items-center justify-center gap-2">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
                             Join Call
                         </button>
@@ -1360,7 +1474,10 @@
     
     <!-- Video Call Modal -->
     <div id="call-modal" class="hidden fixed inset-0 z-[60] bg-black/90 flex flex-col items-center justify-center">
-        <div id="jitsi-container" class="w-full h-full"></div>
+        <div class="w-full h-full flex flex-col md:flex-row gap-4 p-4">
+            <video id="localVideo" autoplay playsinline muted class="w-full h-1/2 md:h-full md:w-1/2 rounded-lg bg-black"></video>
+            <video id="remoteVideo" autoplay playsinline class="w-full h-1/2 md:h-full md:w-1/2 rounded-lg bg-black"></video>
+        </div>
         <button onclick="endCall()" class="absolute top-4 right-4 bg-red-600 hover:bg-red-700 text-white p-3 rounded-full shadow-lg z-[70] transition-transform hover:scale-110">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
         </button>
