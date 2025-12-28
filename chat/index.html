@@ -50,6 +50,27 @@
         #localVideo {
             transform: scaleX(-1);
         }
+        
+        /* Video Grid Layouts */
+        .video-grid {
+            display: grid;
+            gap: 1rem;
+            width: 100%;
+            height: 100%;
+        }
+        .grid-1 { grid-template-columns: 1fr; }
+        .grid-2 { grid-template-columns: 1fr 1fr; }
+        .grid-3 { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; }
+        .grid-3 > :first-child { grid-column: 1 / -1; } /* First video takes full width on top */
+        .grid-4 { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; }
+        
+        @media (max-width: 768px) {
+            .grid-2, .grid-3, .grid-4 {
+                grid-template-columns: 1fr;
+                grid-template-rows: repeat(auto-fit, minmax(0, 1fr));
+            }
+            .grid-3 > :first-child { grid-column: auto; }
+        }
     </style>
     <script type="module">
         // CLOUDINARY CONFIGURATION
@@ -58,7 +79,7 @@
 
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
-        import { getFirestore, collection, doc, setDoc, getDoc, getDocs, addDoc, onSnapshot, query, where, orderBy, updateDoc, arrayUnion, arrayRemove, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
+        import { getFirestore, collection, doc, setDoc, getDoc, getDocs, addDoc, onSnapshot, query, where, orderBy, updateDoc, arrayUnion, arrayRemove, serverTimestamp, deleteDoc } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
         import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-messaging.js";
 
         
@@ -97,15 +118,16 @@
         // FILE UPLOAD STATE
         let selectedFile = null;
         
-        // --- CALL STATE ---
-        let pc = null;
+        // --- CALL STATE (GROUP SUPPORT) ---
+        let peerConnections = {}; // Map: userId -> RTCPeerConnection
         let localStream = null;
-        let remoteStream = null;
+        let remoteStreams = {}; // Map: userId -> MediaStream
         let currentCallId = null;
-        let unsubscribeCall = null;
-        let unsubscribeAnswerCandidates = null;
-        let unsubscribeOfferCandidates = null;
-        let candidateQueue = []; // Queue for ICE candidates to prevent race conditions
+        let unsubscribeSignals = null;
+        let unsubscribeCallMeta = null;
+        let isAudioEnabled = true;
+        let isVideoEnabled = true;
+        let isScreenSharing = false;
 
         const servers = {
             iceServers: [
@@ -489,13 +511,10 @@
             });
         }
 
+        // --- ATTACHMENT / REPLY / EDIT LOGIC STAYS SAME ---
         window.setReplyTarget = (messageId, senderName, content) => {
             if (editingMessage) cancelEdit(); 
-            const sanitizedContent = content
-                .replace(/&/g, "&amp;")
-                .replace(/</g, "&lt;")
-                .replace(/>/g, "&gt;");
-            
+            const sanitizedContent = content.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
             replyingToMessage = { id: messageId, senderName: senderName, content: content };
             replyContent.innerHTML = `Replying to **${senderName}**: ${sanitizedContent.length > 50 ? sanitizedContent.substring(0, 50) + '...' : sanitizedContent}`;
             replyPanel.classList.remove('hidden');
@@ -510,10 +529,8 @@
         
         window.setEditTarget = (messageId, content) => {
             if (replyingToMessage) cancelReply(); 
-            
             editingMessage = { id: messageId };
             messageInput.value = content;
-            
             document.getElementById('send-button-icon').style.display = 'none';
             document.getElementById('edit-button-icon').style.display = 'block';
             document.getElementById('cancel-edit-button').style.display = 'block';
@@ -528,38 +545,21 @@
             document.getElementById('cancel-edit-button').style.display = 'none';
         }
 
-        // --- ATTACHMENT LOGIC ---
-        
         window.handleFileUpload = (e) => {
             const file = e.target.files[0];
             if (!file) return;
-            
             selectedFile = file;
-            
             previewPanel.classList.remove('hidden');
             const isImage = file.type.startsWith('image/');
-            
             if (isImage) {
                 const reader = new FileReader();
                 reader.onload = function(e) {
-                    previewContent.innerHTML = `
-                        <div class="relative group">
-                            <img src="${e.target.result}" class="h-20 w-auto rounded border border-gray-300 dark:border-gray-600">
-                            <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-all rounded"></div>
-                        </div>
-                        <span class="text-xs text-gray-500 mt-1 block max-w-[150px] truncate">${file.name}</span>
-                    `;
+                    previewContent.innerHTML = `<div class="relative group"><img src="${e.target.result}" class="h-20 w-auto rounded border border-gray-300 dark:border-gray-600"></div><span class="text-xs text-gray-500 mt-1 block max-w-[150px] truncate">${file.name}</span>`;
                 }
                 reader.readAsDataURL(file);
             } else {
-                previewContent.innerHTML = `
-                    <div class="h-20 w-20 flex items-center justify-center bg-gray-100 dark:bg-gray-700 rounded border border-gray-300 dark:border-gray-600">
-                        <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-                    </div>
-                    <span class="text-xs text-gray-500 mt-1 block max-w-[150px] truncate">${file.name}</span>
-                `;
+                previewContent.innerHTML = `<div class="h-20 w-20 flex items-center justify-center bg-gray-100 dark:bg-gray-700 rounded border border-gray-300 dark:border-gray-600"><svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg></div><span class="text-xs text-gray-500 mt-1 block max-w-[150px] truncate">${file.name}</span>`;
             }
-            
             e.target.value = ''; 
         }
 
@@ -569,136 +569,38 @@
             previewContent.innerHTML = '';
         }
 
-        // --- CUSTOM P2P VIDEO CALL LOGIC (WebRTC + Firestore) ---
+        // --- GROUP VIDEO CALL LOGIC (Mesh Topology) ---
+        
+        async function getLocalStream() {
+            if (localStream) return localStream;
+            try {
+                localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+                document.getElementById('localVideo').srcObject = localStream;
+                return localStream;
+            } catch (err) {
+                console.error("Media Error:", err);
+                showToast("Could not access camera/microphone", "error");
+                throw err;
+            }
+        }
 
         window.startVideoCall = async () => {
             if (!currentChatId) return;
-
-            // Check API support
-            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-                showToast("Video calling not supported in this browser/context.", "error");
-                return;
-            }
             
-            const chatRef = doc(db, 'artifacts', APP_ID, 'public', 'data', 'chats', currentChatId);
-            const chatSnap = await getDoc(chatRef);
-            const chatData = chatSnap.data();
-            
-            if (chatData.userIds.length > 2) {
-                showToast("Video calls are currently supported for 1:1 chats only", "error");
-                return;
-            }
-            
-            // 1. Initialize Call Doc
+            // 1. Create Call Document
             const callsCollection = collection(db, 'artifacts', APP_ID, 'public', 'data', 'calls');
             const callDocRef = await addDoc(callsCollection, { 
                 chatId: currentChatId,
-                status: 'active', // 'active' or 'ended'
-                initiatorId: currentUser.uid
+                status: 'active',
+                participants: [currentUser.uid], // Start with self
+                createdAt: serverTimestamp()
             });
             currentCallId = callDocRef.id;
-            
-            const offerCandidates = collection(db, 'artifacts', APP_ID, 'public', 'data', 'calls', currentCallId, 'offerCandidates');
-            const answerCandidates = collection(db, 'artifacts', APP_ID, 'public', 'data', 'calls', currentCallId, 'answerCandidates');
-            
-            // 2. Setup Peer Connection
-            pc = new RTCPeerConnection(servers);
-            
-            // 3. Get Media (With Error Handling)
-            try {
-                localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-            } catch (err) {
-                console.error("Error accessing media devices:", err);
-                
-                // Friendly Error Messages
-                if (err.name === 'NotFoundError') {
-                    showToast("No camera or microphone found.", "error");
-                } else if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
-                    showToast("Permission to use camera/mic was denied.", "error");
-                } else {
-                    showToast("Error accessing media devices: " + err.message, "error");
-                }
 
-                // Cleanup: Mark call as ended since we couldn't start media
-                await updateDoc(callDocRef, { status: 'ended' });
-                window.endCallLocalOnly();
-                return;
-            }
-
-            localStream.getTracks().forEach((track) => {
-                pc.addTrack(track, localStream);
-            });
-            document.getElementById('localVideo').srcObject = localStream;
-            
-            remoteStream = new MediaStream();
-            document.getElementById('remoteVideo').srcObject = remoteStream;
-            
-            // 4. Handle Tracks
-            pc.ontrack = (event) => {
-                event.streams[0].getTracks().forEach((track) => {
-                    remoteStream.addTrack(track);
-                });
-            };
-            
-            // 5. Handle ICE Candidates
-            pc.onicecandidate = (event) => {
-                if (event.candidate) {
-                    addDoc(offerCandidates, event.candidate.toJSON());
-                }
-            };
-            
-            // 6. Create Offer
-            const offerDescription = await pc.createOffer();
-            await pc.setLocalDescription(offerDescription);
-            
-            const offer = {
-                sdp: offerDescription.sdp,
-                type: offerDescription.type,
-            };
-            await setDoc(callDocRef, { offer }, { merge: true });
-            
-            // 7. Listen for Answer AND End signals
-            unsubscribeCall = onSnapshot(callDocRef, (snapshot) => {
-                const data = snapshot.data();
-                
-                // Check if call ended
-                if (data?.status === 'ended') {
-                    showToast("Call ended", "info");
-                    window.endCallLocalOnly(); // Clean up without writing to DB again
-                    return;
-                }
-
-                // Check for answer
-                if (!pc.currentRemoteDescription && data?.answer) {
-                    const answerDescription = new RTCSessionDescription(data.answer);
-                    pc.setRemoteDescription(answerDescription)
-                        .then(() => {
-                            // Process queued candidates
-                            while (candidateQueue.length > 0) {
-                                pc.addIceCandidate(candidateQueue.shift());
-                            }
-                        });
-                }
-            });
-            
-            // 8. Listen for Remote ICE Candidates (Queue them if remote desc not set)
-            unsubscribeAnswerCandidates = onSnapshot(answerCandidates, (snapshot) => {
-                snapshot.docChanges().forEach((change) => {
-                    if (change.type === 'added') {
-                        const candidate = new RTCIceCandidate(change.doc.data());
-                        if (pc.remoteDescription) {
-                            pc.addIceCandidate(candidate);
-                        } else {
-                            candidateQueue.push(candidate);
-                        }
-                    }
-                });
-            });
-            
-            // 9. Send notification to chat
+            // 2. Notify Chat
             const messagesRef = collection(db, 'artifacts', APP_ID, 'public', 'data', 'chats', currentChatId, 'messages');
             await addDoc(messagesRef, {
-                content: "Video call started",
+                content: "Group call started",
                 type: 'call',
                 callId: currentCallId,
                 senderId: currentUser.uid,
@@ -706,151 +608,330 @@
                 createdAt: serverTimestamp()
             });
 
-            // 10. Show UI
-            document.getElementById('call-modal').classList.remove('hidden');
+            await joinCall(currentCallId);
         }
 
         window.joinCall = async (callId) => {
             currentCallId = callId;
+            document.getElementById('call-modal').classList.remove('hidden');
             
-            // Check API support
-            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-                showToast("Video calling not supported in this browser/context.", "error");
-                return;
-            }
-
-            const callDocRef = doc(db, 'artifacts', APP_ID, 'public', 'data', 'calls', callId);
-            const offerCandidates = collection(db, 'artifacts', APP_ID, 'public', 'data', 'calls', callId, 'offerCandidates');
-            const answerCandidates = collection(db, 'artifacts', APP_ID, 'public', 'data', 'calls', callId, 'answerCandidates');
-            
-            pc = new RTCPeerConnection(servers);
-            
-            // Get Media (With Error Handling)
+            // 1. Get Local Stream
             try {
-                localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-            } catch (err) {
-                console.error("Error accessing media devices:", err);
-                if (err.name === 'NotFoundError') {
-                    showToast("No camera or microphone found.", "error");
-                } else if (err.name === 'NotAllowedError') {
-                    showToast("Permission to use camera/mic was denied.", "error");
-                } else {
-                    showToast("Error accessing media devices: " + err.message, "error");
-                }
-                
-                window.endCallLocalOnly();
+                await getLocalStream();
+            } catch (e) {
+                window.endCall();
                 return;
             }
-
-            localStream.getTracks().forEach((track) => {
-                pc.addTrack(track, localStream);
-            });
-            document.getElementById('localVideo').srcObject = localStream;
             
-            remoteStream = new MediaStream();
-            document.getElementById('remoteVideo').srcObject = remoteStream;
-            
-            pc.ontrack = (event) => {
-                event.streams[0].getTracks().forEach((track) => {
-                    remoteStream.addTrack(track);
-                });
-            };
-            
-            pc.onicecandidate = (event) => {
-                if (event.candidate) {
-                    addDoc(answerCandidates, event.candidate.toJSON());
-                }
-            };
-            
-            const callSnap = await getDoc(callDocRef);
-            const callData = callSnap.data();
-            
-            // Listen for End Call signal (active listener for callee)
-             unsubscribeCall = onSnapshot(callDocRef, (snapshot) => {
-                const data = snapshot.data();
-                if (data?.status === 'ended') {
-                    showToast("Call ended", "info");
-                    window.endCallLocalOnly();
-                }
+            // 2. Add self to participants if not present
+            const callRef = doc(db, 'artifacts', APP_ID, 'public', 'data', 'calls', callId);
+            await updateDoc(callRef, {
+                participants: arrayUnion(currentUser.uid)
             });
 
-            const offerDescription = callData.offer;
+            // 3. Listen to Signaling Channel
+            const signalsRef = collection(db, 'artifacts', APP_ID, 'public', 'data', 'calls', callId, 'signals');
+            const q = query(signalsRef, where('to', '==', currentUser.uid));
             
-            await pc.setRemoteDescription(new RTCSessionDescription(offerDescription));
-            
-            const answerDescription = await pc.createAnswer();
-            await pc.setLocalDescription(answerDescription);
-            
-            const answer = {
-                type: answerDescription.type,
-                sdp: answerDescription.sdp,
-            };
-            await updateDoc(callDocRef, { answer });
-            
-            unsubscribeOfferCandidates = onSnapshot(offerCandidates, (snapshot) => {
-                snapshot.docChanges().forEach((change) => {
+            unsubscribeSignals = onSnapshot(q, async (snapshot) => {
+                snapshot.docChanges().forEach(async (change) => {
                     if (change.type === 'added') {
-                        const data = change.doc.data();
-                        pc.addIceCandidate(new RTCIceCandidate(data));
+                        const signal = change.doc.data();
+                        await handleSignal(signal, change.doc.id);
                     }
                 });
             });
+
+            // 4. Create Offers for EXISTING participants
+            // We need to fetch the call doc to see who is already there
+            const callSnap = await getDoc(callRef);
+            const participants = callSnap.data().participants || [];
             
-            document.getElementById('call-modal').classList.remove('hidden');
+            for (const uid of participants) {
+                if (uid === currentUser.uid) continue;
+                await createPeerConnection(uid, true); // true = initiator
+            }
+            
+            // 5. Listen to Call Meta (End call if empty, or new participants)
+            unsubscribeCallMeta = onSnapshot(callRef, (snap) => {
+                if (!snap.exists()) {
+                    window.endCall(); // Call deleted
+                    return;
+                }
+                const data = snap.data();
+                // We could implement "polite" joiner here, but simple mesh:
+                // New joiners initiate offers to us, so we just wait for signals.
+                if (!data.participants || !data.participants.includes(currentUser.uid)) {
+                     // We were removed?
+                }
+            });
+            
+            updateGrid();
         }
 
-        // Triggered by the "End Call" button (Updates DB)
-        window.endCall = async () => {
-            if (currentCallId) {
-                // Notify other peer
-                try {
-                     await updateDoc(doc(db, 'artifacts', APP_ID, 'public', 'data', 'calls', currentCallId), {
-                         status: 'ended'
-                     });
-                } catch(e) {
-                    console.log("Error updating call status", e);
+        async function createPeerConnection(remoteUid, isInitiator) {
+            if (peerConnections[remoteUid]) return peerConnections[remoteUid];
+            
+            const pc = new RTCPeerConnection(servers);
+            peerConnections[remoteUid] = pc;
+            
+            // Add local tracks
+            localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
+            
+            // Handle Remote Stream
+            pc.ontrack = (event) => {
+                const stream = event.streams[0];
+                if (!remoteStreams[remoteUid]) {
+                    remoteStreams[remoteUid] = stream;
+                    addRemoteVideo(remoteUid, stream);
+                }
+            };
+
+            // Handle ICE Candidates
+            pc.onicecandidate = async (event) => {
+                if (event.candidate) {
+                    await sendSignal({
+                        type: 'candidate',
+                        candidate: event.candidate.toJSON(),
+                        from: currentUser.uid,
+                        to: remoteUid
+                    });
+                }
+            };
+
+            // If Initiator, create Offer
+            if (isInitiator) {
+                const offer = await pc.createOffer();
+                await pc.setLocalDescription(offer);
+                await sendSignal({
+                    type: 'offer',
+                    sdp: offer,
+                    from: currentUser.uid,
+                    to: remoteUid
+                });
+            }
+
+            return pc;
+        }
+
+        async function handleSignal(signal, signalDocId) {
+            const { type, from, sdp, candidate } = signal;
+            
+            // Clean up processed signal immediately to avoid reprocessing/clutter
+            // (In a real app, maybe keep them but filter by timestamp, but delete is cleaner here)
+            // await deleteDoc(doc(db, 'artifacts', APP_ID, 'public', 'data', 'calls', currentCallId, 'signals', signalDocId)); 
+            // NOTE: Deleting immediately might cause race conditions if multiple tabs open. 
+            // Since we listen to 'added' only, it's okay to leave them or delete them. Let's leave for debug or delete if high volume.
+            
+            let pc = peerConnections[from];
+            
+            if (type === 'offer') {
+                if (!pc) pc = await createPeerConnection(from, false);
+                await pc.setRemoteDescription(new RTCSessionDescription(sdp));
+                const answer = await pc.createAnswer();
+                await pc.setLocalDescription(answer);
+                await sendSignal({
+                    type: 'answer',
+                    sdp: answer,
+                    from: currentUser.uid,
+                    to: from
+                });
+            } else if (type === 'answer') {
+                if (pc) await pc.setRemoteDescription(new RTCSessionDescription(sdp));
+            } else if (type === 'candidate') {
+                if (pc) await pc.addIceCandidate(new RTCIceCandidate(candidate));
+            }
+        }
+
+        async function sendSignal(payload) {
+            const signalsRef = collection(db, 'artifacts', APP_ID, 'public', 'data', 'calls', currentCallId, 'signals');
+            await addDoc(signalsRef, {
+                ...payload,
+                createdAt: serverTimestamp()
+            });
+        }
+
+        function addRemoteVideo(uid, stream) {
+            const container = document.getElementById('remote-videos-container');
+            
+            // Check if exists
+            if (document.getElementById(`video-${uid}`)) return;
+            
+            const wrap = document.createElement('div');
+            wrap.id = `wrapper-${uid}`;
+            wrap.className = "relative bg-gray-900 rounded-2xl overflow-hidden shadow-lg border border-gray-800 w-full h-full min-h-[150px]";
+            
+            const vid = document.createElement('video');
+            vid.id = `video-${uid}`;
+            vid.autoplay = true;
+            vid.playsInline = true;
+            vid.className = "w-full h-full object-cover";
+            vid.srcObject = stream;
+            
+            const label = document.createElement('div');
+            label.className = "absolute bottom-3 left-3 bg-black/50 px-2 py-1 rounded text-white text-xs";
+            // In a real app we'd fetch the name, using "Remote" for now or matching generic logic
+            label.innerText = "User " + uid.substring(0,4); 
+            
+            wrap.appendChild(vid);
+            wrap.appendChild(label);
+            container.appendChild(wrap);
+            
+            updateGrid();
+        }
+
+        function removeRemoteVideo(uid) {
+            const el = document.getElementById(`wrapper-${uid}`);
+            if (el) el.remove();
+            updateGrid();
+        }
+
+        function updateGrid() {
+            const container = document.getElementById('remote-videos-container');
+            const count = container.children.length;
+            
+            container.className = "video-grid p-4"; // Reset
+            if (count <= 1) container.classList.add('grid-1');
+            else if (count === 2) container.classList.add('grid-2');
+            else if (count === 3) container.classList.add('grid-3');
+            else container.classList.add('grid-4');
+        }
+
+        // --- CONTROLS ---
+
+        window.toggleAudio = () => {
+            if (localStream) {
+                const track = localStream.getAudioTracks()[0];
+                if (track) {
+                    track.enabled = !track.enabled;
+                    isAudioEnabled = track.enabled;
+                    updateControlButtons();
                 }
             }
-            endCallLocalOnly();
         }
 
-        // Internal Cleanup function (Does NOT update DB, used when receiving end signal)
-        window.endCallLocalOnly = () => {
-            if (pc) {
-                pc.close();
-                pc = null;
+        window.toggleVideo = () => {
+            if (localStream) {
+                const track = localStream.getVideoTracks()[0];
+                if (track) {
+                    track.enabled = !track.enabled;
+                    isVideoEnabled = track.enabled;
+                    updateControlButtons();
+                }
             }
+        }
+        
+        window.toggleScreenShare = async () => {
+            if (isScreenSharing) {
+                // Stop Sharing
+                await getLocalStream(); // Re-get camera
+                const videoTrack = localStream.getVideoTracks()[0];
+                
+                // Replace in all PCs
+                for (const uid in peerConnections) {
+                    const sender = peerConnections[uid].getSenders().find(s => s.track.kind === 'video');
+                    if (sender) sender.replaceTrack(videoTrack);
+                }
+                
+                isScreenSharing = false;
+                isVideoEnabled = true; // Camera is on
+            } else {
+                // Start Sharing
+                try {
+                    const screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
+                    const screenTrack = screenStream.getVideoTracks()[0];
+                    
+                    // Replace in all PCs
+                    for (const uid in peerConnections) {
+                        const sender = peerConnections[uid].getSenders().find(s => s.track.kind === 'video');
+                        if (sender) sender.replaceTrack(screenTrack);
+                    }
+                    
+                    // Update Local Preview
+                    document.getElementById('localVideo').srcObject = screenStream;
+                    
+                    // Handle user clicking "Stop Sharing" in browser UI
+                    screenTrack.onended = () => {
+                        if (isScreenSharing) toggleScreenShare(); 
+                    };
+                    
+                    isScreenSharing = true;
+                } catch(e) {
+                    console.error("Screen share error", e);
+                }
+            }
+            updateControlButtons();
+        }
+
+        function updateControlButtons() {
+            const audioBtn = document.getElementById('toggle-audio-btn');
+            const videoBtn = document.getElementById('toggle-video-btn');
+            const screenBtn = document.getElementById('toggle-screen-btn');
+            
+            // Audio
+            if (isAudioEnabled) {
+                audioBtn.className = "bg-gray-200 hover:bg-gray-300 text-gray-800 p-4 rounded-full shadow-lg transition-transform hover:scale-105";
+                audioBtn.innerHTML = `<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"></path></svg>`;
+            } else {
+                audioBtn.className = "bg-red-500 hover:bg-red-600 text-white p-4 rounded-full shadow-lg transition-transform hover:scale-105";
+                audioBtn.innerHTML = `<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3l18 18"></path></svg>`;
+            }
+            
+            // Video (Camera)
+            if (isVideoEnabled && !isScreenSharing) {
+                videoBtn.className = "bg-gray-200 hover:bg-gray-300 text-gray-800 p-4 rounded-full shadow-lg transition-transform hover:scale-105";
+                videoBtn.innerHTML = `<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>`;
+            } else {
+                videoBtn.className = "bg-red-500 hover:bg-red-600 text-white p-4 rounded-full shadow-lg transition-transform hover:scale-105";
+                videoBtn.innerHTML = `<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3l18 18"></path></svg>`;
+            }
+
+            // Screen Share
+            if (isScreenSharing) {
+                screenBtn.className = "bg-green-500 hover:bg-green-600 text-white p-4 rounded-full shadow-lg transition-transform hover:scale-105";
+            } else {
+                screenBtn.className = "bg-gray-200 hover:bg-gray-300 text-gray-800 p-4 rounded-full shadow-lg transition-transform hover:scale-105";
+            }
+        }
+
+        window.endCall = async () => {
+            document.getElementById('call-modal').classList.add('hidden');
+            
+            // Clean up DB
+            if (currentCallId) {
+                const callRef = doc(db, 'artifacts', APP_ID, 'public', 'data', 'calls', currentCallId);
+                await updateDoc(callRef, {
+                    participants: arrayRemove(currentUser.uid)
+                });
+            }
+
+            // Stop Local Stream
             if (localStream) {
                 localStream.getTracks().forEach(track => track.stop());
                 localStream = null;
             }
-            if (remoteStream) {
-                remoteStream.getTracks().forEach(track => track.stop());
-                remoteStream = null;
+
+            // Close all Peer Connections
+            for (const uid in peerConnections) {
+                peerConnections[uid].close();
             }
-            document.getElementById('localVideo').srcObject = null;
-            document.getElementById('remoteVideo').srcObject = null;
+            peerConnections = {};
+            remoteStreams = {};
             
-            if (unsubscribeCall) {
-                unsubscribeCall();
-                unsubscribeCall = null;
-            }
-            if (unsubscribeAnswerCandidates) {
-                unsubscribeAnswerCandidates();
-                unsubscribeAnswerCandidates = null;
-            }
-            if (unsubscribeOfferCandidates) {
-                unsubscribeOfferCandidates();
-                unsubscribeOfferCandidates = null;
-            }
+            // Remove video elements
+            document.getElementById('remote-videos-container').innerHTML = '';
+            
+            // Unsubscribe
+            if (unsubscribeSignals) unsubscribeSignals();
+            if (unsubscribeCallMeta) unsubscribeCallMeta();
             
             currentCallId = null;
-            candidateQueue = [];
-            document.getElementById('call-modal').classList.add('hidden');
+            isScreenSharing = false;
         }
 
 
         // --- UTILITY FUNCTIONS ---
+        // (Existing util functions...)
 
         function sendNotification(msg) {
             if (Notification.permission !== "granted") return;
@@ -959,9 +1040,9 @@
                               <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
                               <span class="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
                             </span>
-                            <span class="font-bold">Video Call</span>
+                            <span class="font-bold">Group Call</span>
                         </div>
-                        <p class="text-sm opacity-90 text-center mb-2">Click below to join the call</p>
+                        <p class="text-sm opacity-90 text-center mb-2">Click below to join</p>
                         <button onclick="joinCall('${msg.callId}')" class="w-full bg-white text-blue-600 dark:bg-gray-800 dark:text-blue-400 font-bold py-2 px-4 rounded shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition flex items-center justify-center gap-2">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
                             Join Call
@@ -1519,23 +1600,42 @@
     <div id="call-modal" class="hidden fixed inset-0 z-[60] bg-black/95 flex flex-col items-center justify-center p-4">
         <div class="w-full h-full max-w-6xl mx-auto flex flex-col md:flex-row gap-4 items-center justify-center relative">
             
-            <!-- Remote Video (Large) -->
-            <div class="w-full md:w-2/3 h-2/3 md:h-full bg-gray-900 rounded-2xl overflow-hidden shadow-2xl relative border border-gray-800">
-                <video id="remoteVideo" autoplay playsinline class="w-full h-full object-cover"></video>
-                <div class="absolute bottom-4 left-4 bg-black/50 px-3 py-1 rounded text-white text-sm">Remote</div>
+            <!-- Video Grid -->
+            <div id="remote-videos-container" class="video-grid bg-gray-900 rounded-2xl overflow-hidden shadow-2xl relative border border-gray-800 w-full h-full md:w-3/4">
+                <!-- Remote videos inserted here dynamically -->
             </div>
 
-            <!-- Local Video (Small on Mobile, Side on Desktop) -->
-            <div class="w-1/3 md:w-1/3 aspect-video md:aspect-auto md:h-full bg-gray-800 rounded-2xl overflow-hidden shadow-xl border border-gray-700 relative">
-                <video id="localVideo" autoplay playsinline muted class="w-full h-full object-cover"></video>
-                <div class="absolute bottom-4 left-4 bg-black/50 px-3 py-1 rounded text-white text-sm">You</div>
+            <!-- Local Video (Side on Desktop) -->
+            <div class="hidden md:block md:w-1/4 h-full flex flex-col gap-4">
+                 <div class="bg-gray-800 rounded-2xl overflow-hidden shadow-xl border border-gray-700 relative aspect-video">
+                    <video id="localVideo" autoplay playsinline muted class="w-full h-full object-cover"></video>
+                    <div class="absolute bottom-4 left-4 bg-black/50 px-3 py-1 rounded text-white text-sm">You</div>
+                </div>
             </div>
+             <!-- Local Video (Floating on Mobile) -->
+            <div class="md:hidden absolute top-4 right-4 w-32 aspect-video bg-gray-800 rounded-lg overflow-hidden shadow-xl border border-gray-700 z-10">
+                <video id="localVideoMobile" autoplay playsinline muted class="w-full h-full object-cover"></video> <!-- Mirror of localVideo via JS if needed, or just reuse id careful with dupes. Actually simplest to just move the element or rely on one element. Let's rely on CSS media queries to move 'localVideo' container. -->
+            </div>
+
 
         </div>
         
         <!-- Controls -->
-        <div class="absolute bottom-8 left-0 right-0 flex justify-center gap-4">
-            <button onclick="endCall()" class="bg-red-600 hover:bg-red-700 text-white px-8 py-4 rounded-full shadow-lg transition-transform hover:scale-105 flex items-center gap-2 font-bold">
+        <div class="absolute bottom-8 left-0 right-0 flex justify-center gap-4 z-20">
+            
+            <button id="toggle-audio-btn" onclick="toggleAudio()" class="bg-gray-200 hover:bg-gray-300 text-gray-800 p-4 rounded-full shadow-lg transition-transform hover:scale-105">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"></path></svg>
+            </button>
+            
+            <button id="toggle-video-btn" onclick="toggleVideo()" class="bg-gray-200 hover:bg-gray-300 text-gray-800 p-4 rounded-full shadow-lg transition-transform hover:scale-105">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+            </button>
+
+            <button id="toggle-screen-btn" onclick="toggleScreenShare()" class="bg-gray-200 hover:bg-gray-300 text-gray-800 p-4 rounded-full shadow-lg transition-transform hover:scale-105" title="Share Screen">
+               <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+            </button>
+        
+            <button onclick="endCall()" class="bg-red-600 hover:bg-red-700 text-white px-8 py-4 rounded-full shadow-lg transition-transform hover:scale-105 flex items-center gap-2 font-bold ml-4">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 8l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2M5 3a2 2 0 00-2 2v1c0 8.284 6.716 15 15 15h1a2 2 0 002-2v-3.28a1 1 0 00-.684-.948l-5-1.08a1 1 0 00-1.056.544l-1.204 1.126a12.92 12.92 0 01-4.706-4.706l1.126-1.204a1 1 0 00.544-1.056l-1.08-5A1 1 0 008 3H5z"></path></svg>
                 End Call
             </button>
