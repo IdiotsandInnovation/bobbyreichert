@@ -71,6 +71,15 @@
             }
             .grid-3 > :first-child { grid-column: auto; }
         }
+        
+        /* Fade in animation for scroll button */
+        .fade-in {
+            animation: fadeIn 0.2s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
     </style>
     <script type="module">
         // CLOUDINARY CONFIGURATION
@@ -105,6 +114,7 @@
         // STATE
         let currentUser = null;
         let currentChatId = null;
+        let currentChatParticipants = []; // Store participants for @mentions
         let unsubscribeChats = null;
         let unsubscribeMessages = null;
         let unsubscribeChatMetadata = null;
@@ -151,6 +161,8 @@
         const progressBar = document.getElementById('upload-progress-bar');
         const progressContainer = document.getElementById('upload-progress-container');
         const notificationBtn = document.getElementById('toggle-notifications-btn');
+        const messagesContainer = document.getElementById('messages-container');
+        const scrollToBottomBtn = document.getElementById('scroll-to-bottom-btn');
 
 
         // --- AUTH FUNCTIONS ---
@@ -212,6 +224,15 @@
             }
         }
         
+        async function getDisplayName(uid) {
+            try {
+                const userRef = doc(db, 'artifacts', APP_ID, 'public', 'data', 'users', uid);
+                const snap = await getDoc(userRef);
+                if (snap.exists()) return snap.data().username || "User";
+            } catch (e) { console.error(e); }
+            return "User";
+        }
+        
         async function registerServiceWorker() {
           if (!('serviceWorker' in navigator)) return;
         
@@ -254,20 +275,31 @@
                     const otherEmails = chat.participants ? chat.participants.filter(p => p.email !== currentUser.email).map(p => p.username || p.email.split('@')[0]).join(', ') : "Unknown";
                     const displayName = chat.name || otherEmails || "New Chat";
                     
+                    // Check for mention
+                    const isMentioned = chat.mentions && chat.mentions[currentUser.uid];
+                    
                     const div = document.createElement('div');
-                    div.className = `p-3 rounded-lg cursor-pointer flex items-center gap-3 transition-colors ${currentChatId === chatId ? 'bg-blue-100 dark:bg-blue-900' : 'hover:bg-gray-100 dark:hover:bg-gray-700'}`;
+                    // Add conditional styling for mentions (Yellow border/bg)
+                    const activeClass = currentChatId === chatId ? 'bg-blue-100 dark:bg-blue-900' : 'hover:bg-gray-100 dark:hover:bg-gray-700';
+                    const mentionClass = isMentioned ? 'border-l-4 border-yellow-500 bg-yellow-50 dark:bg-yellow-900/20' : '';
+                    
+                    div.className = `p-3 rounded-lg cursor-pointer flex items-center gap-3 transition-colors ${activeClass} ${mentionClass}`;
                     div.onclick = () => loadChat(chatId, chat);
                     
                     div.innerHTML = `
-                        <div class="h-10 w-10 rounded-full bg-indigo-500 flex items-center justify-center text-white font-bold flex-shrink-0">
+                        <div class="h-10 w-10 rounded-full bg-indigo-500 flex items-center justify-center text-white font-bold flex-shrink-0 relative">
                             ${displayName.substring(0,1).toUpperCase()}
+                            ${isMentioned ? '<span class="absolute -top-1 -right-1 flex h-3 w-3"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-yellow-400 opacity-75"></span><span class="relative inline-flex rounded-full h-3 w-3 bg-yellow-500"></span></span>' : ''}
                         </div>
                         <div class="flex-1 min-w-0">
                             <div class="flex justify-between items-baseline">
                                 <h3 class="font-medium text-gray-900 dark:text-gray-100 truncate">${displayName}</h3>
                                 ${chat.updatedAt ? `<span class="text-xs text-gray-400">${new Date(chat.updatedAt.toDate()).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>` : ''}
                             </div>
-                            <p class="text-sm text-gray-500 dark:text-gray-400 truncate">${chat.lastMessage || 'No messages yet'}</p>
+                            <p class="text-sm text-gray-500 dark:text-gray-400 truncate">
+                                ${isMentioned ? '<span class="text-yellow-600 font-bold">@You </span>' : ''}
+                                ${chat.lastMessage || 'No messages yet'}
+                            </p>
                         </div>
                     `;
                     chatList.appendChild(div);
@@ -306,6 +338,7 @@
                     { email: targetUser.email, uid: targetUser.uid, username: targetUser.username || targetUser.email.split('@')[0] }
                 ],
                 mutedUserIds: [],
+                mentions: {}, // Initialize mentions map
                 createdAt: serverTimestamp(),
                 updatedAt: serverTimestamp(),
                 lastMessage: "Chat created"
@@ -425,6 +458,27 @@
             }
         }
 
+        // --- SCROLL LOGIC ---
+        function scrollToBottom() {
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        messagesContainer.addEventListener('scroll', () => {
+            const isAtBottom = messagesContainer.scrollHeight - messagesContainer.scrollTop - messagesContainer.clientHeight < 100;
+            if (isAtBottom) {
+                scrollToBottomBtn.classList.add('hidden');
+            } else {
+                scrollToBottomBtn.classList.remove('hidden');
+            }
+        });
+
+        window.scrollToBottomManual = () => {
+            messagesContainer.scrollTo({
+                top: messagesContainer.scrollHeight,
+                behavior: 'smooth'
+            });
+        }
+
         // --- MOBILE VIEW LOGIC ---
         window.openMobileChat = () => {
             const sidebar = document.getElementById('sidebar-view');
@@ -446,10 +500,18 @@
             
             chatView.classList.add('hidden');
             chatView.classList.remove('flex');
+            currentChatId = null;
         }
 
         function loadChat(chatId, chatData) {
             currentChatId = chatId;
+            // Clear mentions for self when opening chat
+            if (chatData && chatData.mentions && chatData.mentions[currentUser.uid]) {
+                const chatRef = doc(db, 'artifacts', APP_ID, 'public', 'data', 'chats', chatId);
+                updateDoc(chatRef, {
+                    [`mentions.${currentUser.uid}`]: false // or deleteField() if supported, but false works
+                });
+            }
             
             const items = document.getElementById('chat-list').children;
             for(let item of items) {
@@ -470,8 +532,18 @@
 
             const chatRef = doc(db, 'artifacts', APP_ID, 'public', 'data', 'chats', chatId);
             unsubscribeChatMetadata = onSnapshot(chatRef, (docSnap) => {
-                if (!docSnap.exists()) return;
+                if (!docSnap.exists()) {
+                    // Chat deleted (via /deletechat or otherwise)
+                    if (currentChatId === chatId) {
+                        closeMobileChat(); // Back to list
+                        document.getElementById('chat-interface').classList.add('hidden');
+                        document.getElementById('empty-state').classList.remove('hidden');
+                        showToast("This chat was deleted.", "info");
+                    }
+                    return;
+                }
                 const data = docSnap.data();
+                currentChatParticipants = data.participants || [];
                 
                 const displayName = data.name || (data.participants 
                     ? data.participants.filter(p => p.uid !== currentUser.uid).map(p => p.username || p.email.split('@')[0]).join(', ')
@@ -495,10 +567,18 @@
                     renderMessage(doc.data(), doc.id, container);
                 });
                 
-                if (!isChatInitialLoad) {
+                if (isChatInitialLoad) {
+                    scrollToBottom();
+                } else {
                     snapshot.docChanges().forEach(change => {
                         if (change.type === 'added') {
                             const msg = change.doc.data();
+                            // Check if user is near bottom before scrolling
+                            const isNearBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 150;
+                            if (isNearBottom || msg.senderId === currentUser.uid) {
+                                scrollToBottom();
+                            }
+                            
                             if (!isCurrentChatMuted && msg.senderId !== currentUser.uid) {
                                 sendNotification(msg);
                             }
@@ -507,7 +587,6 @@
                 }
                 
                 isChatInitialLoad = false;
-                container.scrollTop = container.scrollHeight;
             });
         }
 
@@ -716,13 +795,6 @@
 
         async function handleSignal(signal, signalDocId) {
             const { type, from, sdp, candidate } = signal;
-            
-            // Clean up processed signal immediately to avoid reprocessing/clutter
-            // (In a real app, maybe keep them but filter by timestamp, but delete is cleaner here)
-            // await deleteDoc(doc(db, 'artifacts', APP_ID, 'public', 'data', 'calls', currentCallId, 'signals', signalDocId)); 
-            // NOTE: Deleting immediately might cause race conditions if multiple tabs open. 
-            // Since we listen to 'added' only, it's okay to leave them or delete them. Let's leave for debug or delete if high volume.
-            
             let pc = peerConnections[from];
             
             if (type === 'offer') {
@@ -751,11 +823,14 @@
             });
         }
 
-        function addRemoteVideo(uid, stream) {
+        async function addRemoteVideo(uid, stream) {
             const container = document.getElementById('remote-videos-container');
             
             // Check if exists
             if (document.getElementById(`video-${uid}`)) return;
+            
+            // Fetch name
+            const name = await getDisplayName(uid);
             
             const wrap = document.createElement('div');
             wrap.id = `wrapper-${uid}`;
@@ -765,13 +840,13 @@
             vid.id = `video-${uid}`;
             vid.autoplay = true;
             vid.playsInline = true;
-            vid.className = "w-full h-full object-cover";
+            // Changed from object-cover to object-contain so full screen share is seen
+            vid.className = "w-full h-full object-contain bg-black"; 
             vid.srcObject = stream;
             
             const label = document.createElement('div');
-            label.className = "absolute bottom-3 left-3 bg-black/50 px-2 py-1 rounded text-white text-xs";
-            // In a real app we'd fetch the name, using "Remote" for now or matching generic logic
-            label.innerText = "User " + uid.substring(0,4); 
+            label.className = "absolute bottom-3 left-3 bg-black/50 px-2 py-1 rounded text-white text-xs z-10";
+            label.innerText = name; 
             
             wrap.appendChild(vid);
             wrap.appendChild(label);
@@ -1121,6 +1196,42 @@
             if ((!text && !selectedFile) || !currentChatId) return;
             
             try {
+                // --- COMMAND HANDLING ---
+                if (text.startsWith('/')) {
+                    const cmd = text.split(' ')[0].toLowerCase();
+                    const chatRef = doc(db, 'artifacts', APP_ID, 'public', 'data', 'chats', currentChatId);
+                    
+                    if (cmd === '/leavechat') {
+                        // Need exact object match for arrayRemove with objects, or fetch/filter
+                        const chatSnap = await getDoc(chatRef);
+                        if(chatSnap.exists()) {
+                            const data = chatSnap.data();
+                            const newParticipants = (data.participants || []).filter(p => p.uid !== currentUser.uid);
+                            const newUserIds = (data.userIds || []).filter(uid => uid !== currentUser.uid);
+                            
+                            if (newUserIds.length === 0) {
+                                await deleteDoc(chatRef);
+                            } else {
+                                await updateDoc(chatRef, {
+                                    participants: newParticipants,
+                                    userIds: newUserIds,
+                                    lastMessage: `${currentUser.displayName || "User"} left the chat`
+                                });
+                            }
+                            closeMobileChat();
+                            input.value = '';
+                            showToast("Left chat", "info");
+                            return;
+                        }
+                    } else if (cmd === '/deletechat') {
+                        await deleteDoc(chatRef);
+                        closeMobileChat();
+                        input.value = '';
+                        showToast("Chat deleted", "success");
+                        return;
+                    }
+                }
+
                 if (selectedFile) {
                     await uploadAndSend(selectedFile, text);
                     input.value = '';
@@ -1156,14 +1267,33 @@
                         cancelReply();
                     }
 
+                    // --- MENTION LOGIC ---
+                    const chatRef = doc(db, 'artifacts', APP_ID, 'public', 'data', 'chats', currentChatId);
+                    const mentionUpdates = {};
+                    let hasMentions = false;
+                    
+                    if (currentChatParticipants) {
+                        currentChatParticipants.forEach(p => {
+                            if (p.uid !== currentUser.uid && text.includes(`@${p.username}`)) {
+                                mentionUpdates[`mentions.${p.uid}`] = true;
+                                hasMentions = true;
+                            }
+                        });
+                    }
+
                     const messagesRef = collection(db, 'artifacts', APP_ID, 'public', 'data', 'chats', currentChatId, 'messages');
                     await addDoc(messagesRef, messageData);
                     
-                    const chatRef = doc(db, 'artifacts', APP_ID, 'public', 'data', 'chats', currentChatId);
-                    await updateDoc(chatRef, {
+                    const updatePayload = {
                         lastMessage: text,
                         updatedAt: serverTimestamp()
-                    });
+                    };
+                    
+                    if (hasMentions) {
+                        Object.assign(updatePayload, mentionUpdates);
+                    }
+
+                    await updateDoc(chatRef, updatePayload);
                     
                     input.value = '';
                 }
@@ -1448,7 +1578,7 @@
                 <p class="max-w-xs mt-2 text-sm">Or click 'New Chat' to start a conversation</p>
             </div>
 
-            <div id="chat-interface" class="hidden flex flex-col h-full z-10 bg-white dark:bg-gray-900/50 backdrop-blur-sm w-full">
+            <div id="chat-interface" class="hidden flex flex-col h-full z-10 bg-white dark:bg-gray-900/50 backdrop-blur-sm w-full relative">
                 <!-- Upload Progress Bar -->
                 <div id="upload-progress-container" class="hidden h-1 bg-gray-200 dark:bg-gray-700 w-full absolute top-0 left-0 z-20">
                     <div id="upload-progress-bar" class="h-full bg-blue-500 transition-all duration-300" style="width: 0%"></div>
@@ -1485,8 +1615,14 @@
                     </div>
                 </div>
 
-                <div id="messages-container" class="flex-1 overflow-y-auto p-4 md:p-6 space-y-2 custom-scroll bg-gray-50 dark:bg-gray-900 w-full">
-                    </div>
+                <!-- Messages Container -->
+                <div id="messages-container" class="flex-1 overflow-y-auto p-4 md:p-6 space-y-2 custom-scroll bg-gray-50 dark:bg-gray-900 w-full relative">
+                </div>
+                
+                <!-- Floating Scroll Button -->
+                <button id="scroll-to-bottom-btn" onclick="scrollToBottomManual()" class="hidden absolute bottom-24 right-6 z-30 bg-blue-500 text-white p-3 rounded-full shadow-lg hover:bg-blue-600 transition-all fade-in">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path></svg>
+                </button>
 
                 <div class="p-3 md:p-4 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 flex-shrink-0 safe-pb">
                     <!-- Preview Panel (Staging) -->
@@ -1510,7 +1646,7 @@
                             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path></svg>
                             <input type="file" class="hidden" onchange="handleFileUpload(event)">
                         </label>
-                        <input id="message-input" type="text" placeholder="Type a message..." class="flex-1 bg-transparent border-none focus:ring-0 text-gray-800 dark:text-white placeholder-gray-500 text-base">
+                        <input id="message-input" type="text" placeholder="Type a message or use /help..." class="flex-1 bg-transparent border-none focus:ring-0 text-gray-800 dark:text-white placeholder-gray-500 text-base">
                         
                         <button id="cancel-edit-button" onclick="cancelEdit()" class="text-gray-400 hover:text-red-500 flex-shrink-0" style="display: none;">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
