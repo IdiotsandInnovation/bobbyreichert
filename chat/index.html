@@ -346,6 +346,15 @@
 
             try {
                 const docRef = await addDoc(collection(db, 'artifacts', APP_ID, 'public', 'data', 'chats'), chatData);
+                
+                // Add System Message for Creation
+                const messagesRef = collection(db, 'artifacts', APP_ID, 'public', 'data', 'chats', docRef.id, 'messages');
+                await addDoc(messagesRef, {
+                    content: `${currentUser.displayName || currentUser.email.split('@')[0]} created the chat`,
+                    type: 'system',
+                    createdAt: serverTimestamp()
+                });
+
                 closeModal('new-chat-modal');
                 emailInput.value = '';
                 loadChat(docRef.id, chatData);
@@ -390,7 +399,15 @@
             await updateDoc(chatRef, {
                 userIds: arrayUnion(newUser.uid),
                 participants: updatedParticipants,
-                lastMessage: `${currentUser.email.split('@')[0]} added ${newUser.username}`
+                lastMessage: `${currentUser.displayName || "User"} added ${newUser.username}`
+            });
+            
+            // Add System Message
+            const messagesRef = collection(db, 'artifacts', APP_ID, 'public', 'data', 'chats', currentChatId, 'messages');
+            await addDoc(messagesRef, {
+                content: `${currentUser.displayName || "User"} added ${newUser.username}`,
+                type: 'system',
+                createdAt: serverTimestamp()
             });
 
             closeModal('add-user-modal');
@@ -419,6 +436,14 @@
                 await updateDoc(chatRef, {
                     name: newName,
                     updatedAt: serverTimestamp()
+                });
+                
+                // Add System Message
+                const messagesRef = collection(db, 'artifacts', APP_ID, 'public', 'data', 'chats', currentChatId, 'messages');
+                await addDoc(messagesRef, {
+                    content: `${currentUser.displayName || "User"} renamed the chat to "${newName}"`,
+                    type: 'system',
+                    createdAt: serverTimestamp()
                 });
 
                 closeModal('rename-chat-modal');
@@ -509,7 +534,7 @@
             if (chatData && chatData.mentions && chatData.mentions[currentUser.uid]) {
                 const chatRef = doc(db, 'artifacts', APP_ID, 'public', 'data', 'chats', chatId);
                 updateDoc(chatRef, {
-                    [`mentions.${currentUser.uid}`]: false // or deleteField() if supported, but false works
+                    [`mentions.${currentUser.uid}`]: false 
                 });
             }
             
@@ -533,9 +558,8 @@
             const chatRef = doc(db, 'artifacts', APP_ID, 'public', 'data', 'chats', chatId);
             unsubscribeChatMetadata = onSnapshot(chatRef, (docSnap) => {
                 if (!docSnap.exists()) {
-                    // Chat deleted (via /deletechat or otherwise)
                     if (currentChatId === chatId) {
-                        closeMobileChat(); // Back to list
+                        closeMobileChat(); 
                         document.getElementById('chat-interface').classList.add('hidden');
                         document.getElementById('empty-state').classList.remove('hidden');
                         showToast("This chat was deleted.", "info");
@@ -573,13 +597,12 @@
                     snapshot.docChanges().forEach(change => {
                         if (change.type === 'added') {
                             const msg = change.doc.data();
-                            // Check if user is near bottom before scrolling
                             const isNearBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 150;
                             if (isNearBottom || msg.senderId === currentUser.uid) {
                                 scrollToBottom();
                             }
                             
-                            if (!isCurrentChatMuted && msg.senderId !== currentUser.uid) {
+                            if (!isCurrentChatMuted && msg.senderId !== currentUser.uid && msg.type !== 'system') {
                                 sendNotification(msg);
                             }
                         }
@@ -1074,6 +1097,19 @@
             const timeString = msg.createdAt ? new Date(msg.createdAt.toDate()).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : '';
 
             const div = document.createElement('div');
+            
+            // SYSTEM MESSAGE HANDLING
+            if (msg.type === 'system') {
+                div.className = "flex w-full mb-4 justify-center";
+                div.innerHTML = `
+                    <div class="bg-gray-200 dark:bg-gray-800 text-gray-600 dark:text-gray-400 text-xs py-1 px-3 rounded-full opacity-75">
+                        ${msg.content}
+                    </div>
+                `;
+                container.appendChild(div);
+                return;
+            }
+
             div.className = `flex w-full mb-4 ${isMe ? 'justify-end' : 'justify-start'}`;
             
             let contentHtml = '';
@@ -1198,7 +1234,8 @@
             try {
                 // --- COMMAND HANDLING ---
                 if (text.startsWith('/')) {
-                    const cmd = text.split(' ')[0].toLowerCase();
+                    const args = text.split(' ');
+                    const cmd = args[0].toLowerCase();
                     const chatRef = doc(db, 'artifacts', APP_ID, 'public', 'data', 'chats', currentChatId);
                     
                     if (cmd === '/leavechat') {
@@ -1217,6 +1254,13 @@
                                     userIds: newUserIds,
                                     lastMessage: `${currentUser.displayName || "User"} left the chat`
                                 });
+                                // Add System Message for Leaving
+                                const messagesRef = collection(db, 'artifacts', APP_ID, 'public', 'data', 'chats', currentChatId, 'messages');
+                                await addDoc(messagesRef, {
+                                    content: `${currentUser.displayName || "User"} left the chat`,
+                                    type: 'system',
+                                    createdAt: serverTimestamp()
+                                });
                             }
                             closeMobileChat();
                             input.value = '';
@@ -1228,6 +1272,32 @@
                         closeMobileChat();
                         input.value = '';
                         showToast("Chat deleted", "success");
+                        return;
+                    } else if (cmd === '/help') {
+                        showToast("Commands: /leavechat, /deletechat, /mute, /unmute, /theme [light|dark]", "info");
+                        input.value = '';
+                        return;
+                    } else if (cmd === '/mute') {
+                        await updateDoc(chatRef, { mutedUserIds: arrayUnion(currentUser.uid) });
+                        showToast("Chat muted", "success");
+                        input.value = '';
+                        return;
+                    } else if (cmd === '/unmute') {
+                        await updateDoc(chatRef, { mutedUserIds: arrayRemove(currentUser.uid) });
+                        showToast("Chat unmuted", "success");
+                        input.value = '';
+                        return;
+                    } else if (cmd === '/theme') {
+                        if (args[1] === 'dark') {
+                            rootElement.classList.add('dark');
+                            await updateUserProfile({ theme: 'dark' });
+                        } else if (args[1] === 'light') {
+                            rootElement.classList.remove('dark');
+                            await updateUserProfile({ theme: 'light' });
+                        } else {
+                            toggleTheme();
+                        }
+                        input.value = '';
                         return;
                     }
                 }
