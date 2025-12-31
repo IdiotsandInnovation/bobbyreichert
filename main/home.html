@@ -52,6 +52,55 @@
         /* 🔴 MOBILE MENU STYLES 🔴 */
         #mobile-menu { transform: translateX(100%); transition: transform 0.3s ease-out; pointer-events: none; }
         #mobile-menu.open { transform: translateX(0); pointer-events: auto; }
+
+        /* Fullscreen Countdown Overrides */
+        .fullscreen-mode {
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100vw !important;
+            height: 100vh !important;
+            z-index: 9999 !important;
+            border-radius: 0 !important;
+            border: none !important;
+            display: flex !important;
+            flex-direction: column !important;
+            justify-content: center !important;
+            align-items: center !important;
+            text-align: center !important; /* Ensure text is centered */
+            margin: 0 !important;
+            overflow-y: auto !important;
+        }
+
+        /* Hide specific elements when fullscreen is active to remove distractions */
+        body.has-fullscreen-element nav,
+        body.has-fullscreen-element footer,
+        body.has-fullscreen-element #mobile-menu,
+        body.has-fullscreen-element #cookie-banner,
+        body.has-fullscreen-element h1,
+        body.has-fullscreen-element > main > div > p {
+             display: none !important;
+        }
+        
+        /* Keep the section visible */
+        body.has-fullscreen-element > :not(.fullscreen-mode) {
+           /* Handled by specific hiding above for better stability */
+        }
+        
+        .fullscreen-mode .fullscreen-hide {
+            display: none;
+        }
+        
+        .fullscreen-mode h3 {
+            font-size: 3rem;
+            margin-bottom: 2rem;
+        }
+
+        .fullscreen-mode .countdown-item {
+            font-size: 2rem;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
     </style>
 </head>
 <!-- Body now uses responsive dark/light mode classes -->
@@ -159,22 +208,40 @@
 
             
             <!-- 🔴 START: AUTOMATIC COUNTDOWNS SECTION 🔴 -->
-            <section class="mt-8 p-6 bg-gray-50 dark:bg-gray-700 rounded-lg border border-dashed border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200">
+            <section id="countdown-section" class="relative mt-8 p-6 bg-gray-50 dark:bg-gray-700 rounded-lg border border-dashed border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 transition-all duration-300">
+                <!-- Fullscreen Toggle Button -->
+                <button id="fullscreen-btn" class="absolute top-2 right-2 p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600 transition" title="Toggle Fullscreen">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path>
+                    </svg>
+                </button>
+
                 <h3 class="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-4">Countdowns</h3>
                 <!-- Changed space-y-2 to space-y-3 to accommodate the new item gracefully -->
                 <div class="space-y-3 text-lg">
                     <!-- NEW YEAR'S COUNTDOWN (Precise) -->
-                    <p>
-                        To New Year's Day: <span id="new-year-countdown" class="font-extrabold text-primary dark:text-primary-dark">--</span>
+                    <p class="countdown-item">
+                        To New Year's Day: <span id="new-year-countdown" class="font-extrabold text-primary dark:text-primary-dark transition-all duration-300">--</span>
                     </p>
-                    <!--     
-                    <p>
-                        To Christmas 2025: <span id="christmas-countdown" class="font-bold text-primary dark:text-primary-dark">--</span> days
-                    </p>-->
-                    <p>
+                    
+                    <!-- HOLIDAY COUNTDOWNS -->
+                    <p class="countdown-item">
+                        To Valentine's Day: <span id="valentine-countdown" class="font-bold text-primary dark:text-primary-dark">--</span> days
+                    </p>
+                    <p class="countdown-item">
+                        To Halloween: <span id="halloween-countdown" class="font-bold text-primary dark:text-primary-dark">--</span> days
+                    </p>
+                    <p class="countdown-item">
+                        To Christmas: <span id="christmas-countdown" class="font-bold text-primary dark:text-primary-dark">--</span> days
+                    </p>
+
+                    <p class="countdown-item">
                         Since June 19th, 2025: <span id="june-countup" class="font-bold text-primary dark:text-primary-dark">--</span> days
                     </p>
                 </div>
+                
+                <!-- Helper text for fullscreen mode -->
+                <p class="mt-4 text-xs text-gray-500 dark:text-gray-400 opacity-0 transition-opacity duration-300" id="exit-fullscreen-hint">Press ESC or click button to exit</p>
             </section>
             <!-- 🔴 END: AUTOMATIC COUNTDOWNS SECTION 🔴 -->
 
@@ -199,7 +266,7 @@
 
     <!-- Footer uses responsive dark/light mode classes -->
     <footer class="w-full bg-gray-100 dark:bg-gray-900 text-gray-500 dark:text-gray-400 text-center text-sm py-4 border-t dark:border-gray-700">
-        <p>Last Updated: 12/13/2025</p>
+        <p>Last Updated: 12/31/2025</p>
     </footer>
 
     <!-- Cookie Banner (Original code preserved) -->
@@ -236,13 +303,29 @@
          */
         function updateCountdowns() {
             const now = new Date();
+            const MS_PER_SECOND = 1000;
+            const MS_PER_MINUTE = MS_PER_SECOND * 60;
+            const MS_PER_HOUR = MS_PER_MINUTE * 60;
+
+            // --- HELPER FOR HOLIDAYS ---
+            function getDaysUntil(month, day) {
+                const currentYear = now.getFullYear();
+                let targetDate = new Date(currentYear, month - 1, day); // Month is 0-indexed in JS
+                
+                // If the date has passed this year, look at next year
+                if (now.getTime() > targetDate.getTime() + MS_PER_DAY) {
+                    targetDate = new Date(currentYear + 1, month - 1, day);
+                }
+                
+                const diff = targetDate.getTime() - now.getTime();
+                return Math.ceil(diff / MS_PER_DAY);
+            }
 
             // --- NEW YEAR'S COUNTDOWN (Days, Hours, Minutes, Seconds) ---
             const newYearCountdownEl = document.getElementById('new-year-countdown');
 
             if (newYearCountdownEl) {
                 const currentYear = now.getFullYear();
-                // Target is January 1st of the next year
                 let nextNewYear = new Date(`${currentYear + 1}-01-01T00:00:00`); 
                 let timeDifference = nextNewYear.getTime() - now.getTime();
                 
@@ -253,62 +336,98 @@
                     timeDifference = nextNewYear.getTime() - now.getTime();
                 }
 
-                // Time constants for precise calculation
-                const MS_PER_SECOND = 1000;
-                const MS_PER_MINUTE = MS_PER_SECOND * 60;
-                const MS_PER_HOUR = MS_PER_MINUTE * 60;
-                // MS_PER_DAY is already defined globally
+                // Logic to change display based on remaining time
+                const tenMinutesInMs = 10 * 60 * 1000;
+                const oneMinuteInMs = 1 * 60 * 1000;
 
-                // Calculate components (using timeDifference for remaining ms)
                 const days = Math.floor(timeDifference / MS_PER_DAY);
-                timeDifference %= MS_PER_DAY;
+                let remaining = timeDifference % MS_PER_DAY;
 
-                const hours = Math.floor(timeDifference / MS_PER_HOUR);
-                timeDifference %= MS_PER_HOUR;
+                const hours = Math.floor(remaining / MS_PER_HOUR);
+                remaining %= MS_PER_HOUR;
 
-                const minutes = Math.floor(timeDifference / MS_PER_MINUTE);
-                timeDifference %= MS_PER_MINUTE;
+                const minutes = Math.floor(remaining / MS_PER_MINUTE);
+                remaining %= MS_PER_MINUTE;
 
-                const seconds = Math.floor(timeDifference / MS_PER_SECOND);
+                const seconds = Math.floor(remaining / MS_PER_SECOND);
                 
-                // Helper to pad numbers with leading zeros
                 const pad = (num) => String(num).padStart(2, '0');
 
-                if (days >= 0) {
-                    newYearCountdownEl.textContent = 
-                        `${days}d ${pad(hours)}h ${pad(minutes)}m ${pad(seconds)}s`;
+                // Standard Styling Reset
+                newYearCountdownEl.classList.remove('text-yellow-500', 'text-red-500', 'text-6xl', 'text-8xl');
+                
+                // --- SPECIAL LOGIC FOR < 10 MINUTES ---
+                if (timeDifference < tenMinutesInMs) {
+                    newYearCountdownEl.classList.add('text-yellow-500'); // Make text yellow
+                    
+                    if (timeDifference < oneMinuteInMs) {
+                         // --- SPECIAL LOGIC FOR < 1 MINUTE ---
+                        // Remove minutes, enlarge seconds greatly
+                        newYearCountdownEl.textContent = `${seconds}`;
+                        newYearCountdownEl.classList.add('text-8xl'); // Massive text
+                        newYearCountdownEl.classList.remove('text-yellow-500'); // Optional: change color to red or keep yellow
+                        newYearCountdownEl.classList.add('text-red-500'); // Let's make it red for urgency
+                    } else {
+                        // < 10 mins but > 1 min: Remove days/hours, show MM:SS
+                        newYearCountdownEl.textContent = `${pad(minutes)}:${pad(seconds)}`;
+                        newYearCountdownEl.classList.add('text-6xl'); // Larger text
+                    }
+                } else {
+                    // Standard Display
+                    if (days >= 0) {
+                        newYearCountdownEl.textContent = 
+                            `${days}d ${pad(hours)}h ${pad(minutes)}m ${pad(seconds)}s`;
+                    }
                 }
             }
             // --- END NEW YEAR'S COUNTDOWN ---
 
 
-            // 1. Christmas 2025 Countdown (Day-only)
-            const christmas2025 = new Date('2025-12-25T00:00:00');
-            const diffToChristmas = christmas2025.getTime() - now.getTime();
-            // Using Math.ceil to round up to the next full day
-            const daysToChristmas = Math.ceil(diffToChristmas / MS_PER_DAY);
-            
-            const christmasEl = document.getElementById('christmas-countdown');
-            if (christmasEl) {
-                // Display 0 if the date has passed
-                christmasEl.textContent = daysToChristmas > 0 ? daysToChristmas : 0;
-            }
+            // 1. Holiday Countdowns
+            const valentinesEl = document.getElementById('valentine-countdown');
+            if (valentinesEl) valentinesEl.textContent = getDaysUntil(2, 14); // Feb 14
 
-            
+            const halloweenEl = document.getElementById('halloween-countdown');
+            if (halloweenEl) halloweenEl.textContent = getDaysUntil(10, 31); // Oct 31
+
+            const christmasEl = document.getElementById('christmas-countdown');
+            if (christmasEl) christmasEl.textContent = getDaysUntil(12, 25); // Dec 25
 
             // 3. Since June 19th, 2025 Count-up (Day-only)
             const june19th2025 = new Date('2025-06-19T00:00:00');
             const diffSinceJune = now.getTime() - june19th2025.getTime();
-            // Using Math.floor for count-up (completed days)
             const daysSinceJune = Math.floor(diffSinceJune / MS_PER_DAY);
             
             const juneEl = document.getElementById('june-countup');
             if (juneEl) {
-                // Display 0 if the date is in the future
                 juneEl.textContent = daysSinceJune > 0 ? daysSinceJune : 0;
             }
         }
         
+        // --- FULLSCREEN TOGGLE ---
+        function toggleFullscreen() {
+            const section = document.getElementById('countdown-section');
+            const hint = document.getElementById('exit-fullscreen-hint');
+            
+            section.classList.toggle('fullscreen-mode');
+            
+            // Toggle body class to help with hiding scrolling
+            if (section.classList.contains('fullscreen-mode')) {
+                document.body.classList.add('has-fullscreen-element');
+                document.body.style.overflow = 'hidden'; // Prevent background scrolling
+                hint.style.opacity = '1';
+                
+                // Add bg class for better contrast in fullscreen
+                section.classList.add('bg-white', 'dark:bg-gray-900');
+            } else {
+                document.body.classList.remove('has-fullscreen-element');
+                document.body.style.overflow = '';
+                hint.style.opacity = '0';
+                
+                section.classList.remove('bg-white', 'dark:bg-gray-900');
+            }
+        }
+
         // --- THEME MODE LOGIC (Original code preserved) ---
         function applyTheme(theme) {
             const html = document.documentElement;
@@ -360,7 +479,6 @@
 
             // 2. Start Automatic Countdowns
             updateCountdowns();
-            // CHANGED: Set interval to update the count every second (1000ms) for the New Year's countdown accuracy
             setInterval(updateCountdowns, 1000); 
 
             // 3. Initialize mobile menu elements
@@ -368,6 +486,21 @@
             mobileMenu = document.getElementById('mobile-menu');
             hamburgerIcon = document.getElementById('hamburger-icon');
             closeIcon = document.getElementById('close-icon');
+
+            // 4. Fullscreen Button Logic
+            const fsBtn = document.getElementById('fullscreen-btn');
+            if (fsBtn) {
+                fsBtn.addEventListener('click', toggleFullscreen);
+            }
+            // Allow Exit via Escape key
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    const section = document.getElementById('countdown-section');
+                    if (section.classList.contains('fullscreen-mode')) {
+                        toggleFullscreen();
+                    }
+                }
+            });
 
             // --- Cookie Consent Logic ---
             const banner = document.getElementById('cookie-banner');
