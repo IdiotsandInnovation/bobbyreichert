@@ -9,7 +9,7 @@
         gtag('config', 'G-J4PE57KXDN');
     </script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bobby Reichert | Planned Features</title>
+    <title>Bobby Reichert | Planned Features & Known Bugs</title>
     <script src="https://cdn.tailwindcss.com"></script>
     
     
@@ -313,30 +313,45 @@
                   If you notice a bug that you don't see listed below, please email me.
                 </p>
 
-                
+                <section class="p-6 md:p-8 bg-green-50 dark:bg-green-900/20 rounded-xl 
+                                border border-green-200 dark:border-green-700 
+                                shadow-inner dark:shadow-sm text-left">
+                    <div class="flex justify-between items-start mb-2">
+                        <h3 class="text-xl md:text-2xl font-semibold text-green-700 dark:text-green-300">
+                            Settings Universality Issues
+                        </h3>
+                        <span class="inline-flex items-center px-3 py-1 text-sm font-medium rounded-full 
+                                     bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300">
+                            Low Priority
+                        </span>
+                    </div>
+                    <p class="text-green-600 dark:text-green-200 leading-relaxed">
+                        Some select settings on the settings page don't yet apply to other pages
+                    </p>
+                </section>
 
-<!-- BUG: Mobile Menu Settings Link Broken (High Priority) -->
+<!-- BUG: Mobile Menu Settings Link Broken (Medium Priority) -->
                 <section class="p-6 md:p-8 bg-red-50 dark:bg-red-900/20 rounded-xl 
                                 border border-red-200 dark:border-red-700 
                                 shadow-inner dark:shadow-sm text-left">
                     <div class="flex justify-between items-start mb-2">
                         <h3 class="text-xl md:text-2xl font-semibold text-red-700 dark:text-red-300">
-                            Mobile Menu Settings Link Broken
+                            Mobile Menu Broken on Solid Mode
                         </h3>
                         <span class="inline-flex items-center px-3 py-1 text-sm font-medium rounded-full 
-                                     bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300">
-                            High Priority
+                                     bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300">
+                            Medium Priority
                         </span>
                     </div>
                     <p class="text-red-600 dark:text-red-200 leading-relaxed">
-                        The 'Settings' page is a bit glitchy. This is a known issue and will be resolved with the introduction of the new settings menu.
+                        When on mobile menu and the solid menu bar setting is selected, the drop-down becomes transparent.
                     </p>
                 </section>
                 <section class="p-6 md:p-8 bg-red-50 dark:bg-red-900/20 rounded-xl 
                                 border border-red-200 dark:border-red-700 
                                 shadow-inner dark:shadow-sm text-left">
                     <div class="flex justify-between items-start mb-2">
-                        <h3 class="text-xl md:text-2xl font-semibold text-red-700 dark:text-red-300">
+                        <h3 class="text-xl md:text-2xl font-semibold text-green-700 dark:text-green-300">
                             Color discrepancies in different pages
                         </h3>
                         <span class="inline-flex items-center px-3 py-1 text-sm font-medium rounded-full 
@@ -345,7 +360,7 @@
                         </span>
                     </div>
                     <p class="text-green-600 dark:text-green-200 leading-relaxed">
-                        Some pages are coded using different shades of colors. This is a minor bug of low priority.
+                        Some pages are coded using different shades and colors. This is a minor bug of low priority.
                     </p>
                 </section>
             </div>
@@ -355,8 +370,7 @@
     
 
 <footer class="w-full bg-card-light dark:bg-card-dark text-gray-600 dark:text-gray-400 text-center text-sm py-6 border-t 
-                   border-gray-border-light dark:border-gray-border-dark transition-colors duration-300 mt-auto">
-        <p>&copy; <span id="current-year"></span> Bobby Reichert. All rights reserved.</p>
+                   border-gray-border-light dark:border-gray-border-dark transition-colors duration-300 mt-auto">>
         <p class="mt-1">Last Updated: <span id="last-updated-date">11/11/2025</span></p>
     </footer>
 
