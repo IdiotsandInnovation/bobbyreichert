@@ -528,6 +528,17 @@
             currentChatId = null;
         }
 
+        function renderDateDivider(dateStr, container) {
+             const div = document.createElement('div');
+             div.className = "flex items-center justify-center my-6 opacity-70";
+             div.innerHTML = `
+                 <div class="bg-gray-200 dark:bg-gray-800 text-gray-500 dark:text-gray-400 text-xs font-medium px-4 py-1 rounded-full border border-gray-300 dark:border-gray-700 shadow-sm">
+                     ${dateStr}
+                 </div>
+             `;
+             container.appendChild(div);
+        }
+
         function loadChat(chatId, chatData) {
             currentChatId = chatId;
             // Clear mentions for self when opening chat
@@ -587,8 +598,34 @@
                 const container = document.getElementById('messages-container');
                 container.innerHTML = '';
                 
+                let lastDate = null;
+
                 snapshot.forEach(doc => {
-                    renderMessage(doc.data(), doc.id, container);
+                    const msg = doc.data();
+                    
+                    // --- DATE DIVIDER LOGIC ---
+                    let msgDate = "Today"; 
+                    if (msg.createdAt) {
+                        const date = msg.createdAt.toDate();
+                        const today = new Date();
+                        const yesterday = new Date(today);
+                        yesterday.setDate(yesterday.getDate() - 1);
+                        
+                        if (date.toDateString() === today.toDateString()) {
+                            msgDate = "Today";
+                        } else if (date.toDateString() === yesterday.toDateString()) {
+                            msgDate = "Yesterday";
+                        } else {
+                            msgDate = date.toLocaleDateString([], {weekday: 'short', month: 'short', day: 'numeric'}); // e.g., Mon, Jan 1
+                        }
+                    }
+
+                    if (msgDate !== lastDate) {
+                        renderDateDivider(msgDate, container);
+                        lastDate = msgDate;
+                    }
+                    
+                    renderMessage(msg, doc.id, container);
                 });
                 
                 if (isChatInitialLoad) {
@@ -602,7 +639,7 @@
                                 scrollToBottom();
                             }
                             
-                            if (!isCurrentChatMuted && msg.senderId !== currentUser.uid && msg.type !== 'system') {
+                            if (!isCurrentChatMuted && msg.senderId !== currentUser.uid && msg.type !== 'system' && msg.type !== 'action') {
                                 sendNotification(msg);
                             }
                         }
@@ -1110,6 +1147,18 @@
                 return;
             }
 
+            // ACTION MESSAGE HANDLING (/me)
+            if (msg.type === 'action') {
+                div.className = "flex w-full mb-2 justify-center px-4";
+                div.innerHTML = `
+                    <div class="text-sm text-gray-500 dark:text-gray-400 italic text-center">
+                        <span class="font-bold text-gray-600 dark:text-gray-300">* ${msg.senderName}</span> ${msg.content}
+                    </div>
+                `;
+                container.appendChild(div);
+                return;
+            }
+
             div.className = `flex w-full mb-4 ${isMe ? 'justify-end' : 'justify-start'}`;
             
             let contentHtml = '';
@@ -1274,7 +1323,7 @@
                         showToast("Chat deleted", "success");
                         return;
                     } else if (cmd === '/help') {
-                        showToast("Commands: /leavechat, /deletechat, /mute, /unmute, /theme [light|dark]", "info");
+                        showToast("Commands: /me, /shrug, /roll, /leavechat, /mute, /theme", "info");
                         input.value = '';
                         return;
                     } else if (cmd === '/mute') {
@@ -1297,6 +1346,43 @@
                         } else {
                             toggleTheme();
                         }
+                        input.value = '';
+                        return;
+                    } else if (cmd === '/me') {
+                        const actionContent = text.substring(4).trim();
+                        if (actionContent) {
+                            const messagesRef = collection(db, 'artifacts', APP_ID, 'public', 'data', 'chats', currentChatId, 'messages');
+                            await addDoc(messagesRef, {
+                                content: actionContent,
+                                type: 'action',
+                                senderId: currentUser.uid,
+                                senderName: currentUser.displayName || currentUser.email.split('@')[0],
+                                createdAt: serverTimestamp()
+                            });
+                            input.value = '';
+                            return;
+                        }
+                    } else if (cmd === '/shrug') {
+                        const msgContent = (text.substring(7).trim() + " ¯\\_(ツ)_/¯").trim();
+                        const messagesRef = collection(db, 'artifacts', APP_ID, 'public', 'data', 'chats', currentChatId, 'messages');
+                        await addDoc(messagesRef, {
+                            content: msgContent,
+                            type: 'text',
+                            senderId: currentUser.uid,
+                            senderName: currentUser.displayName || currentUser.email.split('@')[0],
+                            createdAt: serverTimestamp()
+                        });
+                        input.value = '';
+                        return;
+                    } else if (cmd === '/roll') {
+                        const max = parseInt(args[1]) || 100;
+                        const roll = Math.floor(Math.random() * max) + 1;
+                        const messagesRef = collection(db, 'artifacts', APP_ID, 'public', 'data', 'chats', currentChatId, 'messages');
+                        await addDoc(messagesRef, {
+                            content: `🎲 ${currentUser.displayName || "User"} rolled ${roll} (1-${max})`,
+                            type: 'system',
+                            createdAt: serverTimestamp()
+                        });
                         input.value = '';
                         return;
                     }
