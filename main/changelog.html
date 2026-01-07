@@ -9,73 +9,52 @@
         gtag('config', 'G-J4PE57KXDN');
     </script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bobby Reichert | Homepage</title>
+    <title>Bobby Reichert | Changelog</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Configure Tailwind - Dark mode ENABLED -->
     <script>
         tailwind.config = {
-            darkMode: 'class', // Enable dark mode via the 'dark' class on <html>
+            darkMode: 'class',
             theme: {
                 extend: {
                     fontFamily: {
                         sans: ['Inter', 'sans-serif'],
                     },
                     colors: {
-                        'primary': '#4f46e5', // Indigo-600
-                        'primary-dark': '#a5b4fc' // Indigo-300 for dark mode accent
+                        'primary': '#4f46e5',
+                        'primary-dark': '#a5b4fc'
                     }
                 }
             }
         }
     </script>
     <style>
-        /* Set the Inter font globally and ensure a smooth background */
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
         body {
             font-family: 'Inter', sans-serif;
-            
         }
         
-        /* Custom scrollbar for a cleaner look */
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
-        /* Light Mode Scrollbar */
-        ::-webkit-scrollbar-thumb {
-            background: #d1d5db; /* Gray-400 */
-            border-radius: 4px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #f7f9fc;
-        }
-        /* Dark Mode Scrollbar Overrides */
-        .dark ::-webkit-scrollbar-thumb {
-            background: #4b5563; /* Gray-600 */
-        }
-        .dark ::-webkit-scrollbar-track {
-            background: #111827; /* Gray-900 background */
-        }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 4px; }
+        ::-webkit-scrollbar-track { background: #f7f9fc; }
+        .dark ::-webkit-scrollbar-thumb { background: #4b5563; }
+        .dark ::-webkit-scrollbar-track { background: #111827; }
 
         .fade-out {
             opacity: 0 !important;
             transform: translateY(100%) !important;
             pointer-events: none;
         }
-        /* CSS to hide the dropdown by default and manage transitions */
         .dropdown-menu {
             opacity: 0;
             visibility: hidden;
             transform: translateY(-10px);
             transition: all 0.2s ease-out;
         }
-
         .dropdown-menu.visible {
             opacity: 1;
             visibility: visible;
             transform: translateY(0);
         }
-
-        /* 🔴 MOBILE MENU STYLES 🔴 */
         #mobile-menu {
             transform: translateX(100%);
             transition: transform 0.3s ease-out;
@@ -85,213 +64,240 @@
             transform: translateX(0);
             pointer-events: auto;
         }
+
+        /* Timeline Styles */
+        .timeline-container {
+            position: relative;
+            padding-left: 2rem;
+        }
+        .timeline-container::before {
+            content: '';
+            position: absolute;
+            left: 7px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: #e5e7eb;
+        }
+        .dark .timeline-container::before {
+            background: #374151;
+        }
+        .timeline-dot {
+            position: absolute;
+            left: 0;
+            top: 24px;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #4f46e5;
+            border: 4px solid white;
+            z-index: 10;
+        }
+        .dark .timeline-dot {
+            border-color: #1f2937;
+            background: #a5b4fc;
+        }
+        .timeline-item:last-child {
+            padding-bottom: 0;
+        }
     </style>
 </head>
-<!-- Body now uses responsive dark/light mode classes -->
 <body class="min-h-screen flex flex-col items-center transition-colors duration-300 bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
 
-    <!-- 🔴 START: NAVIGATION BAR 🔴 -->
+    <!-- NAVIGATION BAR -->
     <nav class="w-full bg-white/30 backdrop-blur-md shadow-lg sticky top-0 z-20 dark:bg-gray-800/30 dark:shadow-xl transition-colors duration-300">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16">
-                <!-- Logo/Name -->
                 <div class="flex-shrink-0">
                     <span class="text-xl font-bold text-primary dark:text-primary-dark">Bobby Reichert</span>
                 </div>
                 
-                <!-- Desktop Links & Dropdown (Hidden on Mobile) -->
                 <div class="hidden md:flex items-center space-x-3 md:space-x-4 text-sm md:text-base">
-                    <a href="#" class="text-gray-900 dark:text-gray-100 font-bold p-2 rounded-md bg-indigo-100 dark:bg-indigo-800 hover:bg-indigo-200 dark:hover:bg-indigo-700 transition">Home</a>
+                    <a href="index.html" class="text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary-dark font-medium p-2 rounded-md transition duration-150">Home</a>
                     <a href="about.html" class="text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary-dark font-medium p-2 rounded-md transition duration-150">Bio</a>
                     <a href="blog.html" class="text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary-dark font-medium p-2 rounded-md transition duration-150">Blog</a>
                     <a href="contact.html" class="text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary-dark font-medium p-2 rounded-md transition duration-150">Contact</a>
                     
-                    <!-- DROPDOWN MENU -->
                     <div id="more-dropdown" class="relative group">
-                        <!-- Dropdown Button -->
-                        <button type="button" class="text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary-dark font-medium p-2 rounded-md transition duration-150 flex items-center" aria-expanded="false" aria-controls="more-menu-items">
+                        <button type="button" class="text-gray-900 dark:text-gray-100 font-bold p-2 rounded-md bg-indigo-100 dark:bg-indigo-800 flex items-center" aria-expanded="false">
                             More
-                            <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                            <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                         </button>
                         
-                        <!-- Dropdown Content uses responsive dark/light mode classes -->
                         <div id="more-menu-items" class="dropdown-menu absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white dark:bg-gray-700 ring-1 ring-black ring-opacity-5 dark:ring-gray-600 z-30">
-                            <div class="py-1" role="menu" aria-orientation="vertical" aria-labelledby="more-dropdown">
-                                <a href="archived-blogs.html" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 hover:text-primary transition duration-150" role="menuitem">
-                                    Archived Blogs
-                                </a>
-                                <a href="changelog.html" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 hover:text-primary transition duration-150" role="menuitem">
-                                    Changelog
-                                </a>
-                                
-                                <a href="planned-features.html" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 hover:text-primary transition duration-150" role="menuitem">
-                                    Future Features
-                                </a>
-                                <a href="settings.html" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 hover:text-primary transition duration-150" role="menuitem">
-                                    Settings
-                                </a>
+                            <div class="py-1">
+                                <a href="archived-blogs.html" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600">Archived Blogs</a>
+                                <a href="changelog.html" class="block px-4 py-2 text-sm font-bold text-primary dark:text-primary-dark bg-indigo-50 dark:bg-indigo-900/50">Changelog</a>
+                                <a href="planned-features.html" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600">Future Features</a>
+                                <a href="settings.html" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600">Settings</a>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Mobile Menu Button (Visible on Mobile) -->
                 <div class="md:hidden">
-                    <button id="mobile-menu-button" type="button" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 inline-flex items-center justify-center p-2 rounded-md transition duration-150" aria-controls="mobile-menu" aria-expanded="false">
-                        <span class="sr-only">Open main menu</span>
-                        <!-- Hamburger Icon -->
-                        <svg id="hamburger-icon" class="block h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-                        </svg>
-                        <!-- Close Icon (X) -->
-                        <svg id="close-icon" class="hidden h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                        </svg>
+                    <button id="mobile-menu-button" type="button" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 p-2">
+                        <svg id="hamburger-icon" class="block h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" /></svg>
+                        <svg id="close-icon" class="hidden h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
                     </button>
                 </div>
             </div>
         </div>
     </nav>
-    <!-- 🔴 END: NAVIGATION BAR 🔴 -->
     
-    <!-- 🔴 START: MOBILE MENU PANEL 🔴 -->
+    <!-- MOBILE MENU PANEL -->
     <div id="mobile-menu" class="fixed inset-0 top-16 w-full h-full md:hidden z-10 bg-white dark:bg-gray-900">
-        <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3 flex flex-col">
-            <!-- Highlighted item -->
-            <a href="#" class="text-lg block px-3 py-2 rounded-md text-primary dark:text-primary-dark bg-indigo-50 dark:bg-indigo-900 font-semibold transition duration-150">Home (Current)</a>
-            
-            <!-- Other links use responsive dark/light mode classes -->
-            <a href="about.html" class="text-lg font-medium block px-3 py-2 rounded-md text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-primary transition duration-150">Bio</a>
-            <a href="blog.html" class="text-lg font-medium block px-3 py-2 rounded-md text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-primary transition duration-150">Blog</a>
-            <a href="contact.html" class="text-lg font-medium block px-3 py-2 rounded-md text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-primary transition duration-150">Contact</a>
-            
-            <!-- Separator -->
+        <div class="px-2 pt-2 pb-3 space-y-1 flex flex-col">
+            <a href="index.html" class="text-lg font-medium block px-3 py-2 text-gray-700 dark:text-gray-200">Home</a>
+            <a href="about.html" class="text-lg font-medium block px-3 py-2 text-gray-700 dark:text-gray-200">Bio</a>
+            <a href="blog.html" class="text-lg font-medium block px-3 py-2 text-gray-700 dark:text-gray-200">Blog</a>
+            <a href="contact.html" class="text-lg font-medium block px-3 py-2 text-gray-700 dark:text-gray-200">Contact</a>
             <div class="h-px w-full my-2 bg-gray-200 dark:bg-gray-700"></div>
-
-            <!-- "More" Dropdown Items -->
-            <a href="archived-blogs.html" class="text-md block px-3 py-2 rounded-md text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-primary transition duration-150">Archived Blogs</a>
-            <a href="changelog.html" class="text-md block px-3 py-2 rounded-md text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-primary transition duration-150">Changelog</a>
-            <a href="planned-features.html" class="text-md block px-3 py-2 rounded-md text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-primary transition duration-150">Future Features</a>
-            <a href="settings.html" class="text-md block px-3 py-2 rounded-md text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-primary transition duration-150">Settings</a>
+            <a href="archived-blogs.html" class="text-md block px-3 py-2 text-gray-600 dark:text-gray-300">Archived Blogs</a>
+            <a href="changelog.html" class="text-md block px-3 py-2 font-bold text-primary dark:text-primary-dark bg-indigo-50 dark:bg-indigo-900/50 rounded-md">Changelog</a>
+            <a href="planned-features.html" class="text-md block px-3 py-2 text-gray-600 dark:text-gray-300">Future Features</a>
+            <a href="settings.html" class="text-md block px-3 py-2 text-gray-600 dark:text-gray-300">Settings</a>
         </div>
     </div>
-    <!-- 🔴 END: MOBILE MENU PANEL 🔴 -->
 
+    <!-- Main Content Area -->
+    <main class="w-full max-w-4xl flex-grow p-4 md:p-8">
+        <div class="w-full bg-white dark:bg-gray-800 shadow-xl rounded-2xl p-6 md:p-12 transition-colors duration-300">
+            <header class="text-center mb-12">
+                <h1 class="text-4xl font-extrabold text-gray-900 dark:text-gray-100 tracking-tight mb-2">Changelog</h1>
+                <p class="text-indigo-600 dark:text-blue-800 font-medium">Tracking the evolution of this project.</p>
+            </header>
 
-    <!-- Main Content Area: Changelog -->
-    <main class="w-full max-w-3xl flex-grow p-4 md:p-8">
-        <div class="w-full max-w-3xl bg-white dark:bg-gray-800 shadow-xl rounded-2xl p-10 md:p-16 text-center transform hover:scale-[1.01] transition duration-300 ease-in-out dark:shadow-2xl">
-
-            <h1 class="text-3xl font-extrabold text-gray-900 dark:text-gray-100 tracking-tight mb-4">
-                Changelog
-            </h1>
-            <p class="text-lg font-light text-indigo-600 mb-8 text-center">
-                A history of website updates.
-            </p>
-
-            <!-- 🔴 START: TIMELINE CONTAINER 🔴 -->
-            <div class="timeline">
-                <!--Timeline Item: Version 1.24-->
-                <div class="timeline-item">
-                    <div class="bg-blue-50 p-4 rounded-lg shadow-md border-t-4 border-blue-600">
-                        <p class="text-xs font-medium text-blue-600 mb-1">November 16, 2025</p>
-                        <h3 class="text-xl font-bold text-gray-800 mb-2">Version 1.24: Dark UI, Settings menu</h3>
-                        <ul class="list-disc ml-5 space-y-1 text-sm text-gray-700">
-                            <li>New testing page at <a href="test.html">bobbyreichert.pages.dev/main/test</a></li>
-                            <li>Dark UI on some pages (still working on getting it on all pages)</li>
-                            <li>Settings menu development (Beta)</li>
-                            <li>Planned features page revamp (Beta)</li>
-                            <li>Bug Fixes</li>
-                            <li>Slight CSS tweaks</li>
+            <div class="timeline-container">
+                <!-- Version 1.30 -->
+                <div class="timeline-item relative pb-10">
+                    <div class="timeline-dot"></div>
+                    <div class="bg-green-50 dark:bg-green-900/20 p-6 rounded-xl border border-green-100 dark:border-green-800/50 shadow-sm ml-4">
+                        <span class="text-sm font-bold text-indigo-600 dark:text-blue-800 block mb-1">January 7, 2026</span>
+                        <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-3">Version 1.30: CSS Update</h3>
+                        <ul class="space-y-2 text-gray-600 dark:text-gray-300 list-disc list-inside marker:text-indigo-500">
+                            <li>Readded comments section</li>
+                            <li><u><a href="/chat">New limited-access chat site</a></u></li>
+                            <li>Complete CSS styling revamp</li>
+                            <li>Transparent glass blur effect on menu bar</li>
+                            <li>Transparent glass blur effect on cookie banner</li>
+                            <li>Optimized Dark UI</li>
+                            <li>Homepage countdowns section</li>
+                            <li>New menu settings options (Beta)</li>
+                            <li>New cookie consent setting</li>
+                            <li>Timeline page design revamp</li>
+                            <li>Scroll-to-top and chat button added to Blog page</li>
+                            <li>Updated Archived Blogs page</li>
+                            <li>Added Google Firebase</li>
+                            <li>Added Firestore and Firebase Authentication to Blog page</li>
+                            <li>Added ReCAPTCHA</li>
                         </ul>
                     </div>
                 </div>
-                <!-- Timeline Item: Version 1.23 -->
-                <div class="timeline-item">
-                    <div class="bg-blue-50 p-4 rounded-lg shadow-md border-t-4 border-blue-600">
-                        <p class="text-xs font-medium text-blue-600 mb-1">November 1, 2025</p>
-                        <h3 class="text-xl font-bold text-gray-800 mb-2">Version 1.23: Mobile menu</h3>
-                        <ul class="list-disc ml-5 space-y-1 text-sm text-gray-700">
-                            
-                            <li>New mobile menu shown on narrow displays (Previously menu elements would go off the side of the screen)</li>
-                            <li>Settings menu development (Beta)</li>
-                            <li>Bug Fixes</li>
+                <!-- Version 1.24 -->
+                <div class="timeline-item relative pb-10">
+                    <div class="timeline-dot"></div>
+                    <div class="bg-gray-50 dark:bg-gray-700/50 p-6 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm ml-4">
+                        <span class="text-sm font-bold text-indigo-600 dark:text-blue-800 block mb-1">November 16, 2025</span>
+                        <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-3">Version 1.24: Dark UI, Settings menu</h3>
+                        <ul class="space-y-2 text-gray-600 dark:text-gray-300 list-disc list-inside marker:text-indigo-500">
+                            <li>New testing page at <a href="test.html" class="text-indigo-600 dark:text-blue-800 hover:underline">bobbyreichert.pages.dev/main/test</a></li>
+                            <li>Expanded Dark UI implementation across multiple pages</li>
+                            <li>Settings menu development</li>
+                            <li>Planned features page revamp</li>
+                            <li>Performance optimizations and CSS tweaks</li>
                         </ul>
                     </div>
                 </div>
-                <!-- Timeline Item: Version 1.22 -->
-                <div class="timeline-item">
-                    <div class="bg-blue-50 p-4 rounded-lg shadow-md border-t-4 border-blue-600">
-                        <p class="text-xs font-medium text-blue-600 mb-1">October 28, 2025</p>
-                        <h3 class="text-xl font-bold text-gray-800 mb-2">Version 1.22: Planned Features & Known Bugs page </h3>
-                        <ul class="list-disc ml-5 space-y-1 text-sm text-gray-700">
-                            
-                            <li>New page to check first before reporting a bug or suggesting a new feature</li>
-                            
-                            <li>Bug Fixes</li>
+
+                <!-- Version 1.23 -->
+                <div class="timeline-item relative pb-10">
+                    <div class="timeline-dot"></div>
+                    <div class="bg-gray-50 dark:bg-gray-700/50 p-6 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm ml-4">
+                        <span class="text-sm font-bold text-indigo-600 dark:text-blue-800 block mb-1">November 1, 2025</span>
+                        <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-3">Version 1.23: Mobile Experience</h3>
+                        <ul class="space-y-2 text-gray-600 dark:text-gray-300 list-disc list-inside marker:text-indigo-500">
+                            <li>New mobile-first navigation menu for better accessibility</li>
+                            <li>Continued development on the Settings dashboard</li>
+                            <li>Fixed layout issues on narrow displays</li>
                         </ul>
                     </div>
                 </div>
-                 <!-- Timeline Item: Version 1.21 -->
-                <div class="timeline-item">
-                    <div class="bg-blue-50 p-4 rounded-lg shadow-md border-t-4 border-blue-600">
-                        <p class="text-xs font-medium text-blue-600 mb-1">October 28, 2025</p>
-                        <h3 class="text-xl font-bold text-gray-800 mb-2">Version 1.21: Deleted comment section </h3>
-                        <ul class="list-disc ml-5 space-y-1 text-sm text-gray-700">
-                            
+
+                <!-- Version 1.22 -->
+                <div class="timeline-item relative pb-10">
+                    <div class="timeline-dot"></div>
+                    <div class="bg-gray-50 dark:bg-gray-700/50 p-6 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm ml-4">
+                        <span class="text-sm font-bold text-indigo-600 dark:text-blue-800 block mb-1">October 28, 2025</span>
+                        <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-3">Version 1.22: Feedback Hub</h3>
+                        <ul class="space-y-2 text-gray-600 dark:text-gray-300 list-disc list-inside marker:text-indigo-500">
+                            <li>Launched Planned Features & Known Bugs page</li>
+                            <li>Bug fixes</li>
+                        </ul>
+                    </div>
+                </div>
+                <!-- Version 1.21 -->
+                <div class="timeline-item relative pb-10">
+                    <div class="timeline-dot"></div>
+                    <div class="bg-gray-50 dark:bg-gray-700/50 p-6 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm ml-4">
+                        <span class="text-sm font-bold text-indigo-600 dark:text-blue-800 block mb-1">October 28, 2025</span>
+                        <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-3">Version 1.21: Planned Features & Known Bugs Pages Added</h3>
+                        <ul class="space-y-2 text-gray-600 dark:text-gray-300 list-disc list-inside marker:text-indigo-500">
                             <li>Changed blog formatting</li>
                             <li>Deleted broken comment section</li>
                             <li>Bug Fixes</li>
                         </ul>
                     </div>
                 </div>
-                 <!-- Timeline Item: Version 1.2 -->
-                <div class="timeline-item">
-                    <div class="bg-yellow-50 p-4 rounded-lg shadow-md border-t-4 border-yellow-600">
-                        <p class="text-xs font-medium text-yellow-600 mb-1">October 28, 2025</p>
-                        <h3 class="text-xl font-bold text-gray-800 mb-2">Version 1.2 (Reverted): Comments Section</h3>
-                        <ul class="list-disc ml-5 space-y-1 text-sm text-gray-700">
+                
+                <!-- Version 1.20 -->
+                <div class="timeline-item relative pb-10">
+                    <div class="timeline-dot"></div>
+                    <div class="bg-red-50 dark:bg-red-700/50 p-6 rounded-xl border border-red-900 dark:border-red-700 shadow-sm ml-4">
+                        <span class="text-sm font-bold text-indigo-600 dark:text-blue-800 block mb-1">October 28, 2025</span>
+                        <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-3">Version 1.20: Comments section</h3>
+                        <ul class="space-y-2 text-gray-600 dark:text-gray-300 list-disc list-inside marker:text-indigo-500">
                             <li>Bug Fixes</li>
                             <li>Added 'return to top' button on blog</li>
-                            <li>Added blog comment section (Beta)</li>
-                            
+                            <li>Added blog comment section (Reverted)</li>
                         </ul>
                     </div>
                 </div>
-                <!-- Timeline Item: Version 1.11 -->
-                <div class="timeline-item">
-                    <div class="bg-blue-50 p-4 rounded-lg shadow-md border-t-4 border-blue-600">
-                        <p class="text-xs font-medium text-blue-600 mb-1">October 27, 2025</p>
-                        <h3 class="text-xl font-bold text-gray-800 mb-2">Version 1.11: Bug fixes</h3>
-                        <ul class="list-disc ml-5 space-y-1 text-sm text-gray-700">
+                <!-- Version 1.20 -->
+                <div class="timeline-item relative pb-10">
+                    <div class="timeline-dot"></div>
+                    <div class="bg-gray-50 dark:bg-gray-700/50 p-6 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm ml-4">
+                        <span class="text-sm font-bold text-indigo-600 dark:text-blue-800 block mb-1">October 27, 2025</span>
+                        <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-3">Version 1.11: Bug Fixes for V1.10</h3>
+                        <ul class="space-y-2 text-gray-600 dark:text-gray-300 list-disc list-inside marker:text-indigo-500">
                             <li>Bug Fixes</li>
                             <li>Fixed Blog archive page formatting</li>
                             <li>UI Update: Ensured the navigation bar correctly highlights the active page within the `More` dropdown.</li>
-                            
                         </ul>
                     </div>
                 </div>
-                <!-- Timeline Item: Version 1.1 -->
-                <div class="timeline-item">
-                    <div class="bg-blue-50 p-4 rounded-lg shadow-md border-t-4 border-blue-600">
-                        <p class="text-xs font-medium text-blue-600 mb-1">October 27, 2025</p>
-                        <h3 class="text-xl font-bold text-gray-800 mb-2">Version 1.1: Changelog Launch and Blog Archives</h3>
-                        <ul class="list-disc ml-5 space-y-1 text-sm text-gray-700">
-                            <li>**New Feature:** Launched the dedicated **Changelog** page to track updates.</li>
-                            <li>**Design:** Added 'More' dropdown menu.</li>
+                <!-- Version 1.10 -->
+                <div class="timeline-item relative pb-10">
+                    <div class="timeline-dot"></div>
+                    <div class="bg-gray-50 dark:bg-gray-700/50 p-6 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm ml-4">
+                        <span class="text-sm font-bold text-indigo-600 dark:text-blue-800 block mb-1">October 27, 2025</span>
+                        <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-3">Version 1.10: Changelog Launch</h3>
+                        <ul class="space-y-2 text-gray-600 dark:text-gray-300 list-disc list-inside marker:text-indigo-500">
+                            <li>Launched the dedicated Changelog page to track updates.</li>
+                            <li>Added 'More' dropdown menu.</li>
                             <li>UI Update: Ensured the navigation bar correctly highlights the active page within the `More` dropdown.</li>
                             <li>New Feature: Added the <a href="archived-blogs.html">Blog Archives</a> page with collapsible drop-downs to store older blog posts.</li>
                             <li>Optimized the accordion transition for smoother opening and closing.</li>
                         </ul>
                     </div>
                 </div>
-
-                <!-- Timeline Item: Version 1.01 -->
-                <div class="timeline-item">
-                    <div class="bg-blue-50 p-4 rounded-lg shadow-md border-t-4 border-blue-600">
-                        <p class="text-xs font-medium text-blue-600 mb-1">October 26, 2025</p>
-                        <h3 class="text-xl font-bold text-gray-800 mb-2">Version 1.05: Bug fixes</h3>  
-                        <ul class="list-disc ml-5 space-y-1 text-sm text-gray-700">
+                <!-- Version 1.05 -->
+                <div class="timeline-item relative pb-10">
+                    <div class="timeline-dot"></div>
+                    <div class="bg-gray-50 dark:bg-gray-700/50 p-6 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm ml-4">
+                        <span class="text-sm font-bold text-indigo-600 dark:text-blue-800 block mb-1">October 26, 2025</span>
+                        <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-3">Version 1.05: Website Moved</h3>
+                        <ul class="space-y-2 text-gray-600 dark:text-gray-300 list-disc list-inside marker:text-indigo-500">
                             <li>Fixed broken links</li>
                             <li>Moved website to Cloudflare platform</li>
                             <li>Reordered blog entry order: now shows more recent at the top</li>
@@ -299,196 +305,84 @@
                         </ul>
                     </div>
                 </div>
-
-                <!-- Timeline Item: Version 1.0 (Major Launch) -->
-                <div class="timeline-item major">
-                    <div class="bg-emerald-50 p-4 rounded-lg shadow-md border-t-4 border-emerald-600">
-                        <p class="text-xs font-medium text-emerald-600 mb-1">October 25, 2025</p>
-                        <h3 class="text-xl font-bold text-gray-800 mb-2">Version 1.0: Initial Website Launch</h3>
-                        <ul class="list-disc ml-5 space-y-1 text-sm text-gray-700">
-                            <li>Launched initial pages on w3spaces: Home, Bio, Blog, and Contact.</li>
-                            <li>Implemented cookies and consent banner.</li>
-                            <li>Design using Tailwind CSS and the Inter font family.</li>
+                <!-- Version 1.0 (Major) -->
+                <div class="timeline-item relative">
+                    <div class="timeline-dot bg-emerald-500"></div>
+                    <div class="bg-emerald-50 dark:bg-emerald-900/20 p-6 rounded-xl border border-emerald-100 dark:border-emerald-800/50 shadow-sm ml-4">
+                        <span class="text-sm font-bold text-emerald-600 dark:text-emerald-400 block mb-1">October 25, 2025</span>
+                        <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-3">Version 1.0: Initial Launch</h3>
+                        <p class="text-gray-600 dark:text-gray-300 mb-2">The birth of the official website.</p>
+                        <ul class="space-y-2 text-gray-600 dark:text-gray-300 list-disc list-inside marker:text-emerald-500">
+                            <li>Core pages: Home, Bio, Blog, and Contact</li>
+                            <li>Tailwind CSS architecture & Inter typography</li>
+                            <li>Privacy-first cookie consent system</li>
                         </ul>
                     </div>
                 </div>
-
             </div>
-            <!-- 🔴 END: TIMELINE CONTAINER 🔴 -->
-
         </div>
     </main>
 
-    <!-- 2. Footer -->
-    <footer class="w-full bg-gray-100 text-gray-500 text-center text-sm py-4 border-t mt-auto">
-        <p>Last Updated: 11/01/2025</p>
+    <footer class="w-full bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 text-center text-sm py-6 border-t dark:border-gray-700 mt-auto">
+        <p>Last Updated: 01/07/2026</p>
     </footer>
 
     <!-- Cookie Banner -->
-    <div id="cookie-banner" class="fixed bottom-0 left-0 right-0 p-4 md:p-6 bg-gray-800/40 backdrop-blur-md text-white shadow-2xl transition-all duration-500 transform translate-y-0 z-50 opacity-100">
+    <div id="cookie-banner" class="fixed bottom-0 left-0 right-0 p-4 md:p-6 bg-gray-900/90 backdrop-blur-md text-white shadow-2xl z-50 transition-all duration-500 hidden">
         <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between">
-            <p class="text-sm mb-3 md:mb-0 md:mr-6">
-                This website uses cookies to ensure you get the best experience and to track web traffic. By continuing to use this site, you agree to our use of cookies.
+            <p class="text-sm mb-3 md:mb-0 md:mr-6 text-gray-300">
+                This website uses cookies to improve your experience and track traffic. By continuing, you agree to our use of cookies.
             </p>
-            <button id="accept-cookies" class="w-full md:w-auto px-6 py-2 bg-indigo-500 hover:bg-indigo-600 text-white font-semibold rounded-lg shadow-md transition duration-300 text-sm">
-                Got it!
+            <button id="accept-cookies" class="w-full md:w-auto px-8 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-full transition duration-300 text-sm whitespace-nowrap">
+                I Understand
             </button>
         </div>
     </div>
 
-    
     <script>
-        // --- CONSTANTS ---
-        const THEME_KEY = 'app-theme-mode'; // Key used to store theme preference
+        const THEME_KEY = 'app-theme-mode';
         const COOKIE_KEY = 'cookiesAccepted';
         
-        // --- DOM Elements ---
-        let mobileMenuButton;
-        let mobileMenu;
-        let hamburgerIcon;
-        let closeIcon;
-
-        // Match Media Query for OS preference
         const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
 
-        // --- THEME MODE LOGIC ---
-
-        /**
-         * Applies the 'dark' class to the HTML element based on the resolved theme.
-         * @param {string} theme 'light', 'dark', or 'system'.
-         */
         function applyTheme(theme) {
             const html = document.documentElement;
             let resolvedTheme = theme;
-
-            if (theme === 'system') {
-                resolvedTheme = mediaQuery.matches ? 'dark' : 'light';
-            }
-
-            if (resolvedTheme === 'dark') {
-                html.classList.add('dark');
-            } else {
-                html.classList.remove('dark');
-            }
+            if (theme === 'system') resolvedTheme = mediaQuery.matches ? 'dark' : 'light';
+            if (resolvedTheme === 'dark') html.classList.add('dark');
+            else html.classList.remove('dark');
         }
-        
-        // Sets up listener for OS theme changes if 'system' is selected.
-        function setupSystemThemeListener() {
-            mediaQuery.addEventListener('change', () => {
-                const currentPreference = localStorage.getItem(THEME_KEY) || 'system';
-                if (currentPreference === 'system') {
-                    applyTheme('system');
-                }
-            });
-        }
-        
-        // --- MOBILE MENU LOGIC ---
-
-        /**
-         * Toggles the mobile navigation menu open and closed.
-         */
-        function toggleMobileMenu() {
-            if (!mobileMenu || !mobileMenuButton) return; 
-
-            const isOpen = mobileMenu.classList.contains('open');
-            mobileMenu.classList.toggle('open');
-            
-            // Toggle icons and aria-expanded state
-            if (isOpen) {
-                hamburgerIcon.classList.remove('hidden');
-                closeIcon.classList.add('hidden');
-                mobileMenuButton.setAttribute('aria-expanded', 'false');
-            } else {
-                hamburgerIcon.classList.add('hidden');
-                closeIcon.classList.remove('hidden');
-                mobileMenuButton.setAttribute('aria-expanded', 'true');
-            }
-        }
-        
-        // --- INITIALIZATION ---
 
         document.addEventListener('DOMContentLoaded', () => {
-            // 1. Initialize Theme Mode
-            const initialThemeMode = localStorage.getItem(THEME_KEY) || 'system';
-            applyTheme(initialThemeMode);
-            setupSystemThemeListener();
+            applyTheme(localStorage.getItem(THEME_KEY) || 'system');
 
-            // 2. Initialize mobile menu elements
-            mobileMenuButton = document.getElementById('mobile-menu-button');
-            mobileMenu = document.getElementById('mobile-menu');
-            hamburgerIcon = document.getElementById('hamburger-icon');
-            closeIcon = document.getElementById('close-icon');
+            const mobileBtn = document.getElementById('mobile-menu-button');
+            const mobileMenu = document.getElementById('mobile-menu');
+            const hamIcon = document.getElementById('hamburger-icon');
+            const closeIcon = document.getElementById('close-icon');
 
-            // --- Cookie Consent Logic ---
+            mobileBtn.addEventListener('click', () => {
+                const isOpen = mobileMenu.classList.toggle('open');
+                hamIcon.classList.toggle('hidden', isOpen);
+                closeIcon.classList.toggle('hidden', !isOpen);
+            });
+
             const banner = document.getElementById('cookie-banner');
-            const acceptButton = document.getElementById('accept-cookies');
-
-            // Check if cookies have been accepted previously
-            const accepted = localStorage.getItem(COOKIE_KEY);
-
-            if (accepted === 'true') {
-                if (banner) {
-                    banner.style.display = 'none';
-                }
-            } else {
-                if (banner) {
-                    banner.style.display = 'block'; 
-                }
-
-                if (acceptButton) {
-                    acceptButton.addEventListener('click', () => {
-                        localStorage.setItem(COOKIE_KEY, 'true');
-                        if (banner) {
-                            banner.classList.add('fade-out');
-                            setTimeout(() => {
-                                banner.style.display = 'none';
-                            }, 500); 
-                        }
-                    });
-                }
+            const acceptBtn = document.getElementById('accept-cookies');
+            if (localStorage.getItem(COOKIE_KEY) !== 'true') {
+                banner.classList.remove('hidden');
+                acceptBtn.addEventListener('click', () => {
+                    localStorage.setItem(COOKIE_KEY, 'true');
+                    banner.classList.add('fade-out');
+                    setTimeout(() => banner.remove(), 500);
+                });
             }
 
-            // --- Dropdown Toggle Logic (More Menu) ---
             const dropdown = document.getElementById('more-dropdown');
-            const button = dropdown.querySelector('button');
             const menu = document.getElementById('more-menu-items');
-            
-            const hideMenu = () => {
-                menu.classList.remove('visible');
-                button.setAttribute('aria-expanded', 'false');
-            };
-
-            // Hover Listeners (for desktop)
-            dropdown.addEventListener('mouseenter', () => {
-                 if (window.innerWidth >= 768) menu.classList.add('visible');
-            });
-            dropdown.addEventListener('mouseleave', () => {
-                 if (window.innerWidth >= 768) hideMenu();
-            });
-
-            // Optional: Close menu when clicking outside of it
-            document.addEventListener('click', (event) => {
-                if (window.innerWidth >= 768 && !dropdown.contains(event.target) && menu.classList.contains('visible')) {
-                    hideMenu();
-                }
-            });
-
-            // --- Mobile Menu Listeners ---
-            if (mobileMenuButton) {
-                mobileMenuButton.addEventListener('click', toggleMobileMenu);
-
-                // Close mobile menu when a link inside is clicked
-                if (mobileMenu) {
-                    mobileMenu.querySelectorAll('a').forEach(link => {
-                        link.addEventListener('click', () => {
-                            if (mobileMenu.classList.contains('open')) {
-                                toggleMobileMenu();
-                            }
-                        });
-                    });
-                }
-            }
+            dropdown.addEventListener('mouseenter', () => window.innerWidth >= 768 && menu.classList.add('visible'));
+            dropdown.addEventListener('mouseleave', () => window.innerWidth >= 768 && menu.classList.remove('visible'));
         });
     </script>
-    </body>
+</body>
 </html>
