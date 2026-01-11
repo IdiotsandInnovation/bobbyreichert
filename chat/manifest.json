@@ -8,10 +8,12 @@
   "icons": [
     {
       "src": "faviconchat.png",
+      "sizes": "722x643",
       "type": "image/png"
     },
     {
       "src": "faviconchat.png",
+      "sizes": "722x643",
       "type": "image/png"
     }
   ]
