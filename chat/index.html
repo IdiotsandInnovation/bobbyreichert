@@ -234,7 +234,13 @@
             } catch (e) { console.error(e); }
             return "User";
         }
-        
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/service-worker.js')
+              .then(reg => console.log('Service Worker Registered!'))
+              .catch(err => console.log('Registration Failed', err));
+          });
+        }
         async function registerServiceWorker() {
           if (!('serviceWorker' in navigator)) return;
         
