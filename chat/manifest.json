@@ -1,6 +1,6 @@
 {
-  "name": "Bobby Reichert Chat",
-  "short_name": "BR Chat",
+  "name": "Bobby Reichert",
+  "short_name": "BR",
   "start_url": "/chat/index.html",
   "display": "standalone",
   "background_color": "#0000ff",
