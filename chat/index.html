@@ -172,26 +172,34 @@
         window.handleLogin = async (e) => {
             e.preventDefault();
             
-            if (Notification.permission === 'default') {
-                Notification.requestPermission();
-            }
+            // NOTE: Removed Notification.requestPermission() from here.
+            // It interferes with mobile form submission flows. 
+            // It is now handled safely after login in registerForPushNotifications.
 
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
             const errorMsg = document.getElementById('login-error');
             const btn = e.target.querySelector('button');
 
-            btn.disabled = true;
-            btn.innerHTML = '<svg class="animate-spin h-5 w-5 mr-3 inline" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Signing In...';
+            // Safety check for button existence
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = '<svg class="animate-spin h-5 w-5 mr-3 inline" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Signing In...';
+            }
 
             try {
                 await signInWithEmailAndPassword(auth, email, password);
+                // Auth observer handles redirect
             } catch (error) {
                 console.error(error);
-                errorMsg.textContent = "Invalid email or password.";
-                errorMsg.classList.remove('hidden');
-                btn.disabled = false;
-                btn.innerHTML = 'Sign In';
+                if (errorMsg) {
+                    errorMsg.textContent = "Invalid email or password.";
+                    errorMsg.classList.remove('hidden');
+                }
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = 'Sign In';
+                }
             }
         }
 

@@ -130,14 +130,15 @@
         <div class="bg-white dark:bg-gray-800 shadow-xl rounded-2xl p-6 md:p-10 w-full dark:shadow-2xl">
             <h1 class="text-4xl font-extrabold text-gray-900 dark:text-gray-100 tracking-tight mb-4 text-center">Blog Posts</h1>
             <p class="text-xl font-light text-primary dark:text-primary-dark mb-6 text-center">I'll occasionally post something here.</p>
-            <!-- Blog Post 31 -->
-            <section class="mt-8 p-6 bg-gray-50 dark:bg-gray-700 rounded-lg border border-dashed border-gray-300 dark:border-gray-600">
-                <h2 class="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">01/06/2026</h2>
-                <hr class="mb-3 border-gray-300 dark:border-gray-600">
-                <p class="text-gray-700 dark:text-gray-200 italic text-base leading-relaxed">
-                    School has started again. We only have 3 PE classes left this entire year! Today we played tennis baseball, with 8th graders vs 7th graders. We absolutely destroyed them. I got 5 home runs and maybe 10 people out. Also, Brendan allegedly hit a ball right into Nigel's nose, and his nose was bleeding after that. Then he hit a ball into ZC's back, and ZC spent the rest of PE in the restroom with an ice pack. On Friday, Vince says we are doing handball, except that it is his "New York version". That means it's not good. Also, in CSI, we have to create our own crime scene. I also have a Geometry test and a big Vince essay due soon. Also, If you're wondering where all the previous blog posts went, they are in the <u><a href="archived-blogs.html">Archived Blogs</a></u> page. If you are wondering what I was doing over break, I didn't really go anywhere. As for this website, I was coding a chat page that is in the final stages of development. Also 1.25 should roll out this week.
-                </p>
-            </section>
+            <!-- DYNAMIC POSTS CONTAINER -->
+            <div id="blog-posts-container" class="space-y-12">
+                <!-- Loading State -->
+                <div class="blog-skeleton p-6 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                    <div class="h-8 bg-gray-200 dark:bg-gray-600 rounded w-1/4 mb-4"></div>
+                    <div class="h-4 bg-gray-200 dark:bg-gray-600 rounded w-full mb-2"></div>
+                    <div class="h-4 bg-gray-200 dark:bg-gray-600 rounded w-5/6"></div>
+                </div>
+            </div>
             
 
             <!-- COMMENTS SECTION -->
@@ -174,7 +175,7 @@
     </main>
 
     <footer class="w-full bg-gray-100 dark:bg-gray-900 text-gray-500 dark:text-gray-400 text-center text-sm py-4 border-t dark:border-gray-700 mt-auto">
-        <p>Last Updated (Excluding Blog Posts): 12/04/2025</p>
+        <p>Last Updated (Excluding Blog Posts): 01/23/2026</p>
     </footer>
 
     <div id="cookie-banner" class="fixed bottom-0 left-0 right-0 p-4 md:p-6 bg-gray-800/40 backdrop-blur-md text-white shadow-2xl transition-all duration-500 transform translate-y-0 z-50 opacity-100">
@@ -194,10 +195,10 @@
     <script type="module">
     // Firebase imports (Firestore + Auth)
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
-    import { getFirestore, collection, addDoc, onSnapshot, query, serverTimestamp, setLogLevel } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, onSnapshot, query, serverTimestamp, setLogLevel, orderBy } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
     import { getAuth, onAuthStateChanged, setPersistence, browserLocalPersistence, signInAnonymously } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
 
-    // Firebase configuration (same as original)
+    // Firebase configuration
     const firebaseConfig = {
       apiKey: "AIzaSyCJTduHsoftZ9jxzK2zGt89JKXhLhkeGk8",
       authDomain: "bobbyreichertwebpage.firebaseapp.com",
@@ -223,8 +224,9 @@
     const loadingIndicator = document.getElementById('loading-indicator');
     const commentForm = document.getElementById('comment-form');
 
-    // Collection path (simple name; you can change to match your Firestore structure)
+    // Collection path
     const COMMENTS_COLLECTION = 'blog_comments';
+    const BLOG_POSTS_COLLECTION = 'blog_posts';
 
     // Utilities
     function sanitizeInput(str) {
@@ -253,6 +255,41 @@
       setTimeout(() => { formMessage.textContent = ''; }, 5000);
     }
 
+    // --- BLOG POSTS LOGIC ---
+    function loadBlogPosts() {
+        const postsContainer = document.getElementById('blog-posts-container');
+        // Sort by timestamp descending
+        const q = query(collection(db, BLOG_POSTS_COLLECTION), orderBy('timestamp', 'desc'));
+
+        onSnapshot(q, (snapshot) => {
+            if (snapshot.empty) {
+                // FALLBACK: Show hardcoded posts if DB is empty
+                postsContainer.innerHTML = `
+                    <section class="p-6 bg-gray-50 dark:bg-gray-700 rounded-lg border border-dashed border-gray-300 dark:border-gray-600">
+                        <h2 class="text-2xl font-bold mb-2">01/23/2026</h2>
+                        <hr class="mb-3 border-gray-300 dark:border-gray-600">
+                        <p class="text-gray-700 dark:text-gray-200 italic leading-relaxed">I rolled out 1.30... (This is a fallback placeholder because the database is empty).</p>
+                    </section>
+                `;
+                return;
+            }
+
+            postsContainer.innerHTML = '';
+            snapshot.forEach(doc => {
+                const post = doc.data();
+                const section = document.createElement('section');
+                section.className = "mt-8 p-6 bg-gray-50 dark:bg-gray-700 rounded-lg border border-dashed border-gray-300 dark:border-gray-600 transition-all hover:shadow-lg";
+                // FIX: Used sanitizeInput instead of sanitize which was undefined
+                section.innerHTML = `
+                    <h2 class="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">${sanitizeInput(post.title)}</h2>
+                    <hr class="mb-3 border-gray-300 dark:border-gray-600">
+                    <p class="text-gray-700 dark:text-gray-200 italic text-base leading-relaxed">${sanitizeInput(post.content)}</p>
+                `;
+                postsContainer.appendChild(section);
+            });
+        });
+    }
+
     // Initialize Auth and load comments
     let currentUserId = null;
     async function initAuthAndComments() {
@@ -266,7 +303,10 @@
             userIdDisplay.innerHTML = `✅ Comment Service Ready. Signed in as: <span class="font-bold break-all">${currentUserId}</span>`;
             submitButton.disabled = false;
             submitButton.classList.remove('submit-disabled');
+            
+            // FIX: Added calls to load content now that we are connected
             loadComments();
+            loadBlogPosts(); 
           } else {
             currentUserId = null;
             userIdDisplay.textContent = 'Authentication state: not signed in.';

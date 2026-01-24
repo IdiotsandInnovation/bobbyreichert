@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blog Admin | Bobby Reichert</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .hidden { display: none; }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen p-4 md:p-8">
+
+    <!-- LOGIN UI -->
+    <div id="login-section" class="max-w-md mx-auto mt-20 bg-white p-8 rounded-2xl shadow-xl">
+        <h1 class="text-2xl font-bold mb-6 text-center">Admin Login</h1>
+        <div class="space-y-4">
+            <input type="email" id="admin-email" placeholder="Admin Email" class="w-full p-3 border rounded-lg outline-none focus:ring-2 focus:ring-indigo-500">
+            <input type="password" id="admin-password" placeholder="Password" class="w-full p-3 border rounded-lg outline-none focus:ring-2 focus:ring-indigo-500">
+            <button id="login-btn" class="w-full bg-indigo-600 text-white font-bold py-3 rounded-lg hover:bg-indigo-700 transition">Login</button>
+        </div>
+        <p id="login-error" class="text-red-500 text-sm mt-4 text-center hidden"></p>
+    </div>
+
+    <!-- ADMIN DASHBOARD (Hidden until login) -->
+    <div id="admin-dashboard" class="max-w-4xl mx-auto hidden">
+        <div class="flex justify-between items-center mb-8">
+            <h1 class="text-3xl font-bold">Content Manager</h1>
+            <button id="logout-btn" class="text-gray-600 hover:text-red-500 font-medium">Logout</button>
+        </div>
+
+        <!-- ADD/EDIT POST -->
+        <section class="bg-white p-6 rounded-2xl shadow-md mb-8">
+            <h2 class="text-xl font-bold mb-4" id="form-title">Create New Post</h2>
+            <input type="hidden" id="editing-id">
+            <div class="space-y-4">
+                <input type="text" id="post-title" placeholder="Title (e.g., 01/25/2026)" class="w-full p-3 border rounded-lg">
+                <textarea id="post-content" rows="6" placeholder="Write your blog post here..." class="w-full p-3 border rounded-lg"></textarea>
+                <div class="flex gap-2">
+                    <button id="save-post-btn" class="bg-green-600 text-white px-8 py-3 rounded-lg font-bold hover:bg-green-700 transition">Publish Post</button>
+                    <button id="cancel-edit" class="bg-gray-200 text-gray-700 px-8 py-3 rounded-lg font-bold hidden">Cancel</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- POSTS LIST -->
+        <section class="mb-8">
+            <h2 class="text-xl font-bold mb-4">Existing Posts</h2>
+            <div id="admin-posts-list" class="space-y-4"></div>
+        </section>
+
+        <!-- COMMENTS LIST -->
+        <section>
+            <h2 class="text-xl font-bold mb-4">Manage Comments</h2>
+            <div id="admin-comments-list" class="space-y-4"></div>
+        </section>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
+        import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCJTduHsoftZ9jxzK2zGt89JKXhLhkeGk8",
+            authDomain: "bobbyreichertwebpage.firebaseapp.com",
+            projectId: "bobbyreichertwebpage",
+            storageBucket: "bobbyreichertwebpage.firebasestorage.app",
+            messagingSenderId: "621093540176",
+            appId: "1:621093540176:web:56cdb61804298e570c1c55",
+            measurementId: "G-GJ4RV7NNXH"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // UI Elements
+        const loginSec = document.getElementById('login-section');
+        const dashSec = document.getElementById('admin-dashboard');
+        const loginBtn = document.getElementById('login-btn');
+        const savePostBtn = document.getElementById('save-post-btn');
+        const cancelEditBtn = document.getElementById('cancel-edit');
+        const postsList = document.getElementById('admin-posts-list');
+        const commentsList = document.getElementById('admin-comments-list');
+
+        // --- AUTH ---
+        loginBtn.onclick = async () => {
+            const email = document.getElementById('admin-email').value;
+            const pass = document.getElementById('admin-password').value;
+            const errEl = document.getElementById('login-error');
+            try {
+                await signInWithEmailAndPassword(auth, email, pass);
+                errEl.classList.add('hidden');
+            } catch (e) {
+                errEl.textContent = e.message;
+                errEl.classList.remove('hidden');
+            }
+        };
+
+        document.getElementById('logout-btn').onclick = () => signOut(auth);
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                loginSec.classList.add('hidden');
+                dashSec.classList.remove('hidden');
+                initDashboard();
+            } else {
+                loginSec.classList.remove('hidden');
+                dashSec.classList.add('hidden');
+            }
+        });
+
+        // --- DASHBOARD LOGIC ---
+        function initDashboard() {
+            // Load Posts
+            onSnapshot(query(collection(db, "blog_posts"), orderBy("timestamp", "desc")), (snap) => {
+                postsList.innerHTML = '';
+                snap.forEach(d => {
+                    const post = d.data();
+                    const div = document.createElement('div');
+                    div.className = "bg-white p-4 rounded-xl shadow-sm border flex justify-between items-center";
+                    div.innerHTML = `
+                        <div>
+                            <p class="font-bold">${post.title}</p>
+                            <p class="text-sm text-gray-500 truncate w-64">${post.content}</p>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="editPost('${d.id}', '${post.title}', \`${post.content.replace(/`/g, '\\`')}\`)" class="text-blue-600 font-bold">Edit</button>
+                            <button onclick="deleteDoc('blog_posts', '${d.id}')" class="text-red-600 font-bold">Delete</button>
+                        </div>
+                    `;
+                    postsList.appendChild(div);
+                });
+            });
+
+            // Load Comments
+            onSnapshot(query(collection(db, "blog_comments"), orderBy("timestamp", "desc")), (snap) => {
+                commentsList.innerHTML = '';
+                snap.forEach(d => {
+                    const c = d.data();
+                    const div = document.createElement('div');
+                    div.className = "bg-white p-4 rounded-xl shadow-sm border flex justify-between items-center";
+                    div.innerHTML = `
+                        <div class="text-sm">
+                            <span class="font-bold">${c.name}:</span> ${c.text}
+                        </div>
+                        <button onclick="deleteDoc('blog_comments', '${d.id}')" class="text-red-500 font-bold">Delete</button>
+                    `;
+                    commentsList.appendChild(div);
+                });
+            });
+        }
+
+        // --- CRUD ACTIONS ---
+        savePostBtn.onclick = async () => {
+            const title = document.getElementById('post-title').value;
+            const content = document.getElementById('post-content').value;
+            const editId = document.getElementById('editing-id').value;
+
+            if (!title || !content) return alert("Fill everything!");
+
+            if (editId) {
+                await updateDoc(doc(db, "blog_posts", editId), { title, content });
+            } else {
+                await addDoc(collection(db, "blog_posts"), {
+                    title, content, timestamp: serverTimestamp()
+                });
+            }
+            resetForm();
+        };
+
+        window.editPost = (id, title, content) => {
+            document.getElementById('post-title').value = title;
+            document.getElementById('post-content').value = content;
+            document.getElementById('editing-id').value = id;
+            document.getElementById('form-title').textContent = "Editing Post";
+            savePostBtn.textContent = "Update Post";
+            cancelEditBtn.classList.remove('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        };
+
+        window.deleteDoc = async (col, id) => {
+            if (confirm("Are you sure?")) {
+                await deleteDoc(doc(db, col, id));
+            }
+        };
+
+        cancelEditBtn.onclick = resetForm;
+
+        function resetForm() {
+            document.getElementById('post-title').value = '';
+            document.getElementById('post-content').value = '';
+            document.getElementById('editing-id').value = '';
+            document.getElementById('form-title').textContent = "Create New Post";
+            savePostBtn.textContent = "Publish Post";
+            cancelEditBtn.classList.add('hidden');
+        }
+    </script>
+</body>
+</html>
