@@ -195,10 +195,10 @@
     <script type="module">
     // Firebase imports (Firestore + Auth)
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
-    import { getFirestore, collection, addDoc, onSnapshot, query, serverTimestamp, setLogLevel } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, onSnapshot, query, serverTimestamp, setLogLevel, orderBy } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
     import { getAuth, onAuthStateChanged, setPersistence, browserLocalPersistence, signInAnonymously } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
 
-    // Firebase configuration (same as original)
+    // Firebase configuration
     const firebaseConfig = {
       apiKey: "AIzaSyCJTduHsoftZ9jxzK2zGt89JKXhLhkeGk8",
       authDomain: "bobbyreichertwebpage.firebaseapp.com",
@@ -214,39 +214,6 @@
     const db = getFirestore(app);
     const auth = getAuth(app);
     setLogLevel('debug');
-    // --- BLOG POSTS LOGIC ---
-    function loadBlogPosts() {
-        const postsContainer = document.getElementById('blog-posts-container');
-        // Sort by timestamp descending
-        const q = query(collection(db, 'blog_posts'), orderBy('timestamp', 'desc'));
-
-        onSnapshot(q, (snapshot) => {
-            if (snapshot.empty) {
-                // FALLBACK: Show hardcoded posts if DB is empty
-                postsContainer.innerHTML = `
-                    <section class="p-6 bg-gray-50 dark:bg-gray-700 rounded-lg border border-dashed border-gray-300 dark:border-gray-600">
-                        <h2 class="text-2xl font-bold mb-2">Error fetching posts</h2>
-                        <hr class="mb-3 border-gray-300 dark:border-gray-600">
-                        <p class="text-gray-700 dark:text-gray-200 italic leading-relaxed">Database was empty or could not be retrieved</p>
-                    </section>
-                `;
-                return;
-            }
-
-            postsContainer.innerHTML = '';
-            snapshot.forEach(doc => {
-                const post = doc.data();
-                const section = document.createElement('section');
-                section.className = "mt-8 p-6 bg-gray-50 dark:bg-gray-700 rounded-lg border border-dashed border-gray-300 dark:border-gray-600 transition-all hover:shadow-lg";
-                section.innerHTML = `
-                    <h2 class="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">${sanitize(post.title)}</h2>
-                    <hr class="mb-3 border-gray-300 dark:border-gray-600">
-                    <p class="text-gray-700 dark:text-gray-200 italic text-base leading-relaxed">${sanitize(post.content)}</p>
-                `;
-                postsContainer.appendChild(section);
-            });
-        });
-    }
 
     // DOM elements
     const userIdDisplay = document.getElementById('user-id-display');
@@ -257,8 +224,9 @@
     const loadingIndicator = document.getElementById('loading-indicator');
     const commentForm = document.getElementById('comment-form');
 
-    // Collection path (simple name; you can change to match your Firestore structure)
+    // Collection path
     const COMMENTS_COLLECTION = 'blog_comments';
+    const BLOG_POSTS_COLLECTION = 'blog_posts';
 
     // Utilities
     function sanitizeInput(str) {
@@ -287,6 +255,41 @@
       setTimeout(() => { formMessage.textContent = ''; }, 5000);
     }
 
+    // --- BLOG POSTS LOGIC ---
+    function loadBlogPosts() {
+        const postsContainer = document.getElementById('blog-posts-container');
+        // Sort by timestamp descending
+        const q = query(collection(db, BLOG_POSTS_COLLECTION), orderBy('timestamp', 'desc'));
+
+        onSnapshot(q, (snapshot) => {
+            if (snapshot.empty) {
+                // FALLBACK: Show hardcoded posts if DB is empty
+                postsContainer.innerHTML = `
+                    <section class="p-6 bg-gray-50 dark:bg-gray-700 rounded-lg border border-dashed border-gray-300 dark:border-gray-600">
+                        <h2 class="text-2xl font-bold mb-2">01/23/2026</h2>
+                        <hr class="mb-3 border-gray-300 dark:border-gray-600">
+                        <p class="text-gray-700 dark:text-gray-200 italic leading-relaxed">I rolled out 1.30... (This is a fallback placeholder because the database is empty).</p>
+                    </section>
+                `;
+                return;
+            }
+
+            postsContainer.innerHTML = '';
+            snapshot.forEach(doc => {
+                const post = doc.data();
+                const section = document.createElement('section');
+                section.className = "mt-8 p-6 bg-gray-50 dark:bg-gray-700 rounded-lg border border-dashed border-gray-300 dark:border-gray-600 transition-all hover:shadow-lg";
+                // FIX: Used sanitizeInput instead of sanitize which was undefined
+                section.innerHTML = `
+                    <h2 class="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">${sanitizeInput(post.title)}</h2>
+                    <hr class="mb-3 border-gray-300 dark:border-gray-600">
+                    <p class="text-gray-700 dark:text-gray-200 italic text-base leading-relaxed">${sanitizeInput(post.content)}</p>
+                `;
+                postsContainer.appendChild(section);
+            });
+        });
+    }
+
     // Initialize Auth and load comments
     let currentUserId = null;
     async function initAuthAndComments() {
@@ -300,7 +303,10 @@
             userIdDisplay.innerHTML = `✅ Comment Service Ready. Signed in as: <span class="font-bold break-all">${currentUserId}</span>`;
             submitButton.disabled = false;
             submitButton.classList.remove('submit-disabled');
+            
+            // FIX: Added calls to load content now that we are connected
             loadComments();
+            loadBlogPosts(); 
           } else {
             currentUserId = null;
             userIdDisplay.textContent = 'Authentication state: not signed in.';
