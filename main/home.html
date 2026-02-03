@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <!-- Google Analytics (Original code preserved) -->
+    <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-J4PE57KXDN"></script>
     <script>
         window.dataLayer = window.dataLayer || [];
@@ -206,7 +206,22 @@
                 This is my personal webpage. Announcements will show below.
             </p>
 
-            
+            <!-- 🎵 LYRIC OF THE DAY SECTION (New) 🎵 -->
+            <a href="lyric.html">
+            <section id="lyric-section" class="mb-8 p-6 bg-indigo-50 dark:bg-gray-700/50 rounded-xl border border-indigo-100 dark:border-gray-600 shadow-sm hidden transition-all duration-500">
+                <h3 class="text-sm uppercase tracking-widest font-bold text-indigo-500 dark:text-indigo-300 mb-3">🎵 Lyric of the Day</h3>
+                <blockquote class="text-xl md:text-2xl italic text-gray-800 dark:text-gray-100 leading-relaxed mb-4">
+                    "<span id="lyric-text">Loading...</span>"
+                </blockquote>
+                <div class="flex flex-col items-center">
+                    <p class="text-sm font-bold text-gray-600 dark:text-gray-300 uppercase tracking-wide">
+                        — <span id="lyric-song">Unknown Song</span>
+                    </p>
+                    <span id="lyric-date-display" class="text-xs text-gray-400 dark:text-gray-500 mt-1"></span>
+                </div>
+            </section>
+            </a>
+                
             <!-- 🔴 START: AUTOMATIC COUNTDOWNS SECTION 🔴 -->
             <section id="countdown-section" class="relative mt-8 p-6 bg-gray-50 dark:bg-gray-700 rounded-lg border border-dashed border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 transition-all duration-300">
                 <!-- Fullscreen Toggle Button -->
@@ -276,6 +291,73 @@
             </button>
         </div>
     </div>
+
+    <!-- FIREBASE & LYRIC LOGIC -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
+        import { getFirestore, collection, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
+
+        // Same config as your other files
+        const firebaseConfig = {
+            apiKey: "AIzaSyCJTduHsoftZ9jxzK2zGt89JKXhLhkeGk8",
+            authDomain: "bobbyreichertwebpage.firebaseapp.com",
+            projectId: "bobbyreichertwebpage",
+            storageBucket: "bobbyreichertwebpage.firebasestorage.app",
+            messagingSenderId: "621093540176",
+            appId: "1:621093540176:web:56cdb61804298e570c1c55"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // Fetch Lyrics
+        const lyricSection = document.getElementById('lyric-section');
+        const lyricText = document.getElementById('lyric-text');
+        const lyricSong = document.getElementById('lyric-song');
+        const lyricDate = document.getElementById('lyric-date-display');
+
+        // Helper to format date string (YYYY-MM-DD) to local Date
+        function getLocalYMD() {
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+
+        onSnapshot(collection(db, "lyric_of_the_day"), (snapshot) => {
+            if (snapshot.empty) return;
+
+            const allLyrics = [];
+            snapshot.forEach(doc => allLyrics.push(doc.data()));
+
+            // 1. Sort lyrics by date descending (Newest first)
+            allLyrics.sort((a, b) => b.date.localeCompare(a.date));
+
+            // 2. Find today's lyric
+            const todayStr = getLocalYMD();
+            let todaysLyric = allLyrics.find(l => l.date === todayStr);
+
+            // 3. Fallback: If no lyric for today, show the most recent past one
+            if (!todaysLyric && allLyrics.length > 0) {
+                // Since it's sorted desc, index 0 is the latest one
+                todaysLyric = allLyrics[0];
+            }
+
+            // 4. Render
+            if (todaysLyric) {
+                lyricText.textContent = todaysLyric.lyric;
+                lyricSong.textContent = todaysLyric.song;
+                // Only show date if it's NOT today (to indicate it's an old one)
+                if (todaysLyric.date !== todayStr) {
+                    lyricDate.textContent = `(From ${todaysLyric.date})`;
+                } else {
+                    lyricDate.textContent = ''; // Clean look for today
+                }
+                lyricSection.classList.remove('hidden');
+            }
+        });
+    </script>
 
     <script>
         // --- CONSTANTS ---
