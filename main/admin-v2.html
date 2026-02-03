@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blog Admin | Bobby Reichert</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .hidden { display: none; }
+        .tab-active { border-bottom: 2px solid #4f46e5; color: #4f46e5; }
+        /* Ensures text wraps and doesn't push elements off screen */
+        .content-wrapper {
+            overflow-wrap: break-word;
+            word-break: break-word;
+            min-width: 0; 
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen p-4 md:p-8">
+
+    <!-- LOGIN UI -->
+    <div id="login-section" class="max-w-md mx-auto mt-20 bg-white p-8 rounded-2xl shadow-xl">
+        <h1 class="text-2xl font-bold mb-6 text-center text-gray-800">Admin Login</h1>
+        <div class="space-y-4">
+            <input type="email" id="admin-email" placeholder="Email" class="w-full p-3 border rounded-lg outline-none focus:ring-2 focus:ring-indigo-500">
+            <input type="password" id="admin-password" placeholder="Password" class="w-full p-3 border rounded-lg outline-none focus:ring-2 focus:ring-indigo-500">
+            <button id="login-btn" class="w-full bg-indigo-600 text-white font-bold py-3 rounded-lg hover:bg-indigo-700 transition">Login</button>
+        </div>
+        <p id="login-error" class="text-red-500 text-sm mt-4 text-center hidden"></p>
+    </div>
+
+    <!-- MAIN DASHBOARD -->
+    <div id="admin-dashboard" class="max-w-5xl mx-auto hidden">
+        <div class="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-800">Content Manager</h1>
+                <p id="user-display" class="text-sm text-gray-500">Connecting...</p>
+            </div>
+            <button id="logout-btn" class="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-red-100 hover:text-red-600 transition">Sign Out</button>
+        </div>
+
+        <!-- TABS -->
+        <div class="flex space-x-6 mb-8 border-b border-gray-200 overflow-x-auto pb-1">
+            <button onclick="switchTab('posts')" id="tab-posts" class="pb-2 font-medium tab-active text-indigo-600 whitespace-nowrap">Blog Posts</button>
+            <button onclick="switchTab('lyrics')" id="tab-lyrics" class="pb-2 font-medium text-gray-500 whitespace-nowrap">Lyrics of the Day</button>
+            <button onclick="switchTab('comments')" id="tab-comments" class="pb-2 font-medium text-gray-500 whitespace-nowrap">Comments</button>
+        </div>
+
+        <!-- 1. POSTS SECTION -->
+        <div id="section-posts" class="space-y-8">
+            <!-- Create/Edit Post Form -->
+            <section class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                <h2 class="text-xl font-bold mb-4" id="post-form-title">Create New Post</h2>
+                <input type="hidden" id="post-edit-id">
+                <div class="space-y-4">
+                    <input type="text" id="post-title" placeholder="Title / Date (e.g., 01/25/2026)" class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none">
+                    <textarea id="post-content" rows="4" placeholder="Write your blog post here..." class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"></textarea>
+                    <div class="flex gap-2">
+                        <button id="save-post-btn" class="bg-green-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-green-700 transition">Publish Post</button>
+                        <button id="cancel-post-edit" class="bg-gray-200 text-gray-700 px-6 py-2 rounded-lg font-bold hidden">Cancel</button>
+                    </div>
+                </div>
+            </section>
+            <!-- Posts List -->
+            <div id="posts-list" class="space-y-4"></div>
+        </div>
+
+        <!-- 2. LYRICS SECTION -->
+        <div id="section-lyrics" class="space-y-8 hidden">
+            <!-- Create/Edit Lyric Form -->
+            <section class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                <h2 class="text-xl font-bold mb-4" id="lyric-form-title">Schedule Lyric</h2>
+                <input type="hidden" id="lyric-edit-id">
+                <div class="space-y-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Date</label>
+                            <input type="date" id="lyric-date" class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Song</label>
+                            <input type="text" id="lyric-song" placeholder="Song Title" class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Lyric</label>
+                        <textarea id="lyric-text" rows="2" placeholder="The lyric text..." class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"></textarea>
+                    </div>
+                    <div class="flex gap-2">
+                        <button id="save-lyric-btn" class="bg-green-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-green-700 transition">Schedule Lyric</button>
+                        <button id="cancel-lyric-edit" class="bg-gray-200 text-gray-700 px-6 py-2 rounded-lg font-bold hidden">Cancel</button>
+                    </div>
+                </div>
+            </section>
+            <!-- Lyrics List -->
+            <div id="lyrics-list" class="space-y-4"></div>
+        </div>
+
+        <!-- 3. COMMENTS SECTION -->
+        <div id="section-comments" class="hidden">
+            <h2 class="text-xl font-bold mb-4">Manage Comments</h2>
+            <div id="comments-list" class="space-y-4"></div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
+        import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
+
+        // CONFIG
+        const firebaseConfig = {
+            apiKey: "AIzaSyCJTduHsoftZ9jxzK2zGt89JKXhLhkeGk8",
+            authDomain: "bobbyreichertwebpage.firebaseapp.com",
+            projectId: "bobbyreichertwebpage",
+            storageBucket: "bobbyreichertwebpage.firebasestorage.app",
+            messagingSenderId: "621093540176",
+            appId: "1:621093540176:web:56cdb61804298e570c1c55"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // UI Helpers
+        const loginSec = document.getElementById('login-section');
+        const dashSec = document.getElementById('admin-dashboard');
+
+        // --- AUTH ---
+        document.getElementById('login-btn').onclick = async () => {
+            const email = document.getElementById('admin-email').value;
+            const pass = document.getElementById('admin-password').value;
+            const errEl = document.getElementById('login-error');
+            try {
+                await signInWithEmailAndPassword(auth, email, pass);
+                errEl.classList.add('hidden');
+            } catch (e) {
+                errEl.textContent = e.message;
+                errEl.classList.remove('hidden');
+            }
+        };
+
+        document.getElementById('logout-btn').onclick = () => signOut(auth);
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                loginSec.classList.add('hidden');
+                dashSec.classList.remove('hidden');
+                document.getElementById('user-display').textContent = `Logged in as: ${user.email}`;
+                initDashboard();
+            } else {
+                loginSec.classList.remove('hidden');
+                dashSec.classList.add('hidden');
+            }
+        });
+
+        // --- GLOBAL WINDOW FUNCTIONS (For OnClick) ---
+        // This mirrors the logic from your working uploaded file
+        window.deleteEntry = async (collectionName, id) => {
+            if (confirm("Permanently delete this item?")) {
+                try {
+                    await deleteDoc(doc(db, collectionName, id));
+                } catch(e) {
+                    alert("Delete failed: " + e.message + "\n(Check Firebase Rules)");
+                    console.error(e);
+                }
+            }
+        };
+
+        window.editPost = (id, title, content) => {
+            document.getElementById('post-edit-id').value = id;
+            document.getElementById('post-title').value = title;
+            document.getElementById('post-content').value = content;
+            document.getElementById('post-form-title').textContent = "Edit Post";
+            document.getElementById('save-post-btn').textContent = "Update Post";
+            document.getElementById('cancel-post-edit').classList.remove('hidden');
+            window.switchTab('posts');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        };
+
+        window.editLyric = (id, date, song, lyric) => {
+            document.getElementById('lyric-edit-id').value = id;
+            document.getElementById('lyric-date').value = date;
+            document.getElementById('lyric-song').value = song;
+            document.getElementById('lyric-text').value = lyric;
+            document.getElementById('lyric-form-title').textContent = "Edit Lyric";
+            document.getElementById('save-lyric-btn').textContent = "Update Lyric";
+            document.getElementById('cancel-lyric-edit').classList.remove('hidden');
+            window.switchTab('lyrics');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        };
+
+        window.switchTab = (tab) => {
+            ['posts', 'lyrics', 'comments'].forEach(t => {
+                document.getElementById(`section-${t}`).classList.add('hidden');
+                document.getElementById(`tab-${t}`).classList.remove('tab-active', 'text-indigo-600');
+                document.getElementById(`tab-${t}`).classList.add('text-gray-500');
+            });
+            document.getElementById(`section-${tab}`).classList.remove('hidden');
+            document.getElementById(`tab-${tab}`).classList.add('tab-active', 'text-indigo-600');
+        };
+
+        // --- DASHBOARD INIT ---
+        function initDashboard() {
+            // 1. Posts List
+            onSnapshot(collection(db, "blog_posts"), (snap) => {
+                const list = document.getElementById('posts-list');
+                list.innerHTML = '';
+                const posts = snap.docs.map(d => ({id: d.id, ...d.data()}));
+                // Memory sort to avoid index requirements for now
+                posts.sort((a,b) => (b.timestamp?.seconds || 0) - (a.timestamp?.seconds || 0));
+
+                posts.forEach(p => {
+                    const cleanTitle = (p.title || "").replace(/'/g, "\\'");
+                    const cleanContent = (p.content || "").replace(/`/g, "\\`").replace(/'/g, "\\'");
+                    
+                    const el = document.createElement('div');
+                    el.className = "bg-white p-4 rounded-xl shadow-sm border flex justify-between items-center gap-4";
+                    // Note: content-wrapper class handles the text overflow
+                    el.innerHTML = `
+                        <div class="flex-1 content-wrapper">
+                            <p class="font-bold text-gray-800">${p.title || "Untitled"}</p>
+                            <p class="text-sm text-gray-500 whitespace-pre-wrap">${p.content || ""}</p>
+                        </div>
+                        <div class="flex flex-col sm:flex-row gap-2 shrink-0">
+                            <button onclick="editPost('${p.id}', '${cleanTitle}', \`${cleanContent}\`)" class="text-blue-600 font-bold hover:underline">Edit</button>
+                            <button type="button" onclick="deleteEntry('blog_posts', '${p.id}')" class="text-red-600 font-bold hover:underline">Delete</button>
+                        </div>
+                    `;
+                    list.appendChild(el);
+                });
+            });
+
+            // 2. Lyrics List
+            onSnapshot(collection(db, "lyric_of_the_day"), (snap) => {
+                const list = document.getElementById('lyrics-list');
+                list.innerHTML = '';
+                const lyrics = snap.docs.map(d => ({id: d.id, ...d.data()}));
+                lyrics.sort((a,b) => (b.date || "").localeCompare(a.date || ""));
+
+                lyrics.forEach(l => {
+                    const cleanSong = (l.song || "").replace(/'/g, "\\'");
+                    const cleanLyric = (l.lyric || "").replace(/`/g, "\\`").replace(/'/g, "\\'");
+                    
+                    const el = document.createElement('div');
+                    el.className = "bg-white p-4 rounded-xl shadow-sm border flex justify-between items-center gap-4";
+                    el.innerHTML = `
+                        <div class="flex-1 content-wrapper">
+                            <div class="flex items-center gap-2 mb-1 flex-wrap">
+                                <span class="bg-indigo-100 text-indigo-700 text-xs font-bold px-2 py-0.5 rounded">${l.date}</span>
+                                <span class="font-bold text-gray-800">${l.song || "Unknown"}</span>
+                            </div>
+                            <p class="text-sm text-gray-600 italic">"${l.lyric || ""}"</p>
+                        </div>
+                        <div class="flex flex-col sm:flex-row gap-2 shrink-0">
+                            <button onclick="editLyric('${l.id}', '${l.date}', '${cleanSong}', \`${cleanLyric}\`)" class="text-blue-600 font-bold hover:underline">Edit</button>
+                            <button type="button" onclick="deleteEntry('lyric_of_the_day', '${l.id}')" class="text-red-600 font-bold hover:underline">Delete</button>
+                        </div>
+                    `;
+                    list.appendChild(el);
+                });
+            });
+
+            // 3. Comments List
+            onSnapshot(collection(db, "blog_comments"), (snap) => {
+                const list = document.getElementById('admin-comments-list') || document.getElementById('comments-list');
+                if(!list) return;
+                list.innerHTML = '';
+                const comments = snap.docs.map(d => ({id: d.id, ...d.data()}));
+                comments.sort((a,b) => (b.timestamp?.seconds || 0) - (a.timestamp?.seconds || 0));
+
+                comments.forEach(c => {
+                    const el = document.createElement('div');
+                    el.className = "bg-white p-4 rounded-xl shadow-sm border flex justify-between items-start gap-4";
+                    el.innerHTML = `
+                        <div class="flex-1 content-wrapper">
+                            <span class="font-bold text-gray-800 text-sm">${c.name || "Anonymous"}:</span>
+                            <span class="text-gray-600 text-sm whitespace-pre-wrap">${c.text || ""}</span>
+                            <div class="text-xs text-gray-400 mt-1">${c.timestamp ? c.timestamp.toDate().toLocaleDateString() : 'Just now'}</div>
+                        </div>
+                        <button type="button" onclick="deleteEntry('blog_comments', '${c.id}')" class="text-red-500 font-bold hover:underline shrink-0">Delete</button>
+                    `;
+                    list.appendChild(el);
+                });
+            });
+        }
+
+        // --- FORM HANDLERS ---
+        // Post Save
+        document.getElementById('save-post-btn').onclick = async () => {
+            const title = document.getElementById('post-title').value;
+            const content = document.getElementById('post-content').value;
+            const editId = document.getElementById('post-edit-id').value;
+
+            if (!title || !content) return alert("Fill everything!");
+
+            try {
+                if (editId) {
+                    await updateDoc(doc(db, "blog_posts", editId), { title, content });
+                } else {
+                    await addDoc(collection(db, "blog_posts"), { title, content, timestamp: serverTimestamp() });
+                }
+                resetPostForm();
+            } catch(e) { alert("Error: " + e.message); }
+        };
+
+        // Lyric Save
+        document.getElementById('save-lyric-btn').onclick = async () => {
+            const date = document.getElementById('lyric-date').value;
+            const song = document.getElementById('lyric-song').value;
+            const lyric = document.getElementById('lyric-text').value;
+            const editId = document.getElementById('lyric-edit-id').value;
+
+            if (!date || !song || !lyric) return alert("Fill all fields!");
+
+            try {
+                if (editId) {
+                    await updateDoc(doc(db, "lyric_of_the_day", editId), { date, song, lyric });
+                } else {
+                    await addDoc(collection(db, "lyric_of_the_day"), { date, song, lyric, createdAt: serverTimestamp() });
+                }
+                resetLyricForm();
+            } catch(e) { alert("Error: " + e.message); }
+        };
+
+        // Reset Functions
+        function resetPostForm() {
+            document.getElementById('post-title').value = '';
+            document.getElementById('post-content').value = '';
+            document.getElementById('post-edit-id').value = '';
+            document.getElementById('post-form-title').textContent = "Create New Post";
+            document.getElementById('save-post-btn').textContent = "Publish Post";
+            document.getElementById('cancel-post-edit').classList.add('hidden');
+        }
+        function resetLyricForm() {
+            document.getElementById('lyric-date').value = '';
+            document.getElementById('lyric-song').value = '';
+            document.getElementById('lyric-text').value = '';
+            document.getElementById('lyric-edit-id').value = '';
+            document.getElementById('lyric-form-title').textContent = "Schedule Lyric";
+            document.getElementById('save-lyric-btn').textContent = "Schedule Lyric";
+            document.getElementById('cancel-lyric-edit').classList.add('hidden');
+        }
+
+        document.getElementById('cancel-post-edit').onclick = resetPostForm;
+        document.getElementById('cancel-lyric-edit').onclick = resetLyricForm;
+
+    </script>
+</body>
+</html>
