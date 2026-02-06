@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-J4PE57KXDN"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);} 
+        gtag('js', new Date());
+        gtag('config', 'G-J4PE57KXDN');
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lyric of the Day | Bobby Reichert</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: { 'primary': '#4f46e5', 'primary-dark': '#a5b4fc' }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 4px; }
+        .dark ::-webkit-scrollbar-thumb { background: #4b5563; }
+        
+        .fade-in { animation: fadeIn 0.5s ease-in; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        /* Mobile Menu Transitions */
+        #mobile-menu { transform: translateX(100%); transition: transform 0.3s ease-out; pointer-events: none; }
+        #mobile-menu.open { transform: translateX(0); pointer-events: auto; }
+        
+        .dropdown-menu { opacity: 0; visibility: hidden; transform: translateY(-10px); transition: all 0.2s ease-out; }
+        .dropdown-menu.visible { opacity: 1; visibility: visible; transform: translateY(0); }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col transition-colors duration-300 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+
+    <!-- NAV -->
+    <nav class="w-full bg-white/50 backdrop-blur-md shadow-sm sticky top-0 z-20 dark:bg-gray-800/50 dark:shadow-xl transition-colors duration-300 border-b border-gray-200 dark:border-gray-700">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex-shrink-0">
+                    <a href="home.html" class="text-xl font-bold text-primary dark:text-primary-dark">Lyric of the Day</a>
+                </div>
+                
+            </div>
+        </div>
+    </nav>
+
+    
+
+    <!-- MAIN CONTENT -->
+    <main class="flex-grow w-full max-w-4xl mx-auto p-4 md:p-8">
+        
+        <header class="text-center mb-12 mt-4">
+          <!--
+            <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight mb-4 text-gray-900 dark:text-white">
+                Lyric of the Day
+            </h1>
+            -->
+            <p class="text-lg text-gray-500 dark:text-gray-400">
+                A daily dose of music that's stuck in my head.
+            </p>
+        </header>
+
+        <!-- 1. FEATURED (TODAY) SECTION -->
+        <section id="featured-container" class="mb-16 min-h-[200px] flex items-center justify-center">
+            <div class="animate-pulse flex flex-col items-center gap-4 w-full">
+                <div class="h-6 bg-gray-200 dark:bg-gray-700 rounded w-1/4"></div>
+                <div class="h-20 bg-gray-200 dark:bg-gray-700 rounded w-3/4"></div>
+                <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/3"></div>
+            </div>
+        </section>
+
+        <!-- 2. ARCHIVE HEADER -->
+        <div class="flex items-center gap-4 mb-8">
+            <div class="h-px bg-gray-300 dark:bg-gray-700 flex-grow"></div>
+            <h2 class="text-xl font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500">Previous Lyrics of the Day</h2>
+            <div class="h-px bg-gray-300 dark:bg-gray-700 flex-grow"></div>
+        </div>
+
+        <!-- 3. PAST LYRICS LIST -->
+        <div id="archive-list" class="grid gap-6">
+            <!-- Populated by JS -->
+        </div>
+
+    </main>
+
+    <footer class="w-full bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400 text-center text-sm py-6 border-t dark:border-gray-700">
+        <p>Last Updated 02/05/2026</p>
+    </footer>
+
+    <!-- Firebase Logic -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
+        import { getFirestore, collection, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCJTduHsoftZ9jxzK2zGt89JKXhLhkeGk8",
+            authDomain: "bobbyreichertwebpage.firebaseapp.com",
+            projectId: "bobbyreichertwebpage",
+            storageBucket: "bobbyreichertwebpage.firebasestorage.app",
+            messagingSenderId: "621093540176",
+            appId: "1:621093540176:web:56cdb61804298e570c1c55"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // --- HELPER TO FORMAT DATE ---
+        function getLocalYMD() {
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+
+        // --- RENDER FUNCTIONS ---
+        
+        function renderFeatured(lyric) {
+            const container = document.getElementById('featured-container');
+            const todayStr = getLocalYMD();
+            const isToday = lyric.date === todayStr;
+            
+            container.innerHTML = `
+                <div class="w-full bg-gradient-to-br from-indigo-500 to-purple-600 rounded-3xl p-8 md:p-12 text-center text-white shadow-2xl transform hover:scale-[1.01] transition-transform duration-300 fade-in relative overflow-hidden">
+                    <!-- Background Decoration -->
+                    <div class="absolute top-0 right-0 -mt-10 -mr-10 w-40 h-40 bg-white opacity-10 rounded-full blur-2xl"></div>
+                    <div class="absolute bottom-0 left-0 -mb-10 -ml-10 w-40 h-40 bg-white opacity-10 rounded-full blur-2xl"></div>
+
+                    <div class="relative z-10">
+                        <span class="inline-block px-3 py-1 mb-6 text-xs font-bold tracking-widest uppercase bg-white/20 rounded-full backdrop-blur-sm">
+                            ${isToday ? "Today's Pick" : "Latest Pick"}
+                        </span>
+                        
+                        <blockquote class="text-2xl md:text-4xl font-serif italic leading-relaxed mb-8">
+                            "${lyric.lyric}"
+                        </blockquote>
+                        
+                        <div class="flex flex-col items-center gap-1">
+                            <cite class="text-lg font-bold not-italic tracking-wide uppercase">
+                                — ${lyric.song}
+                            </cite>
+                            <time class="text-sm text-indigo-200 font-medium">${lyric.date}</time>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderArchive(lyrics) {
+            const list = document.getElementById('archive-list');
+            
+            if (lyrics.length === 0) {
+                list.innerHTML = `<p class="text-center text-gray-500 italic py-8">No past lyrics found.</p>`;
+                return;
+            }
+
+            list.innerHTML = lyrics.map(l => `
+                <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 flex flex-col md:flex-row md:items-center justify-between gap-4 transition hover:shadow-md fade-in">
+                    <div class="flex-1">
+                        <p class="text-lg text-gray-800 dark:text-gray-200 font-serif italic mb-2">"${l.lyric}"</p>
+                        <p class="text-sm font-bold text-primary dark:text-primary-dark uppercase tracking-wide">— ${l.song}</p>
+                    </div>
+                    <div class="text-xs font-mono text-gray-400 bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-full whitespace-nowrap self-start md:self-center">
+                        ${l.date}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // --- DATA LOGIC ---
+        
+        onSnapshot(collection(db, "lyric_of_the_day"), (snapshot) => {
+            const allLyrics = snapshot.docs.map(d => ({id: d.id, ...d.data()}));
+            
+            // 1. Get Today's Date (Local Time)
+            const todayStr = getLocalYMD();
+
+            // 2. Filter out future dates
+            // We only want lyrics where date <= todayStr
+            const validLyrics = allLyrics.filter(l => l.date <= todayStr);
+
+            // 3. Sort by date desc (Newest first)
+            validLyrics.sort((a, b) => b.date.localeCompare(a.date));
+
+            if (validLyrics.length > 0) {
+                // The first item is the most recent valid lyric (Featured)
+                renderFeatured(validLyrics[0]);
+                
+                // The rest are the archive
+                const archiveLyrics = validLyrics.slice(1);
+                renderArchive(archiveLyrics);
+            } else {
+                document.getElementById('featured-container').innerHTML = 
+                    `<div class="p-8 text-center text-gray-500">No lyrics posted yet (or all are scheduled for the future). Check back soon!</div>`;
+                document.getElementById('archive-list').innerHTML = '';
+            }
+        });
+
+        // --- UI LOGIC (Mobile Menu & Dropdowns) ---
+        const btn = document.getElementById('mobile-menu-button');
+        const menu = document.getElementById('mobile-menu');
+        if(btn && menu) {
+            btn.addEventListener('click', () => {
+                const open = menu.classList.toggle('open');
+                btn.setAttribute('aria-expanded', open);
+            });
+        }
+
+        const dropBtn = document.querySelector('#more-dropdown button');
+        const dropMenu = document.getElementById('more-menu-items');
+        if(dropBtn && dropMenu) {
+            const toggle = () => dropMenu.classList.toggle('visible');
+            dropBtn.addEventListener('mouseenter', () => window.innerWidth >= 768 && dropMenu.classList.add('visible'));
+            document.getElementById('more-dropdown').addEventListener('mouseleave', () => window.innerWidth >= 768 && dropMenu.classList.remove('visible'));
+            dropBtn.addEventListener('click', toggle);
+        }
+
+        // --- THEME ---
+        if (localStorage.getItem('app-theme-mode') === 'dark' || (!('app-theme-mode' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    </script>
+</body>
+</html>
