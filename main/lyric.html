@@ -111,6 +111,26 @@
     </div>
     <!-- Firebase Logic -->
     <script type="module">
+        const COOKIE_KEY = 'cookiesAccepted';
+         // --- Cookie Consent Logic ---
+            const banner = document.getElementById('cookie-banner');
+            const acceptButton = document.getElementById('accept-cookies');
+            const accepted = localStorage.getItem(COOKIE_KEY);
+
+            if (accepted === 'true') {
+                if (banner) { banner.style.display = 'none'; }
+            } else {
+                if (banner) { banner.style.display = 'block'; }
+                if (acceptButton) {
+                    acceptButton.addEventListener('click', () => {
+                        localStorage.setItem(COOKIE_KEY, 'true');
+                        if (banner) {
+                            banner.classList.add('fade-out');
+                            setTimeout(() => { banner.style.display = 'none'; }, 500); 
+                        }
+                    });
+                }
+            }
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
         import { getFirestore, collection, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
 
