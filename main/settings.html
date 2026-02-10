@@ -451,10 +451,12 @@
 
             // Classes specific to the Main Nav (#main-nav)
             const navBlurClasses = ['bg-white/10', 'backdrop-blur-md', 'dark:bg-gray-800/30'];
-            const navSolidClasses = ['bg-white', 'dark:bg-gray-800'];
+            // Added explicit opacity and blur reset for solid mode
+            const navSolidClasses = ['bg-white', 'bg-opacity-100', 'backdrop-blur-none', 'dark:bg-gray-800', 'dark:bg-opacity-100'];
 
             const menuBlurClasses = ['bg-white/30', 'backdrop-blur-md', 'dark:bg-gray-900/40'];
-            const menuSolidClasses = ['bg-white', 'dark:bg-gray-900'];
+            // Added explicit opacity and blur reset for solid mode
+            const menuSolidClasses = ['bg-white', 'bg-opacity-100', 'backdrop-blur-none', 'dark:bg-gray-900', 'dark:bg-opacity-100'];
             
             const allNavClasses = [...navBlurClasses, ...navSolidClasses];
             const allMenuClasses = [...menuBlurClasses, ...menuSolidClasses];
@@ -537,6 +539,12 @@
                 mobileMenuPanel.className = mobileMenuPanel.dataset.originalClasses;
                 mobileMenuPanel.classList.remove('md:hidden');
             }
+
+            // --- FIX START ---
+            // Re-apply the current navigation style because setting className above wipes out the background classes
+            const currentNavStyle = localStorage.getItem(NAV_STYLE_KEY) || 'blur';
+            applyNavStyle(currentNavStyle);
+            // --- FIX END ---
 
             if (menuControl) {
                 const menuStatus = document.getElementById('menu-status');
@@ -704,5 +712,3 @@
     </script>
 </body>
 </html>
-
-
