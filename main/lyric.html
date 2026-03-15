@@ -68,7 +68,7 @@
             </h1>
             -->
             <p class="text-lg text-gray-500 dark:text-gray-400">
-                A daily dose of music that's stuck in my head. These songs aren't necessarily in my playlist.
+                A daily dose of music that's stuck in my head. These songs aren't necessarily in my playlist. Because of Journey's Final Frontier Tour (Jonathan Cain is leaving the band), I will try to use only Journey song lyrics until July 2, when the tour ends.
             </p>
         </header>
 
@@ -233,7 +233,7 @@
                 renderArchive(archiveLyrics);
             } else {
                 document.getElementById('featured-container').innerHTML = 
-                    `<div class="p-8 text-center text-gray-500">No lyrics posted yet (or all are scheduled for the future). Check back soon!</div>`;
+                    <div class="p-8 text-center text-gray-500">I think you're offline or in a region that blocks access to our servers. Unable to fetch data from server.</div>;
                 document.getElementById('archive-list').innerHTML = '';
             }
         });
