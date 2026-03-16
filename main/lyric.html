@@ -233,7 +233,7 @@
                 renderArchive(archiveLyrics);
             } else {
                 document.getElementById('featured-container').innerHTML = 
-                    <div class="p-8 text-center text-gray-500">I think you're offline or in a region that blocks access to our servers. Unable to fetch data from server.</div>;
+                    `<div class="p-8 text-center text-gray-500">I think you're offline or in a region/network that blocks access to our servers. Server connection timed out.</div>`;
                 document.getElementById('archive-list').innerHTML = '';
             }
         });
