@@ -10,7 +10,7 @@
         gtag('config', 'G-J4PE57KXDN');
     </script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bobby Reichert | Homepage</title>
+    <title>Bobby Reichert | Bio</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Configure Tailwind - Dark mode ENABLED -->
     <script>
@@ -80,11 +80,6 @@
         body.has-fullscreen-element h1,
         body.has-fullscreen-element > main > div > p {
              display: none !important;
-        }
-        
-        /* Keep the section visible */
-        body.has-fullscreen-element > :not(.fullscreen-mode) {
-           /* Handled by specific hiding above for better stability */
         }
         
         .fullscreen-mode .fullscreen-hide {
@@ -253,7 +248,6 @@
         const THEME_KEY = 'app-theme-mode';
         const NAV_STYLE_KEY = 'app-nav-style'; 
         const COOKIE_KEY = 'cookiesAccepted';
-        const MS_PER_DAY = 1000 * 60 * 60 * 24; // Milliseconds in a day
         
         // --- DOM Elements ---
         let mobileMenuButton;
@@ -342,7 +336,7 @@
         }
 
         
-        // --- THEME MODE LOGIC (Original code preserved) ---
+        // --- THEME MODE LOGIC ---
         function applyTheme(theme) {
             const html = document.documentElement;
             let resolvedTheme = theme;
@@ -365,7 +359,7 @@
             });
         }
         
-        // --- MOBILE MENU LOGIC (Original code preserved) ---
+        // --- MOBILE MENU LOGIC ---
         function toggleMobileMenu() {
             if (!mobileMenu || !mobileMenuButton) return; 
 
@@ -405,24 +399,7 @@
             const initialNavStyle = localStorage.getItem(NAV_STYLE_KEY) || 'blur';
             applyNavStyle(initialNavStyle);
 
-            // 5. Start Automatic Countdowns
-            updateCountdowns();
-            setInterval(updateCountdowns, 1000); 
-
-            // 6. Fullscreen Button Logic
-            const fsBtn = document.getElementById('fullscreen-btn');
-            if (fsBtn) {
-                fsBtn.addEventListener('click', toggleFullscreen);
-            }
-            // Allow Exit via Escape key
-            document.addEventListener('keydown', (e) => {
-                if (e.key === 'Escape') {
-                    const section = document.getElementById('countdown-section');
-                    if (section.classList.contains('fullscreen-mode')) {
-                        toggleFullscreen();
-                    }
-                }
-            });
+            // Note: Countdown logic removed because elements don't exist on the bio page.
 
             // --- Cookie Consent Logic ---
             const banner = document.getElementById('cookie-banner');
@@ -454,19 +431,21 @@
             };
 
             // Hover Listeners (for desktop)
-            dropdown.addEventListener('mouseenter', () => {
-                 if (window.innerWidth >= 768) menu.classList.add('visible');
-            });
-            dropdown.addEventListener('mouseleave', () => {
-                 if (window.innerWidth >= 768) hideMenu();
-            });
+            if (dropdown && menu) {
+                dropdown.addEventListener('mouseenter', () => {
+                     if (window.innerWidth >= 768) menu.classList.add('visible');
+                });
+                dropdown.addEventListener('mouseleave', () => {
+                     if (window.innerWidth >= 768) hideMenu();
+                });
 
-            // Optional: Close menu when clicking outside of it
-            document.addEventListener('click', (event) => {
-                if (window.innerWidth >= 768 && !dropdown.contains(event.target) && menu.classList.contains('visible')) {
-                    hideMenu();
-                }
-            });
+                // Close menu when clicking outside of it
+                document.addEventListener('click', (event) => {
+                    if (window.innerWidth >= 768 && !dropdown.contains(event.target) && menu.classList.contains('visible')) {
+                        hideMenu();
+                    }
+                });
+            }
 
             // --- Mobile Menu Listeners ---
             if (mobileMenuButton) {
