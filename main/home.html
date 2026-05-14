@@ -245,7 +245,7 @@
                     
                     <!-- HOLIDAY COUNTDOWNS -->
                     <p class="countdown-item">
-                        To Valentine's Day: <span id="valentine-countdown" class="font-bold text-primary dark:text-primary-dark">--</span> days
+                        To Last Day of School: <span id="school-countdown" class="font-bold text-primary dark:text-primary-dark">--</span> days
                     </p>
                     <p class="countdown-item">
                         To Halloween: <span id="halloween-countdown" class="font-bold text-primary dark:text-primary-dark">--</span> days
@@ -545,8 +545,8 @@
 
 
             // 1. Holiday Countdowns
-            const valentinesEl = document.getElementById('valentine-countdown');
-            if (valentinesEl) valentinesEl.textContent = getDaysUntil(2, 14); // Feb 14
+            const schoolEl = document.getElementById('school-countdown');
+            if (schoolEl) schoolEl.textContent = getDaysUntil(6, 17); // Feb 14
 
             const halloweenEl = document.getElementById('halloween-countdown');
             if (halloweenEl) halloweenEl.textContent = getDaysUntil(10, 31); // Oct 31
