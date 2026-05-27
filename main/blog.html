@@ -72,7 +72,6 @@
 <body class="min-h-screen flex flex-col items-center transition-colors duration-300 bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
 
     <!-- NAV -->
-    <!-- Added ID "main-nav" and increased z-index to 50 -->
     <nav id="main-nav" class="w-full bg-white/10 backdrop-blur-md shadow-lg sticky top-0 z-50 dark:bg-gray-800/30 dark:shadow-xl transition-colors duration-300">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16">
@@ -80,7 +79,6 @@
                     <span class="text-xl font-bold text-primary dark:text-primary-dark">Bobby Reichert</span>
                 </div>
                 
-                <!-- Added ID "desktop-nav" for settings control -->
                 <div id="desktop-nav" class="hidden md:flex items-center space-x-3 md:space-x-4 text-sm md:text-base">
                     <a href="home.html" class="text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary-dark font-medium p-2 rounded-md transition duration-150">Home</a>
                     <a href="about.html" class="text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary-dark font-medium p-2 rounded-md transition duration-150">Bio</a>
@@ -102,7 +100,6 @@
                     </div>
                 </div>
 
-                <!-- Added ID "mobile-toggle" for settings control -->
                 <div id="mobile-toggle" class="md:hidden">
                     <button id="mobile-menu-button" type="button" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 inline-flex items-center justify-center p-2 rounded-md transition duration-150" aria-controls="mobile-menu" aria-expanded="false">
                         <span class="sr-only">Open main menu</span>
@@ -115,7 +112,6 @@
     </nav>
 
     <!-- MOBILE MENU -->
-    <!-- Increased z-index to 40 to sit below nav (z-50) -->
     <div id="mobile-menu" class="fixed inset-0 top-16 w-full h-full md:hidden z-40 bg-white dark:bg-gray-900 overflow-y-auto">
         <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3 flex flex-col">
             <a href="home.html" class="text-lg font-medium block px-3 py-2 rounded-md text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-primary transition duration-150">Home</a>
@@ -136,46 +132,83 @@
         <div class="bg-white dark:bg-gray-800 shadow-xl rounded-2xl p-6 md:p-10 w-full dark:shadow-2xl">
             <h1 class="text-4xl font-extrabold text-gray-900 dark:text-gray-100 tracking-tight mb-4 text-center">Blog Posts</h1>
             <p class="text-xl font-light text-primary dark:text-primary-dark mb-6 text-center">I'll occasionally post something here.</p>
-            <!-- DYNAMIC POSTS CONTAINER -->
-            <div id="blog-posts-container" class="space-y-12">
-                <!-- Loading State -->
-                <div class="blog-skeleton p-6 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                    <div class="h-8 bg-gray-200 dark:bg-gray-600 rounded w-1/4 mb-4"></div>
-                    <div class="h-4 bg-gray-200 dark:bg-gray-600 rounded w-full mb-2"></div>
-                    <div class="h-4 bg-gray-200 dark:bg-gray-600 rounded w-5/6"></div>
+
+            <!-- LOGIN SECTION (Visible when not authenticated) -->
+            <div id="login-section" class="flex flex-col items-center justify-center py-12 text-center transition-opacity duration-300">
+                <div class="bg-gray-50 dark:bg-gray-700 p-8 rounded-2xl border border-gray-200 dark:border-gray-600 shadow-inner max-w-lg w-full">
+                    <h2 id="auth-title" class="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-2">Sign In</h2>
+                    <p id="auth-subtitle" class="text-gray-600 dark:text-gray-300 mb-6">Please log in with your email and password to view blog posts.</p>
+                    
+                    <form id="auth-form" class="space-y-4">
+                        <div>
+                            <label for="auth-email" class="block text-left text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email Address</label>
+                            <input type="email" id="auth-email" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary dark:bg-gray-600 dark:border-gray-500 dark:text-gray-100">
+                        </div>
+                        <div>
+                            <label for="auth-password" class="block text-left text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Password</label>
+                            <input type="password" id="auth-password" required minlength="6" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary dark:bg-gray-600 dark:border-gray-500 dark:text-gray-100">
+                        </div>
+                        <button type="submit" id="auth-submit-btn" class="w-full py-3 bg-primary text-white font-bold rounded-lg hover:bg-indigo-700 transition duration-300 shadow-lg">Sign In</button>
+                    </form>
+                    
+                    <div id="login-error" class="mt-4 text-red-500 font-medium text-sm hidden bg-red-50 dark:bg-red-900/30 p-3 rounded-lg border border-red-200 dark:border-red-800"></div>
+<!--
+                    <div class="mt-6 text-sm">
+                        <span id="toggle-msg" class="text-gray-600 dark:text-gray-400">Don't have an account?</span>
+                        <button id="auth-toggle-btn" class="text-primary dark:text-primary-dark font-semibold ml-1 underline hover:opacity-80">Sign Up</button>
+                    </div>
+                    -->
                 </div>
             </div>
-            
 
-            <!-- COMMENTS SECTION -->
-            <section class="mt-12 pt-8 border-t border-gray-300 dark:border-gray-700">
-                <h2 id="comments" class="text-3xl font-bold text-primary dark:text-primary-dark mb-4 border-b border-primary dark:border-primary-dark pb-2">Comments</h2>
-
-                <div id="auth-status" class="mb-4 p-3 bg-indigo-50 dark:bg-indigo-900 rounded-lg text-sm text-indigo-800 dark:text-indigo-200">
-                    <span id="user-id-display">Connecting to the comment service...</span>
+            <!-- PROTECTED CONTENT (Visible when authenticated) -->
+            <div id="protected-content" class="hidden transition-opacity duration-500">
+                
+                <div class="flex flex-col sm:flex-row justify-between items-center mb-6 gap-3 bg-indigo-50 dark:bg-indigo-900/30 p-4 rounded-lg border border-indigo-100 dark:border-indigo-800">
+                    <div id="auth-status" class="text-sm text-indigo-800 dark:text-indigo-200">
+                        <span id="user-id-display">Authenticating...</span>
+                    </div>
+                    <button id="logout-button" class="text-sm px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded shadow transition duration-200">
+                        Sign Out
+                    </button>
                 </div>
 
-                <form id="comment-form" class="mb-8 p-6 bg-gray-50 dark:bg-gray-700 rounded-xl shadow-inner">
-                    <h3 class="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-100">Leave a Comment</h3>
-                    <div class="mb-4">
-                        <label for="comment-name" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Your Name</label>
-                        <input type="text" id="comment-name" name="name" required maxlength="20" placeholder="Name"
-                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary dark:bg-gray-600 dark:border-gray-500 dark:text-gray-100">
+                <!-- DYNAMIC POSTS CONTAINER -->
+                <div id="blog-posts-container" class="space-y-12">
+                    <!-- Loading State -->
+                    <div class="blog-skeleton p-6 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                        <div class="h-8 bg-gray-200 dark:bg-gray-600 rounded w-1/4 mb-4"></div>
+                        <div class="h-4 bg-gray-200 dark:bg-gray-600 rounded w-full mb-2"></div>
+                        <div class="h-4 bg-gray-200 dark:bg-gray-600 rounded w-5/6"></div>
                     </div>
-                    <div class="mb-4">
-                        <label for="comment-text" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Your Comment *</label>
-                        <textarea id="comment-text" name="comment" rows="4" required minlength="5" maxlength="500" placeholder="Leave a comment"
-                                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary dark:bg-gray-600 dark:border-gray-500 dark:text-gray-100"></textarea>
-                    </div>
-                    <button type="submit" id="submit-button" disabled class="submit-disabled w-full md:w-auto px-6 py-3 bg-primary text-white font-bold rounded-lg hover:bg-indigo-700 transition duration-300 shadow-lg">Post Comment</button>
-                    <div id="form-message" class="mt-3 text-sm font-medium"></div>
-                </form>
-
-                <h3 class="text-2xl font-semibold text-gray-800 dark:text-gray-100 mb-4">All Comments (<span id="comment-count">0</span>)</h3>
-                <div id="comments-list" class="space-y-6">
-                    <div id="loading-indicator" class="text-center p-8 text-gray-500 dark:text-gray-400">Loading comments...</div>
                 </div>
-            </section>
+                
+                <!-- COMMENTS SECTION -->
+                <section class="mt-12 pt-8 border-t border-gray-300 dark:border-gray-700">
+                    <h2 id="comments" class="text-3xl font-bold text-primary dark:text-primary-dark mb-4 border-b border-primary dark:border-primary-dark pb-2">Comments</h2>
+
+                    <form id="comment-form" class="mb-8 p-6 bg-gray-50 dark:bg-gray-700 rounded-xl shadow-inner">
+                        <h3 class="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-100">Leave a Comment</h3>
+                        <div class="mb-4">
+                            <label for="comment-name" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Your Name</label>
+                            <input type="text" id="comment-name" name="name" required maxlength="20" placeholder="Name"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary dark:bg-gray-600 dark:border-gray-500 dark:text-gray-100">
+                        </div>
+                        <div class="mb-4">
+                            <label for="comment-text" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Your Comment *</label>
+                            <textarea id="comment-text" name="comment" rows="4" required minlength="5" maxlength="500" placeholder="Leave a comment (Supports raw links and code blocks with backticks)"
+                                      class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary dark:bg-gray-600 dark:border-gray-500 dark:text-gray-100"></textarea>
+                        </div>
+                        <button type="submit" id="submit-button" disabled class="submit-disabled w-full md:w-auto px-6 py-3 bg-primary text-white font-bold rounded-lg hover:bg-indigo-700 transition duration-300 shadow-lg">Post Comment</button>
+                        <div id="form-message" class="mt-3 text-sm font-medium"></div>
+                    </form>
+
+                    <h3 class="text-2xl font-semibold text-gray-800 dark:text-gray-100 mb-4">All Comments (<span id="comment-count">0</span>)</h3>
+                    <div id="comments-list" class="space-y-6">
+                        <div id="loading-indicator" class="text-center p-8 text-gray-500 dark:text-gray-400">Loading comments...</div>
+                    </div>
+                </section>
+            </div>
 
         </div>
     </main>
@@ -193,7 +226,7 @@
     <div id="scroll-to-comments" class="bg-primary dark:bg-primary-dark text-white p-3 rounded-full shadow-lg hover:bg-indigo-700 dark:hover:bg-indigo-400 transition duration-300" aria-label="Scroll to comments">
         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 4v-4z"></path></svg>
     </div>
-    <div id="scroll-to-top" onclick="scrollToTop()" class="w-12 h-12 flex items-center justify-center bg-blue-600/40 dark:bg-blue-500/30 backdrop-blur-md text-white rounded-full shadow-lg hover:bg-blue-600/70 dark:hover:bg-blue-500/70 transition duration-300">
+    <div id="scroll-to-top" class="w-12 h-12 flex items-center justify-center bg-blue-600/40 dark:bg-blue-500/30 backdrop-blur-md text-white rounded-full shadow-lg hover:bg-blue-600/70 dark:hover:bg-blue-500/70 transition duration-300">
         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"></path></svg>
     </div>
 
@@ -202,7 +235,7 @@
     // Firebase imports (Firestore + Auth)
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
     import { getFirestore, collection, addDoc, onSnapshot, query, serverTimestamp, setLogLevel, orderBy } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
-    import { getAuth, onAuthStateChanged, setPersistence, browserLocalPersistence, signInAnonymously } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
+    import { getAuth, onAuthStateChanged, setPersistence, browserLocalPersistence, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
 
     // Firebase configuration
     const firebaseConfig = {
@@ -229,16 +262,55 @@
     const commentCount = document.getElementById('comment-count');
     const loadingIndicator = document.getElementById('loading-indicator');
     const commentForm = document.getElementById('comment-form');
+    
+    // Auth DOM elements
+    const loginSection = document.getElementById('login-section');
+    const protectedContent = document.getElementById('protected-content');
+    const authForm = document.getElementById('auth-form');
+    const authEmail = document.getElementById('auth-email');
+    const authPassword = document.getElementById('auth-password');
+    const authSubmitBtn = document.getElementById('auth-submit-btn');
+    const authTitle = document.getElementById('auth-title');
+    const authSubtitle = document.getElementById('auth-subtitle');
+    const authToggleBtn = document.getElementById('auth-toggle-btn');
+    const toggleMsg = document.getElementById('toggle-msg');
+    const loginError = document.getElementById('login-error');
+    const logoutButton = document.getElementById('logout-button');
 
-    // Collection path
+    // Collection paths
     const COMMENTS_COLLECTION = 'blog_comments';
     const BLOG_POSTS_COLLECTION = 'blog_posts';
 
-    // Utilities
-    function sanitizeInput(str) {
-      const temp = document.createElement('div');
-      temp.textContent = str;
-      return temp.innerHTML;
+    // --- ENHANCED PARSER (Checks for HTML and Parses Links / Code Blocks) ---
+    function parseAndSanitizeText(rawText) {
+      if (!rawText) return '';
+
+      // 1. Force escape all raw HTML elements to prevent arbitrary HTML execution (Anti-XSS Security Guard)
+      let text = rawText
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+
+      // 2. Parse Markdown-style Multi-line Code Blocks: ```code```
+      text = text.replace(/```([\s\S]+?)```/g, function(match, codeBody) {
+        return `<pre class="bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200 p-3 my-3 rounded-lg overflow-x-auto border border-gray-200 dark:border-gray-700 font-mono text-sm leading-relaxed"><code>${codeBody.trim()}</code></pre>`;
+      });
+
+      // 3. Parse Markdown-style Inline Code Tags: `code`
+      text = text.replace(/`([^`\n]+?)`/g, '<code class="bg-gray-100 dark:bg-gray-900 text-pink-600 dark:text-pink-400 px-1.5 py-0.5 rounded font-mono text-sm border border-gray-200 dark:border-gray-700">$1</code>');
+
+      // 4. Auto-parse Safe Clickable Links (http/https links)
+      const urlRegex = /(\b(https?):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig;
+      text = text.replace(urlRegex, function(url) {
+        return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-primary dark:text-primary-dark underline hover:opacity-80 break-all">${url}</a>`;
+      });
+
+      // 5. Convert leftover raw carriage returns to standard HTML line breaks
+      text = text.replace(/\n/g, '<br>');
+
+      return text;
     }
 
     function formatTimestamp(timestamp) {
@@ -262,19 +334,20 @@
     }
 
     // --- BLOG POSTS LOGIC ---
+    let blogPostsUnsubscribe = null;
+    let commentsUnsubscribe = null;
+
     function loadBlogPosts() {
         const postsContainer = document.getElementById('blog-posts-container');
-        // Sort by timestamp descending
         const q = query(collection(db, BLOG_POSTS_COLLECTION), orderBy('timestamp', 'desc'));
 
-        onSnapshot(q, (snapshot) => {
+        blogPostsUnsubscribe = onSnapshot(q, (snapshot) => {
             if (snapshot.empty) {
-                // FALLBACK: Show hardcoded posts if DB is empty
                 postsContainer.innerHTML = `
                     <section class="p-6 bg-gray-50 dark:bg-gray-700 rounded-lg border border-dashed border-gray-300 dark:border-gray-600">
-                        <h2 class="text-2xl font-bold mb-2">Error Fetching Posts</h2>
+                        <h2 class="text-2xl font-bold mb-2">No Posts Yet</h2>
                         <hr class="mb-3 border-gray-300 dark:border-gray-600">
-                        <p class="text-gray-700 dark:text-gray-200 italic leading-relaxed">The database is empty or could not be retrieved. Check your network region and connection.</p>
+                        <p class="text-gray-700 dark:text-gray-200 italic leading-relaxed">Check back later for updates.</p>
                     </section>
                 `;
                 return;
@@ -284,62 +357,38 @@
             snapshot.forEach(doc => {
                 const post = doc.data();
                 const section = document.createElement('section');
-                section.className = "mt-8 p-6 bg-gray-50 dark:bg-gray-700 rounded-lg border border-dashed border-gray-300 dark:border-gray-600 transition-all hover:shadow-lg";
-                // FIX: Used sanitizeInput instead of sanitize which was undefined
+                section.className = "mt-8 p-6 bg-gray-50 dark:bg-gray-700 rounded-lg border border-solid border-gray-200 dark:border-gray-600 shadow-sm transition-all hover:shadow-md";
+                
+                // Title and Post Content run securely through our robust new Parser & Sanitizer
+                const cleanTitle = parseAndSanitizeText(post.title || 'Untitled');
+                const parsedContent = parseAndSanitizeText(post.content || '');
+
                 section.innerHTML = `
-                    <h2 class="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">${sanitizeInput(post.title)}</h2>
+                    <h2 class="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">${cleanTitle}</h2>
                     <hr class="mb-3 border-gray-300 dark:border-gray-600">
-                    <p class="text-gray-700 dark:text-gray-200 italic text-base leading-relaxed">${sanitizeInput(post.content)}</p>
+                    <div class="text-gray-700 dark:text-gray-200 text-base leading-relaxed break-words">${parsedContent}</div>
                 `;
                 postsContainer.appendChild(section);
             });
+        }, (err) => {
+            console.error('Snapshot error (posts)', err);
+            if (postsContainer) {
+                postsContainer.innerHTML = `<p class="text-red-500">Error loading posts.</p>`;
+            }
         });
     }
 
-    // Initialize Auth and load comments
-    let currentUserId = null;
-    async function initAuthAndComments() {
-      try {
-        await setPersistence(auth, browserLocalPersistence);
-        await signInAnonymously(auth);
-
-        onAuthStateChanged(auth, (user) => {
-          if (user) {
-            currentUserId = user.uid;
-            userIdDisplay.innerHTML = `✅ Comment Service Ready. Signed in as: <span class="font-bold break-all">${currentUserId}</span>`;
-            submitButton.disabled = false;
-            submitButton.classList.remove('submit-disabled');
-            
-            // FIX: Added calls to load content now that we are connected
-            loadComments();
-            loadBlogPosts(); 
-          } else {
-            currentUserId = null;
-            userIdDisplay.textContent = 'Authentication state: not signed in.';
-            submitButton.disabled = true;
-            submitButton.classList.add('submit-disabled');
-          }
-        });
-      } catch (err) {
-        console.error('Auth init failed', err);
-        userIdDisplay.innerHTML = `Error initializing comment service: ${err.message || err}`;
-        submitButton.disabled = true;
-        submitButton.classList.add('submit-disabled');
-        loadingIndicator.textContent = 'Comments service unavailable.';
-      }
-    }
-
-    // Realtime listener
     function loadComments() {
       loadingIndicator.textContent = 'Loading comments...';
       const q = query(collection(db, COMMENTS_COLLECTION));
-      onSnapshot(q, (snapshot) => {
+      
+      commentsUnsubscribe = onSnapshot(q, (snapshot) => {
         const comments = [];
         snapshot.forEach(doc => comments.push({ id: doc.id, ...doc.data() }));
         comments.sort((a,b) => (b.timestamp?.seconds || 0) - (a.timestamp?.seconds || 0));
         renderComments(comments);
       }, (err) => {
-        console.error('Snapshot error', err);
+        console.error('Snapshot error (comments)', err);
         loadingIndicator.textContent = 'Error loading comments.';
       });
     }
@@ -353,8 +402,11 @@
       }
       comments.forEach(comment => {
         const dateString = formatTimestamp(comment.timestamp);
-        const userName = sanitizeInput(comment.name || 'Anonymous');
-        const commentText = sanitizeInput(comment.text || '');
+        
+        // Pass user comments through the new parser to render links and format code snippets securely
+        const userName = parseAndSanitizeText(comment.name || 'Anonymous');
+        const commentText = parseAndSanitizeText(comment.text || '');
+
         const el = document.createElement('div');
         el.className = 'p-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm transition duration-150 hover:shadow-md';
         el.innerHTML = `
@@ -362,46 +414,185 @@
             <p class="font-bold text-lg text-primary dark:text-primary-dark">${userName}</p>
             <p class="text-xs text-gray-500 dark:text-gray-400">${dateString}</p>
           </div>
-          <p class="mt-2 text-gray-700 dark:text-gray-200 whitespace-pre-wrap">${commentText}</p>
-          <div class="mt-2 text-xs text-gray-400 dark:text-gray-500 border-t border-dashed border-gray-100 dark:border-gray-700 pt-2 break-all">Posted by user ID: ${sanitizeInput(comment.userId || 'unknown')}</div>
+          <div class="mt-2 text-gray-700 dark:text-gray-200 break-words">${commentText}</div>
         `;
         commentsList.appendChild(el);
       });
     }
 
-    // Submit handler
-    commentForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      if (!currentUserId) { showFormMessage('Comment service not ready.', 'error'); return; }
-      const name = document.getElementById('comment-name').value.trim() || 'Anonymous';
-      const text = document.getElementById('comment-text').value.trim();
-      if (text.length < 5 || text.length > 500) { showFormMessage('Comment must be between 5 and 500 characters.', 'error'); return; }
-      submitButton.disabled = true; submitButton.classList.add('submit-disabled'); submitButton.textContent = 'Posting...';
+    // --- AUTHENTICATION LOGIC ---
+    let currentUserId = null;
+    let isLoginMode = true; // Mode switch toggle flag
+
+    async function initAuthAndData() {
       try {
-        await addDoc(collection(db, COMMENTS_COLLECTION), { name: sanitizeInput(name), text: sanitizeInput(text), userId: currentUserId, timestamp: serverTimestamp() });
-        showFormMessage('Comment posted successfully!', 'success');
-        document.getElementById('comment-text').value = '';
-        document.getElementById('comment-name').value = '';
+        await setPersistence(auth, browserLocalPersistence);
+
+        // Track Authentication State
+        onAuthStateChanged(auth, (user) => {
+          if (user) {
+            currentUserId = user.uid;
+            
+            const userIdentifier = user.email || 'Verified User';
+            if (userIdDisplay) {
+                userIdDisplay.innerHTML = `✅ Signed in as: <span class="font-bold break-all">${parseAndSanitizeText(userIdentifier)}</span>`;
+            }
+            
+            if (submitButton) {
+                submitButton.disabled = false;
+                submitButton.classList.remove('submit-disabled');
+            }
+            
+            if (loginSection) loginSection.classList.add('hidden');
+            if (protectedContent) protectedContent.classList.remove('hidden');
+
+            // Autocomplete default author's name in form
+            const nameInput = document.getElementById('comment-name');
+            if (nameInput && !nameInput.value && user.email) {
+                nameInput.value = user.email.split('@')[0];
+            }
+
+            // Real-time fetches
+            loadBlogPosts(); 
+            loadComments();
+          } else {
+            currentUserId = null;
+            if (userIdDisplay) userIdDisplay.textContent = 'Authentication state: not signed in.';
+            
+            if (submitButton) {
+                submitButton.disabled = true;
+                submitButton.classList.add('submit-disabled');
+            }
+
+            if (loginSection) loginSection.classList.remove('hidden');
+            if (protectedContent) protectedContent.classList.add('hidden');
+
+            // Cleanup subscription streams
+            if (blogPostsUnsubscribe) blogPostsUnsubscribe();
+            if (commentsUnsubscribe) commentsUnsubscribe();
+          }
+        });
+
+        // Toggle sign-in / registration
+        if (authToggleBtn) {
+            authToggleBtn.addEventListener('click', () => {
+                isLoginMode = !isLoginMode;
+                if (loginError) loginError.classList.add('hidden');
+                
+                if (isLoginMode) {
+                    authTitle.textContent = 'Sign In';
+                    authSubtitle.textContent = 'Please log in with your email and password to view blog posts.';
+                    authSubmitBtn.textContent = 'Sign In';
+                    toggleMsg.textContent = "Don't have an account?";
+                    authToggleBtn.textContent = 'Sign Up';
+                } else {
+                    authTitle.textContent = 'Create Account';
+                    authSubtitle.textContent = 'Register with your email and password to access the blog content.';
+                    authSubmitBtn.textContent = 'Register Now';
+                    toggleMsg.textContent = 'Already registered?';
+                    authToggleBtn.textContent = 'Log In';
+                }
+            });
+        }
+
+        // Submit form (Sign In or Sign Up)
+        if (authForm) {
+            authForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                if (loginError) loginError.classList.add('hidden');
+
+                const emailValue = authEmail.value.trim();
+                const passwordValue = authPassword.value;
+
+                if (!emailValue || !passwordValue) return;
+
+                try {
+                    authSubmitBtn.disabled = true;
+                    authSubmitBtn.textContent = isLoginMode ? 'Signing In...' : 'Registering...';
+
+                    if (isLoginMode) {
+                        await signInWithEmailAndPassword(auth, emailValue, passwordValue);
+                    } else {
+                        await createUserWithEmailAndPassword(auth, emailValue, passwordValue);
+                    }
+                } catch (err) {
+                    console.error('Authentication Error:', err);
+                    if (loginError) {
+                        loginError.textContent = err.message || 'An error occurred during authentication.';
+                        loginError.classList.remove('hidden');
+                    }
+                } finally {
+                    authSubmitBtn.disabled = false;
+                    authSubmitBtn.textContent = isLoginMode ? 'Sign In' : 'Register Now';
+                }
+            });
+        }
+
+        // Logout
+        if (logoutButton) {
+            logoutButton.addEventListener('click', async () => {
+                try {
+                    await signOut(auth);
+                } catch (err) {
+                    console.error('Logout error', err);
+                }
+            });
+        }
+
       } catch (err) {
-        console.error('Add doc error', err);
-        showFormMessage('Failed to post comment: ' + (err.message || err), 'error');
-      } finally {
-        submitButton.disabled = false; submitButton.classList.remove('submit-disabled'); submitButton.textContent = 'Post Comment';
+        console.error('Authentication Initializer Error:', err);
       }
-    });
+    }
 
-    // Initialize auth + comments on load
+    // Submit new comment
+    if (commentForm) {
+        commentForm.addEventListener('submit', async (e) => {
+          e.preventDefault();
+          if (!currentUserId) { showFormMessage('Comment service requires login.', 'error'); return; }
+          
+          const name = document.getElementById('comment-name').value.trim() || 'Anonymous';
+          const text = document.getElementById('comment-text').value.trim();
+          
+          if (text.length < 5 || text.length > 500) { 
+              showFormMessage('Comment must be between 5 and 500 characters.', 'error'); 
+              return; 
+          }
+          
+          submitButton.disabled = true; 
+          submitButton.classList.add('submit-disabled'); 
+          submitButton.textContent = 'Posting...';
+          
+          try {
+            await addDoc(collection(db, COMMENTS_COLLECTION), { 
+                name: name, 
+                text: text, 
+                userId: currentUserId, 
+                timestamp: serverTimestamp() 
+            });
+            showFormMessage('Comment posted successfully!', 'success');
+            document.getElementById('comment-text').value = '';
+          } catch (err) {
+            console.error('Comment Post Fail Error:', err);
+            showFormMessage('Failed to post comment: ' + (err.message || err), 'error');
+          } finally {
+            submitButton.disabled = false; 
+            submitButton.classList.remove('submit-disabled'); 
+            submitButton.textContent = 'Post Comment';
+          }
+        });
+    }
+
+    // Initialize content scripts
     document.addEventListener('DOMContentLoaded', () => {
-      initAuthAndComments();
+      initAuthAndData();
 
-      // Theme handling (preserve original theme code)
+      // Theme logic 
       const THEME_KEY = 'app-theme-mode';
       const MENU_KEY = 'app-menu-mode';
       const NAV_STYLE_KEY = 'app-nav-style'; 
       const COOKIE_KEY = 'cookiesAccepted';
       const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
       
-      // --- THEME LOGIC ---
       function applyTheme(theme) {
         const html = document.documentElement;
         let resolved = theme;
@@ -412,12 +603,11 @@
       applyTheme(initialTheme);
       mediaQuery.addEventListener('change', () => { if ((localStorage.getItem(THEME_KEY) || 'system') === 'system') applyTheme('system'); });
 
-      // --- NAV STYLE LOGIC ---
+      // Nav style logic
       function applyNavStyle(style) {
           const navElement = document.getElementById('main-nav');
           const mobileMenu = document.getElementById('mobile-menu');
           
-          // Classes specific to the Main Nav (#main-nav)
           const navBlurClasses = ['bg-white/10', 'backdrop-blur-md', 'dark:bg-gray-800/30'];
           const navSolidClasses = ['bg-white', 'bg-opacity-100', 'backdrop-blur-none', 'dark:bg-gray-800', 'dark:bg-opacity-100'];
 
@@ -433,13 +623,13 @@
           if (style === 'blur') {
               if (navElement) navElement.classList.add(...navBlurClasses);
               if (mobileMenu) mobileMenu.classList.add(...menuBlurClasses);
-          } else { // 'solid'
+          } else { 
               if (navElement) navElement.classList.add(...navSolidClasses);
               if (mobileMenu) mobileMenu.classList.add(...menuSolidClasses);
           }
       }
 
-      // --- MENU MODE LOGIC ---
+      // Menu mode logic
       function applyMenuMode(mode) {
           const desktopNav = document.getElementById('desktop-nav');
           const mobileToggle = document.getElementById('mobile-toggle');
@@ -480,58 +670,78 @@
               mobileMenuPanel.classList.remove('md:hidden');
           }
 
-          // Re-apply navigation style as setting className might wipe classes
           const currentNavStyle = localStorage.getItem(NAV_STYLE_KEY) || 'blur';
           applyNavStyle(currentNavStyle);
       }
 
-      // Initialize Menu Mode & Nav Style
+      // Initialize menu modes & style definitions
       const initialMenuMode = localStorage.getItem(MENU_KEY) || 'auto';
       applyMenuMode(initialMenuMode);
       
       const initialNavStyle = localStorage.getItem(NAV_STYLE_KEY) || 'blur';
       applyNavStyle(initialNavStyle);
 
-      // Mobile menu toggles
+      // Mobile trigger menu click events
       const mobileMenuButton = document.getElementById('mobile-menu-button');
       const mobileMenu = document.getElementById('mobile-menu');
       const hamburgerIcon = document.getElementById('hamburger-icon');
       const closeIcon = document.getElementById('close-icon');
+      
       function toggleMobileMenu() {
         if (!mobileMenu || !mobileMenuButton) return;
         const isOpen = mobileMenu.classList.contains('open');
         mobileMenu.classList.toggle('open');
-        if (isOpen) { hamburgerIcon.classList.remove('hidden'); closeIcon.classList.add('hidden'); mobileMenuButton.setAttribute('aria-expanded', 'false'); }
-        else { hamburgerIcon.classList.add('hidden'); closeIcon.classList.remove('hidden'); mobileMenuButton.setAttribute('aria-expanded', 'true'); }
+        if (isOpen) { 
+            hamburgerIcon.classList.remove('hidden'); 
+            closeIcon.classList.add('hidden'); 
+            mobileMenuButton.setAttribute('aria-expanded', 'false'); 
+        } else { 
+            hamburgerIcon.classList.add('hidden'); 
+            closeIcon.classList.remove('hidden'); 
+            mobileMenuButton.setAttribute('aria-expanded', 'true'); 
+        }
       }
       if (mobileMenuButton) mobileMenuButton.addEventListener('click', toggleMobileMenu);
       if (mobileMenu) mobileMenu.querySelectorAll('a').forEach(a => a.addEventListener('click', () => { if (mobileMenu.classList.contains('open')) setTimeout(toggleMobileMenu, 100); }));
 
-      // Dropdown
+      // Settings dropdown trigger events
       const dropdown = document.getElementById('more-dropdown');
-      const button = dropdown.querySelector('button');
+      const button = dropdown ? dropdown.querySelector('button') : null;
       const menu = document.getElementById('more-menu-items');
-      const toggleMenu = () => { menu.classList.toggle('visible'); button.setAttribute('aria-expanded', menu.classList.contains('visible')); };
-      const showMenu = () => { if (window.innerWidth >= 768) { menu.classList.add('visible'); button.setAttribute('aria-expanded', 'true'); } };
-      const hideMenu = () => { if (window.innerWidth >= 768) { menu.classList.remove('visible'); button.setAttribute('aria-expanded', 'false'); } };
-      dropdown.addEventListener('mouseenter', showMenu); dropdown.addEventListener('mouseleave', hideMenu); button.addEventListener('click', toggleMenu);
-      document.addEventListener('click', (ev) => { if (window.innerWidth >= 768 && !dropdown.contains(ev.target) && menu.classList.contains('visible')) hideMenu(); });
+      
+      if (dropdown && button && menu) {
+          const toggleMenu = () => { menu.classList.toggle('visible'); button.setAttribute('aria-expanded', menu.classList.contains('visible')); };
+          const showMenu = () => { if (window.innerWidth >= 768) { menu.classList.add('visible'); button.setAttribute('aria-expanded', 'true'); } };
+          const hideMenu = () => { if (window.innerWidth >= 768) { menu.classList.remove('visible'); button.setAttribute('aria-expanded', 'false'); } };
+          dropdown.addEventListener('mouseenter', showMenu); 
+          dropdown.addEventListener('mouseleave', hideMenu); 
+          button.addEventListener('click', toggleMenu);
+          document.addEventListener('click', (ev) => { if (window.innerWidth >= 768 && !dropdown.contains(ev.target) && menu.classList.contains('visible')) hideMenu(); });
+      }
 
-      // Cookie banner
+      // Cookie Acceptance banner elements
       const banner = document.getElementById('cookie-banner');
       const acceptButton = document.getElementById('accept-cookies');
       const accepted = localStorage.getItem(COOKIE_KEY);
       if (accepted === 'true') { if (banner) banner.style.display = 'none'; }
-      else { if (banner) banner.style.display = 'block'; if (acceptButton) acceptButton.addEventListener('click', () => { localStorage.setItem(COOKIE_KEY, 'true'); if (banner) { banner.classList.add('fade-out'); setTimeout(() => { banner.style.display = 'none'; }, 500); } }); }
-      
+      else { 
+          if (banner) banner.style.display = 'block'; 
+          if (acceptButton) acceptButton.addEventListener('click', () => { 
+              localStorage.setItem(COOKIE_KEY, 'true'); 
+              if (banner) { 
+                  banner.classList.add('fade-out'); 
+                  setTimeout(() => { banner.style.display = 'none'; }, 500); 
+              } 
+          }); 
+      }
 
+      // Window scrolling indicators
       const scrollButton = document.getElementById('scroll-to-top');
       const commentButton = document.getElementById('scroll-to-comments');
       const commentsSection = document.getElementById('comments');
 
       function checkScroll() { 
           const scrolled = document.body.scrollTop > 300 || document.documentElement.scrollTop > 300;
-          
           if (scrolled) { 
               if (scrollButton) scrollButton.classList.add('show'); 
               if (commentButton) commentButton.classList.add('show');
