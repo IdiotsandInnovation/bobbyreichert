@@ -152,9 +152,6 @@
 <body class="font-sans min-h-screen flex flex-col transition-colors duration-300 bg-gray-100 text-gray-900 dark:bg-gray-900 dark:text-gray-100">
 
     <!-- 🔴 START: NAVIGATION BAR 🔴 -->
-    
-    <!-- Nav classes are now managed entirely by JS -->
-    <!-- UPDATED: z-index increased to 50 to stay above mobile menu -->
     <nav id="main-nav" class="w-full shadow-lg sticky top-0 z-50 dark:shadow-xl transition-colors duration-300">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16">
@@ -221,8 +218,6 @@
     <!-- 🔴 END: NAVIGATION BAR 🔴 -->
     
     <!-- 🔴 START: MOBILE MENU PANEL 🔴 -->
-    <!-- Mobile menu classes are now managed entirely by JS -->
-    <!-- UPDATED: z-index increased to 40 to cover page content (z-10 toggles) but sit under nav (z-50) -->
     <div id="mobile-menu" class="fixed inset-0 top-16 w-full h-full md:hidden z-40">
         <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3 flex flex-col">
             <!-- Main Links -->
@@ -316,6 +311,23 @@
                     </p>
                 </div>
 
+                <!-- --- Wiki Settings Section (NEW) --- -->
+                <div>
+                    <h2 class="text-xl font-semibold mb-3 border-t pt-8 border-gray-200 dark:border-gray-700">Wiki Settings</h2>
+                    <p class="text-sm mb-4 text-gray-600 dark:text-gray-400">Configure preferences for the Knowledge Base sub-folder.</p>
+                    
+                    <div class="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700">
+                        <div class="pr-4">
+                            <span class="block text-sm font-semibold text-gray-800 dark:text-gray-200">Show 'Return to Main Site' Button</span>
+                            <span class="block text-xs text-gray-500 dark:text-gray-400">Display a quick link back to your homepage in the Wiki header directory.</span>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer select-none">
+                            <input type="checkbox" id="back-to-main-toggle" class="sr-only peer">
+                            <div class="w-11 h-6 bg-gray-300 dark:bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary dark:peer-checked:bg-primary-dark"></div>
+                        </label>
+                    </div>
+                </div>
+
                 <!-- --- Privacy & Data Section --- -->
                 <div>
                     <h2 class="text-xl font-semibold mb-3 border-t pt-8 border-gray-200 dark:border-gray-700">Privacy & Data</h2>
@@ -368,6 +380,7 @@
         const THEME_KEY = 'app-theme-mode';
         const NAV_STYLE_KEY = 'app-nav-style'; 
         const COOKIE_KEY = 'cookiesAccepted';
+        const BACK_TO_MAIN_KEY = 'show-back-to-main';
         
         // --- DOM Elements ---
         const settingsCard = document.getElementById('settings-card');
@@ -377,6 +390,7 @@
         const saveIndicator = document.getElementById('save-indicator');
         const resetCookiesBtn = document.getElementById('reset-cookies-btn');
         const cookieStatusMsg = document.getElementById('cookie-status-msg');
+        const backToMainToggle = document.getElementById('back-to-main-toggle');
 
         // Nav Element
         const navElement = document.getElementById('main-nav');
@@ -540,11 +554,9 @@
                 mobileMenuPanel.classList.remove('md:hidden');
             }
 
-            // --- FIX START ---
             // Re-apply the current navigation style because setting className above wipes out the background classes
             const currentNavStyle = localStorage.getItem(NAV_STYLE_KEY) || 'blur';
             applyNavStyle(currentNavStyle);
-            // --- FIX END ---
 
             if (menuControl) {
                 const menuStatus = document.getElementById('menu-status');
@@ -643,7 +655,6 @@
         }
         
         // --- Event Listeners ---
-        
         if (menuControl) {
             menuControl.addEventListener('change', (event) => {
                 if (event.target.name === 'menu') {
@@ -660,12 +671,20 @@
             });
         }
         
-        // Nav Style Listener (NEW)
+        // Nav Style Listener
         if (navStyleControl) {
             navStyleControl.addEventListener('change', (event) => {
                 if (event.target.name === 'nav-style') {
                     applyNavStyle(event.target.value);
                 }
+            });
+        }
+
+        // Wiki Return to Main Site Button Toggle Listener
+        if (backToMainToggle) {
+            backToMainToggle.addEventListener('change', (event) => {
+                localStorage.setItem(BACK_TO_MAIN_KEY, event.target.checked ? 'true' : 'false');
+                showSaveIndicator();
             });
         }
 
@@ -685,7 +704,6 @@
         }
 
         // --- Core Initialization ---
-
         function initializeSettings() {
             // 1. Theme
             const initialThemeMode = localStorage.getItem(THEME_KEY) || 'system';
@@ -699,11 +717,17 @@
             const initialMenuMode = localStorage.getItem(MENU_KEY) || 'auto';
             applyMenuMode(initialMenuMode);
             
-            // 4. Nav Style (NEW) - Default to 'blur' if not set
+            // 4. Nav Style - Default to 'blur' if not set
             const initialNavStyle = localStorage.getItem(NAV_STYLE_KEY) || 'blur';
             applyNavStyle(initialNavStyle);
 
-            // 5. Cookie
+            // 5. Wiki Toggle Style Switch Setup
+            const initialBackToMainSetting = localStorage.getItem(BACK_TO_MAIN_KEY) === 'true';
+            if (backToMainToggle) {
+                backToMainToggle.checked = initialBackToMainSetting;
+            }
+
+            // 6. Cookie
             initializeCookieBanner();
         }
 
