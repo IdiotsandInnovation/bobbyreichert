@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-J4PE57KXDN" crossorigin="anonymous"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);} 
+        gtag('js', new Date());
+        gtag('config', 'G-J4PE57KXDN');
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bobby Reichert | Wiki Subpage Template</title>
+    <!-- Load Tailwind CSS from CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Configure Tailwind - Dark mode ENABLED -->
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        'primary': '#4f46e5',
+                        'primary-dark': '#a5b4fc',
+                        'wiki-accent': '#3366cc',
+                        'wiki-accent-dark': '#6699ff'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        
+        /* Custom scrollbar matching original site layout */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 4px; }
+        ::-webkit-scrollbar-track { background: #f7f9fc; }
+        .dark ::-webkit-scrollbar-thumb { background: #4b5563; }
+        .dark ::-webkit-scrollbar-track { background: #111827; }
+
+        .fade-out { opacity: 0 !important; transform: translateY(100%) !important; pointer-events: none; }
+        
+        #scroll-to-top {
+            position: fixed;
+            right: 1.5rem;
+            bottom: 2rem;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s, visibility 0.3s;
+            cursor: pointer;
+            z-index: 1000;
+        }
+        #scroll-to-top.show { opacity: 1; visibility: visible; }
+        
+        /* Table of Contents Scrollspy highlighting classes */
+        .toc-active {
+            color: #4f46e5 !important;
+            font-weight: 600;
+            border-left-color: #4f46e5 !important;
+            background-color: rgba(79, 70, 229, 0.05);
+        }
+        .dark .toc-active {
+            color: #a5b4fc !important;
+            border-left-color: #a5b4fc !important;
+            background-color: rgba(165, 180, 252, 0.05);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col transition-colors duration-300 bg-gray-50 dark:bg-gray-900 text-gray-950 dark:text-gray-100">
+
+    <!-- NAV (Clean Header with Back to Wiki Home Directory) -->
+    <nav id="main-nav" class="w-full bg-white/15 backdrop-blur-md shadow-sm sticky top-0 z-50 dark:bg-gray-800/40 dark:shadow-md transition-colors duration-300 border-b border-gray-200/50 dark:border-gray-700/50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <!-- Logo/Brand -->
+                <div class="flex-shrink-0 flex items-center gap-2">
+                    <span class="text-xl font-bold text-primary dark:text-primary-dark">Bobby Reichert</span>
+                    <span class="text-sm font-light text-gray-400 dark:text-gray-500">/ Wiki</span>
+                </div>
+                
+                <!-- Return to Wiki Home Action Button -->
+                <div class="flex items-center">
+                    <a href="index.html" class="flex items-center gap-2 text-xs sm:text-sm font-semibold px-4 py-2 rounded-lg bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-200 transition duration-150 border border-gray-200/50 dark:border-gray-700/50 shadow-sm">
+                        <svg class="w-4 h-4 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                        </svg>
+                        <span>Return to Wiki Home</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- BREADCRUMBS & ARTICLE BAR -->
+    <div class="w-full bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700/60 shadow-sm transition-colors duration-300">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+            <div class="flex flex-wrap items-center justify-between gap-4">
+                
+                <!-- Breadcrumbs -->
+                <div class="flex items-center space-x-2 text-xs sm:text-sm text-gray-500 dark:text-gray-400">
+                    <a href="index.html" class="hover:text-primary dark:hover:text-primary-dark transition">Wiki Home</a>
+                    <span>/</span>
+                    <a href="index.html#web-development" class="hover:text-primary dark:hover:text-primary-dark transition">Web Development</a>
+                    <span>/</span>
+                    <span class="text-gray-800 dark:text-gray-200 font-semibold truncate max-w-[150px] sm:max-w-none">Tailwind Integration Guide</span>
+                </div>
+
+                <!-- Wiki Action Tabs (Read, View History) -->
+                <div class="flex items-center">
+                    <div class="inline-flex rounded-lg bg-gray-100 dark:bg-gray-900 p-1 text-xs">
+                        <button id="action-read" class="action-btn px-3 py-1.5 rounded-md font-medium transition duration-150 bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-sm" onclick="switchWikiAction('read')">
+                            Read
+                        </button>
+                        <button id="action-history" class="action-btn px-3 py-1.5 rounded-md font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition duration-150" onclick="switchWikiAction('history')">
+                            View history
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN CONTENT FRAME -->
+    <main class="w-full max-w-7xl mx-auto flex-grow px-4 sm:px-6 lg:px-8 py-8">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+            
+            <!-- LEFT COLUMN: Table of Contents (Hidden on mobile/tablet, sticky on wide screens) -->
+            <aside class="hidden lg:block lg:col-span-3 sticky top-24 bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700/60 p-5 transition-colors duration-300">
+                <div class="flex items-center justify-between pb-3 mb-4 border-b border-gray-100 dark:border-gray-700">
+                    <h3 class="text-sm font-bold tracking-wider text-gray-400 dark:text-gray-500 uppercase">Contents</h3>
+                    <span class="text-[10px] bg-gray-100 dark:bg-gray-700 px-2 py-0.5 rounded text-gray-500 dark:text-gray-400">Scrollspy</span>
+                </div>
+                
+                <nav class="space-y-1 text-sm text-gray-600 dark:text-gray-400" id="toc-nav">
+                    <a href="#summary" class="toc-item block px-3 py-2 border-l-2 border-transparent hover:text-primary dark:hover:text-primary-dark transition-all duration-150">Summary</a>
+                    <a href="#installation" class="toc-item block px-3 py-2 border-l-2 border-transparent hover:text-primary dark:hover:text-primary-dark transition-all duration-150">1. Core Installation</a>
+                    <a href="#configuration" class="toc-item block px-3 py-2 border-l-2 border-transparent hover:text-primary dark:hover:text-primary-dark transition-all duration-150">2. Configuration Setup</a>
+                    <a href="#darkmode" class="toc-item block px-3 py-2 border-l-2 border-transparent hover:text-primary dark:hover:text-primary-dark transition-all duration-150">3. Dark Mode Integration</a>
+                    <a href="#bestpractices" class="toc-item block px-3 py-2 border-l-2 border-transparent hover:text-primary dark:hover:text-primary-dark transition-all duration-150">4. Best Practices</a>
+                    <a href="#references" class="toc-item block px-3 py-2 border-l-2 border-transparent hover:text-primary dark:hover:text-primary-dark transition-all duration-150">References & Citations</a>
+                </nav>
+            </aside>
+
+            <!-- CENTER/RIGHT COLUMN: Article Body & Infobox Grid -->
+            <div class="lg:col-span-9 space-y-8">
+                
+                <!-- 🔴 MAIN ARTICLE VIEW PANEL 🔴 -->
+                <article id="panel-article" class="bg-white dark:bg-gray-800 rounded-2xl shadow-md border border-gray-200 dark:border-gray-700/60 p-6 sm:p-10 transition-all duration-300">
+                    
+                    <!-- Head Header -->
+                    <div class="border-b border-gray-200 dark:border-gray-700/60 pb-4 mb-6">
+                        <h1 id="article-title" class="text-3xl sm:text-4xl font-extrabold text-gray-900 dark:text-white tracking-tight mb-2">Tailwind Integration Guide</h1>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">
+                            From the Knowledge Base, the free encyclopedia & personal project logs.
+                        </p>
+                    </div>
+
+                    <!-- Wikipedia-style Ambox (Maintenance Notice) -->
+                    <div class="flex items-start gap-4 p-4 mb-6 bg-amber-50 dark:bg-amber-950/20 border-l-4 border-amber-500 rounded-r-lg text-sm">
+                        <div class="p-1 bg-amber-100 dark:bg-amber-900/40 rounded">
+                            <svg class="w-5 h-5 text-amber-600 dark:text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77.192 3 1.732 3z"></path></svg>
+                        </div>
+                        <div class="text-amber-800 dark:text-amber-300">
+                            <strong>This article is a designated technical template.</strong> It presents structured guidelines matching Bobby Reichert's primary stack setup. Readers are encouraged to clone this template structure for any auxiliary wiki documentation.
+                        </div>
+                    </div>
+
+                    <!-- Flexbox for Content & Infobox (Reflows on mobile screens) -->
+                    <div class="flex flex-col-reverse md:flex-row gap-8 items-start">
+                        
+                        <!-- Content Stream -->
+                        <div class="flex-grow space-y-6 text-gray-700 dark:text-gray-300 leading-relaxed text-sm sm:text-base">
+                            
+                            <p id="summary" class="scroll-mt-24 first-letter:text-5xl first-letter:font-extrabold first-letter:text-primary dark:first-letter:text-primary-dark first-letter:mr-2 first-letter:float-left">
+                                This encyclopedic tutorial defines the structured methodology of integrating and configuring the Tailwind CSS engine within a zero-overhead native application pipeline. Tailored for production systems maintaining lightweight static files, this wiki section summarizes best practices, dark mode toggle structures, CDN implementation techniques <a href="#ref-1" class="text-primary dark:text-primary-dark hover:underline font-semibold" id="back-ref-1">[1]</a>, and dynamic rendering workflows.
+                            </p>
+
+                            <!-- INFOCARD: Mobile Infobox placeholder -->
+                            <!-- (Will only show up here on mobile layout; otherwise stays on right) -->
+                            <aside class="md:hidden w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 p-4 rounded-xl space-y-4">
+                                <div class="text-center font-bold text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-2">Tailwind CDN Integration</div>
+                                <div class="grid grid-cols-2 gap-2 text-xs">
+                                    <span class="font-semibold text-gray-500">Framework Type</span><span>CSS utility-first</span>
+                                    <span class="font-semibold text-gray-500">Release Version</span><span>v3.4.15 (Play CDN)</span>
+                                    <span class="font-semibold text-gray-500">Dark Mode Trigger</span><span>Class-based toggle</span>
+                                    <span class="font-semibold text-gray-500">Main Author</span><span>Bobby Reichert</span>
+                                </div>
+                            </aside>
+
+                            <!-- Section 1 -->
+                            <div id="installation" class="scroll-mt-24">
+                                <h2 class="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white border-b border-gray-100 dark:border-gray-700 pb-2 mb-3">1. Core Installation</h2>
+                                <p>
+                                    To deploy a lightweight website, Tailwind offers its dynamic Play CDN. The following meta/script tags must exist in the head of your document:
+                                </p>
+                                
+                                <!-- Code snippet component -->
+                                <div class="relative group my-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 overflow-hidden">
+                                    <div class="flex items-center justify-between px-4 py-2 bg-gray-100 dark:bg-gray-800 text-xs border-b border-gray-200 dark:border-gray-700">
+                                        <span class="font-mono text-gray-500 uppercase">HTML Configuration</span>
+                                        <button class="text-primary dark:text-primary-dark hover:opacity-80 flex items-center gap-1 font-medium" onclick="copySnippet('code-cdn')">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path></svg>
+                                            Copy
+                                        </button>
+                                    </div>
+                                    <pre class="p-4 overflow-x-auto text-xs sm:text-sm font-mono leading-relaxed text-pink-600 dark:text-pink-400"><code id="code-cdn">&lt;!-- Load Tailwind CSS from Play CDN --&gt;
+&lt;script src="https://cdn.tailwindcss.com"&gt;&lt;/script&gt;</code></pre>
+                                </div>
+                            </div>
+
+                            <!-- Section 2 -->
+                            <div id="configuration" class="scroll-mt-24">
+                                <h2 class="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white border-b border-gray-100 dark:border-gray-700 pb-2 mb-3">2. Configuration Setup</h2>
+                                <p>
+                                    Extending color parameters, setting up default responsive breakpoints, or customizing core theme parameters can be declared inline:
+                                </p>
+                                
+                                <div class="relative group my-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 overflow-hidden">
+                                    <div class="flex items-center justify-between px-4 py-2 bg-gray-100 dark:bg-gray-800 text-xs border-b border-gray-200 dark:border-gray-700">
+                                        <span class="font-mono text-gray-500 uppercase">JavaScript Config Inline</span>
+                                        <button class="text-primary dark:text-primary-dark hover:opacity-80 flex items-center gap-1 font-medium" onclick="copySnippet('code-config')">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path></svg>
+                                            Copy
+                                        </button>
+                                    </div>
+                                    <pre class="p-4 overflow-x-auto text-xs sm:text-sm font-mono leading-relaxed text-indigo-600 dark:text-indigo-400"><code id="code-config">&lt;script&gt;
+    tailwind.config = {
+        darkMode: 'class', // Active selector strategy
+        theme: {
+            extend: {
+                colors: {
+                    'brand-blue': '#1e40af',
+                    'brand-indigo': '#4f46e5'
+                }
+            }
+        }
+    }
+&lt;/script&gt;</code></pre>
+                                </div>
+                            </div>
+
+                            <!-- Section 3 -->
+                            <div id="darkmode" class="scroll-mt-24">
+                                <h2 class="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white border-b border-gray-100 dark:border-gray-700 pb-2 mb-3">3. Dark Mode Integration</h2>
+                                <p>
+                                    Enabling system-level preference syncing alongside manual toggles requires listening to active class lists:
+                                </p>
+                                
+                                <div class="overflow-x-auto my-4 border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-800">
+                                    <table class="min-w-full text-sm divide-y divide-gray-200 dark:divide-gray-700">
+                                        <thead class="bg-gray-50 dark:bg-gray-900/50">
+                                            <tr>
+                                                <th class="px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-300">Class Strategy</th>
+                                                <th class="px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-300">Target Element</th>
+                                                <th class="px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-300">Behavior</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                                            <tr>
+                                                <td class="px-4 py-3 font-mono text-xs text-indigo-600 dark:text-indigo-400">.dark</td>
+                                                <td class="px-4 py-3">HTML element</td>
+                                                <td class="px-4 py-3 text-gray-600 dark:text-gray-400">Enforces dark variant styling globally</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="px-4 py-3 font-mono text-xs text-indigo-600 dark:text-indigo-400">.transition-colors</td>
+                                                <td class="px-4 py-3">Body element</td>
+                                                <td class="px-4 py-3 text-gray-600 dark:text-gray-400">Smoothes switching background colors</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <!-- Section 4 -->
+                            <div id="bestpractices" class="scroll-mt-24">
+                                <h2 class="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white border-b border-gray-100 dark:border-gray-700 pb-2 mb-3">4. Best Practices</h2>
+                                <p>
+                                    To maximize application load speed and UI responsiveness, implement these critical guidelines:
+                                </p>
+                                <ul class="list-disc pl-5 mt-2 space-y-2">
+                                    <li><strong>Fallback Styles:</strong> Always configure semantic backup styles to cover potential CDN request timeouts <a href="#ref-2" class="text-primary dark:text-primary-dark hover:underline font-semibold" id="back-ref-2">[2]</a>.</li>
+                                    <li><strong>Local Storage Keys:</strong> Standardize state variables (such as <code>app-theme-mode</code>) across all directory roots.</li>
+                                    <li><strong>Responsive Classes:</strong> Use breakpoint abbreviations (<code>sm:</code>, <code>md:</code>, <code>lg:</code>) progressively.</li>
+                                </ul>
+                            </div>
+
+                        </div>
+
+                        <!-- RIGHT COLUMN: Desktop InfoBox (Hidden on small screens) -->
+                        <aside class="hidden md:block w-full md:w-72 bg-gray-50 dark:bg-gray-950/40 border border-gray-200 dark:border-gray-700/60 p-5 rounded-2xl flex-shrink-0 space-y-4 shadow-sm">
+                            <div class="text-center font-bold text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-3">
+                                Tailwind CDN specs
+                            </div>
+                            
+                            <div class="space-y-3 text-xs sm:text-sm">
+                                <div>
+                                    <span class="block text-[10px] uppercase font-bold text-gray-400 dark:text-gray-500">Framework Type</span>
+                                    <span class="text-gray-800 dark:text-gray-200">CSS utility-first architecture</span>
+                                </div>
+                                <div>
+                                    <span class="block text-[10px] uppercase font-bold text-gray-400 dark:text-gray-500">Engine Source</span>
+                                    <span class="text-gray-800 dark:text-gray-200">cdnjs.cloudflare.com</span>
+                                </div>
+                                <div>
+                                    <span class="block text-[10px] uppercase font-bold text-gray-400 dark:text-gray-500">Integration</span>
+                                    <span class="text-gray-800 dark:text-gray-200">Single Script Tag Injection</span>
+                                </div>
+                                <div>
+                                    <span class="block text-[10px] uppercase font-bold text-gray-400 dark:text-gray-500">Dark Mode Strategy</span>
+                                    <span class="text-gray-800 dark:text-gray-200">System listener + LocalStorage toggle</span>
+                                </div>
+                                <div>
+                                    <span class="block text-[10px] uppercase font-bold text-gray-400 dark:text-gray-500">Primary Architect</span>
+                                    <span class="text-gray-800 dark:text-gray-200">Bobby Reichert</span>
+                                </div>
+                            </div>
+                        </aside>
+
+                    </div>
+
+                    <!-- References / Citations (Wikipedia style) -->
+                    <section id="references" class="mt-12 pt-6 border-t border-gray-200 dark:border-gray-700/60 scroll-mt-24">
+                        <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-4">References & Citations</h3>
+                        <ol class="list-decimal pl-5 text-sm text-gray-600 dark:text-gray-400 space-y-2">
+                            <li id="ref-1">
+                                <span class="text-gray-800 dark:text-gray-200">Play CDN Documentation</span>. Tailwind CSS official manuals. 
+                                <a href="#back-ref-1" class="text-primary dark:text-primary-dark ml-2 font-bold select-none hover:underline" title="Jump back to context">^</a>
+                            </li>
+                            <li id="ref-2">
+                                <span class="text-gray-800 dark:text-gray-200">Dynamic Styling Fallbacks</span>. Personal log page notes on performance. 
+                                <a href="#back-ref-2" class="text-primary dark:text-primary-dark ml-2 font-bold select-none hover:underline" title="Jump back to context">^</a>
+                            </li>
+                        </ol>
+                    </section>
+
+                </article>
+
+                <!-- 🔴 VIEW HISTORY PANEL (Hidden by default) 🔴 -->
+                <div id="panel-history" class="hidden bg-white dark:bg-gray-800 rounded-2xl shadow-md border border-gray-200 dark:border-gray-700/60 p-6 sm:p-10 transition-all duration-300 space-y-6">
+                    <div class="border-b border-gray-200 dark:border-gray-700/60 pb-4">
+                        <h2 class="text-3xl font-extrabold text-gray-900 dark:text-white">Revision History</h2>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">Dynamic history timeline simulation.</p>
+                    </div>
+
+                    <!-- History Timeline layout -->
+                    <div class="relative border-l-2 border-gray-200 dark:border-gray-700 pl-6 ml-2 space-y-8 text-sm">
+                        
+                        <!-- Log Item 1 -->
+                        <div class="relative">
+                            <span class="absolute -left-[31px] top-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-primary ring-4 ring-white dark:ring-gray-800"></span>
+                            <div class="flex flex-wrap items-center justify-between gap-2">
+                                <span class="font-bold text-gray-900 dark:text-white">08:51, May 30, 2026</span>
+                                <span class="text-xs bg-indigo-50 dark:bg-indigo-950/40 text-primary dark:text-primary-dark px-2.5 py-0.5 rounded-full font-medium">Current Revision</span>
+                            </div>
+                            <p class="text-gray-500 dark:text-gray-400 mt-1">Edited by <span class="font-semibold text-gray-700 dark:text-gray-300">Bobby Reichert</span>. Updated Tailwind config dark mode settings guidelines.</p>
+                        </div>
+
+                        <!-- Log Item 2 -->
+                        <div class="relative">
+                            <span class="absolute -left-[31px] top-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-gray-300 dark:bg-gray-600 ring-4 ring-white dark:ring-gray-800"></span>
+                            <div class="flex flex-wrap items-center justify-between gap-2">
+                                <span class="font-bold text-gray-900 dark:text-white">14:22, May 12, 2026</span>
+                                <span class="text-xs bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 px-2.5 py-0.5 rounded-full font-medium">Revision 2</span>
+                            </div>
+                            <p class="text-gray-500 dark:text-gray-400 mt-1">Edited by <span class="font-semibold text-gray-700 dark:text-gray-300">System Admin</span>. Adjusted breadcrumb links formatting.</p>
+                        </div>
+
+                        <!-- Log Item 3 -->
+                        <div class="relative">
+                            <span class="absolute -left-[31px] top-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-gray-300 dark:bg-gray-600 ring-4 ring-white dark:ring-gray-800"></span>
+                            <div class="flex flex-wrap items-center justify-between gap-2">
+                                <span class="font-bold text-gray-900 dark:text-white">09:00, Mar 28, 2026</span>
+                                <span class="text-xs bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 px-2.5 py-0.5 rounded-full font-medium">Initial Release</span>
+                            </div>
+                            <p class="text-gray-500 dark:text-gray-400 mt-1">Page created by <span class="font-semibold text-gray-700 dark:text-gray-300">Bobby Reichert</span>. Set up base layout structure.</p>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="w-full bg-white dark:bg-gray-950 text-gray-500 dark:text-gray-400 text-center text-sm py-8 border-t border-gray-200 dark:border-gray-800 mt-auto transition-colors duration-300">
+        <div class="max-w-7xl mx-auto px-4 space-y-2">
+            
+            <p>Page Last Updated: May 30, 2026</p>
+        </div>
+    </footer>
+
+    <!-- COOKIE BANNER -->
+    <div id="cookie-banner" class="fixed bottom-0 left-0 right-0 p-4 md:p-6 bg-gray-800/40 backdrop-blur-md text-white shadow-2xl transition-all duration-500 transform translate-y-0 z-50 opacity-100">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between">
+            <p class="text-sm mb-3 md:mb-0 md:mr-6">This website uses cookies to ensure you get the best experience and to track web traffic. By continuing to use this site, you agree to our use of cookies.</p>
+            <button id="accept-cookies" class="w-full md:w-auto px-6 py-2 bg-indigo-500 hover:bg-indigo-600 text-white font-semibold rounded-lg shadow-md transition duration-300 text-sm">Got it!</button>
+        </div>
+    </div>
+
+    <!-- SCROLL TO TOP -->
+    <div id="scroll-to-top" class="w-12 h-12 flex items-center justify-center bg-blue-600/40 dark:bg-blue-500/30 backdrop-blur-md text-white rounded-full shadow-lg hover:bg-blue-600/70 dark:hover:bg-blue-500/70 transition duration-300">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"></path></svg>
+    </div>
+
+    <!-- -------------------- SCRIPTS & THEME HANDLERS -------------------- -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            
+            // --- CORE LOCALSTORAGE & SYSTEM SYNCING ---
+            const THEME_KEY = 'app-theme-mode';
+            const NAV_STYLE_KEY = 'app-nav-style'; 
+            const COOKIE_KEY = 'cookiesAccepted';
+            const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+            
+            function applyTheme(theme) {
+                const html = document.documentElement;
+                let resolved = theme;
+                if (theme === 'system') resolved = mediaQuery.matches ? 'dark' : 'light';
+                if (resolved === 'dark') html.classList.add('dark'); else html.classList.remove('dark');
+            }
+            const initialTheme = localStorage.getItem(THEME_KEY) || 'system';
+            applyTheme(initialTheme);
+            mediaQuery.addEventListener('change', () => { if ((localStorage.getItem(THEME_KEY) || 'system') === 'system') applyTheme('system'); });
+
+            // Apply nav style settings matching standard configuration
+            function applyNavStyle(style) {
+                const navElement = document.getElementById('main-nav');
+                const navBlurClasses = ['bg-white/15', 'backdrop-blur-md', 'dark:bg-gray-800/40'];
+                const navSolidClasses = ['bg-white', 'bg-opacity-100', 'backdrop-blur-none', 'dark:bg-gray-800', 'dark:bg-opacity-100'];
+                
+                if (navElement) {
+                    navElement.classList.remove(...navBlurClasses, ...navSolidClasses);
+                    if (style === 'blur') {
+                        navElement.classList.add(...navBlurClasses);
+                    } else { 
+                        navElement.classList.add(...navSolidClasses);
+                    }
+                }
+            }
+            applyNavStyle(localStorage.getItem(NAV_STYLE_KEY) || 'blur');
+
+            // --- SCROLLSPY INTERSECTION OBSERVER ---
+            const sections = document.querySelectorAll('.scroll-mt-24');
+            const tocItems = document.querySelectorAll('.toc-item');
+            
+            const observerOptions = {
+                root: null,
+                rootMargin: '-10% 0px -75% 0px',
+                threshold: 0
+            };
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const activeId = entry.target.getAttribute('id');
+                        tocItems.forEach(item => {
+                            if (item.getAttribute('href') === `#${activeId}`) {
+                                item.classList.add('toc-active');
+                            } else {
+                                item.classList.remove('toc-active');
+                            }
+                        });
+                    }
+                });
+            }, observerOptions);
+
+            sections.forEach(section => observer.observe(section));
+
+            // --- COOKIE & BACK TO TOP BANNER HANDLERS ---
+            const banner = document.getElementById('cookie-banner');
+            if (localStorage.getItem(COOKIE_KEY) === 'true' && banner) banner.style.display = 'none';
+            else if (banner) {
+                document.getElementById('accept-cookies').addEventListener('click', () => { 
+                    localStorage.setItem(COOKIE_KEY, 'true'); banner.classList.add('fade-out'); setTimeout(() => banner.style.display = 'none', 500); 
+                });
+            }
+
+            const scrollButton = document.getElementById('scroll-to-top');
+            window.addEventListener('scroll', () => {
+                if (document.body.scrollTop > 300 || document.documentElement.scrollTop > 300) scrollButton.classList.add('show');
+                else scrollButton.classList.remove('show');
+            });
+            if (scrollButton) scrollButton.addEventListener('click', () => window.scrollTo({top: 0, behavior: 'smooth'}));
+
+        });
+
+        // --- INTERACTIVE ACTIONS: WIKI TABS MANAGER ---
+        function switchWikiAction(actionType) {
+            const articlePanel = document.getElementById('panel-article');
+            const historyPanel = document.getElementById('panel-history');
+
+            const readBtn = document.getElementById('action-read');
+            const historyBtn = document.getElementById('action-history');
+
+            const activeClasses = ['bg-white', 'dark:bg-gray-800', 'text-gray-900', 'dark:text-white', 'shadow-sm'];
+            const inactiveClasses = ['text-gray-600', 'dark:text-gray-400', 'hover:text-gray-900', 'dark:hover:text-white'];
+
+            if (actionType === 'read') {
+                articlePanel.classList.remove('hidden');
+                historyPanel.classList.add('hidden');
+
+                readBtn.classList.add(...activeClasses); readBtn.classList.remove(...inactiveClasses);
+                historyBtn.classList.remove(...activeClasses); historyBtn.classList.add(...inactiveClasses);
+            } 
+            else if (actionType === 'history') {
+                historyPanel.classList.remove('hidden');
+                articlePanel.classList.add('hidden');
+
+                historyBtn.classList.add(...activeClasses); historyBtn.classList.remove(...inactiveClasses);
+                readBtn.classList.remove(...activeClasses); readBtn.classList.add(...inactiveClasses);
+            }
+        }
+
+        // --- ACTION LOGIC: CLIPBOARD COPY UTILITY ---
+        function copySnippet(elementId) {
+            const codeContent = document.getElementById(elementId).innerText;
+            const tempInput = document.createElement('textarea');
+            tempInput.value = codeContent;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            document.execCommand('copy');
+            document.body.removeChild(tempInput);
+
+            // Trigger mock notification indicator
+            const mockContainer = document.createElement('div');
+            mockContainer.className = "fixed bottom-8 left-8 bg-gray-900 text-white text-xs px-4 py-3 rounded-lg shadow-xl z-50 border border-gray-700 animate-bounce";
+            mockContainer.innerHTML = "✅ Code copied securely!";
+            document.body.appendChild(mockContainer);
+            setTimeout(() => mockContainer.remove(), 2500);
+        }
+    </script>
+</body>
+</html>
