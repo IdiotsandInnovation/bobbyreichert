@@ -105,10 +105,25 @@
         </div>
     </div>
 
+    <!-- UI TOAST CONTAINER FOR ALERTS -->
+    <div id="toast-container" class="fixed bottom-4 right-4 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+    <!-- CUSTOM CONFIRMATION MODAL -->
+    <div id="confirm-modal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-2xl p-6 max-w-sm w-full shadow-2xl transform scale-95 transition-all duration-200">
+            <h3 class="text-lg font-bold text-gray-900 mb-2">Are you sure?</h3>
+            <p id="confirm-modal-text" class="text-sm text-gray-500 mb-6">This action cannot be undone.</p>
+            <div class="flex justify-end gap-3">
+                <button id="confirm-cancel-btn" class="px-4 py-2 text-sm font-medium text-gray-500 hover:text-gray-700 bg-gray-100 rounded-lg">Cancel</button>
+                <button id="confirm-ok-btn" class="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg">Delete</button>
+            </div>
+        </div>
+    </div>
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
-        import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, setDoc, updateDoc, deleteDoc, doc, onSnapshot, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
 
         // CONFIG
         const firebaseConfig = {
@@ -128,6 +143,28 @@
         const loginSec = document.getElementById('login-section');
         const dashSec = document.getElementById('admin-dashboard');
 
+        // Elegant Toast System (Replacing browser Alerts)
+        function showToast(message, type = 'error') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `p-4 rounded-xl shadow-lg text-white font-medium transition-all duration-300 transform translate-y-2 opacity-0 pointer-events-auto ${
+                type === 'success' ? 'bg-emerald-600' : 'bg-rose-600'
+            }`;
+            toast.innerText = message;
+            container.appendChild(toast);
+            
+            // Slide/Fade-in
+            setTimeout(() => {
+                toast.classList.remove('translate-y-2', 'opacity-0');
+            }, 10);
+            
+            // Auto dismissal
+            setTimeout(() => {
+                toast.classList.add('translate-y-2', 'opacity-0');
+                setTimeout(() => toast.remove(), 300);
+            }, 4000);
+        }
+
         // --- AUTH ---
         document.getElementById('login-btn').onclick = async () => {
             const email = document.getElementById('admin-email').value;
@@ -136,13 +173,18 @@
             try {
                 await signInWithEmailAndPassword(auth, email, pass);
                 errEl.classList.add('hidden');
+                showToast("Signed in successfully!", "success");
             } catch (e) {
                 errEl.textContent = e.message;
                 errEl.classList.remove('hidden');
+                showToast(e.message, "error");
             }
         };
 
-        document.getElementById('logout-btn').onclick = () => signOut(auth);
+        document.getElementById('logout-btn').onclick = () => {
+            signOut(auth);
+            showToast("Signed out successfully!", "success");
+        };
 
         onAuthStateChanged(auth, (user) => {
             if (user) {
@@ -156,16 +198,37 @@
             }
         });
 
-        // --- GLOBAL WINDOW FUNCTIONS (For OnClick) ---
-        // This mirrors the logic from your working uploaded file
-        window.deleteEntry = async (collectionName, id) => {
-            if (confirm("Permanently delete this item?")) {
+        // --- CUSTOM DELETION MODAL INTEGRATION (Replacing browser confirm) ---
+        let pendingConfirmAction = null;
+
+        window.deleteEntry = (collectionName, id) => {
+            const modal = document.getElementById('confirm-modal');
+            const confirmText = document.getElementById('confirm-modal-text');
+            confirmText.textContent = `Are you sure you want to permanently delete this item from the ${collectionName.replace(/_/g, ' ')} list?`;
+            
+            modal.classList.remove('hidden');
+            
+            pendingConfirmAction = async () => {
                 try {
                     await deleteDoc(doc(db, collectionName, id));
+                    showToast("Successfully deleted standard item", "success");
                 } catch(e) {
-                    alert("Delete failed: " + e.message + "\n(Check Firebase Rules)");
+                    showToast("Delete failed: " + e.message + " (Check Firebase Rules)", "error");
                     console.error(e);
                 }
+            };
+        };
+
+        document.getElementById('confirm-cancel-btn').onclick = () => {
+            document.getElementById('confirm-modal').classList.add('hidden');
+            pendingConfirmAction = null;
+        };
+
+        document.getElementById('confirm-ok-btn').onclick = async () => {
+            document.getElementById('confirm-modal').classList.add('hidden');
+            if (pendingConfirmAction) {
+                await pendingConfirmAction();
+                pendingConfirmAction = null;
             }
         };
 
@@ -221,7 +284,10 @@
                     // Note: content-wrapper class handles the text overflow
                     el.innerHTML = `
                         <div class="flex-1 content-wrapper">
-                            <p class="font-bold text-gray-800">${p.title || "Untitled"}</p>
+                            <div class="flex items-center gap-2 mb-1 flex-wrap">
+                                <span class="bg-gray-100 text-gray-700 text-xs font-mono font-bold px-2 py-0.5 rounded">ID: ${p.id}</span>
+                                <p class="font-bold text-gray-800">${p.title || "Untitled"}</p>
+                            </div>
                             <p class="text-sm text-gray-500 whitespace-pre-wrap">${p.content || ""}</p>
                         </div>
                         <div class="flex flex-col sm:flex-row gap-2 shrink-0">
@@ -290,20 +356,48 @@
         // --- FORM HANDLERS ---
         // Post Save
         document.getElementById('save-post-btn').onclick = async () => {
-            const title = document.getElementById('post-title').value;
+            const titleInput = document.getElementById('post-title').value.trim();
             const content = document.getElementById('post-content').value;
             const editId = document.getElementById('post-edit-id').value;
 
-            if (!title || !content) return alert("Fill everything!");
+            if (!titleInput || !content) {
+                return showToast("Please fill in both title and content fields!");
+            }
 
             try {
                 if (editId) {
-                    await updateDoc(doc(db, "blog_posts", editId), { title, content });
+                    // Update an existing post (keeps original document ID)
+                    await updateDoc(doc(db, "blog_posts", editId), { title: titleInput, content });
+                    showToast("Post updated successfully!", "success");
                 } else {
-                    await addDoc(collection(db, "blog_posts"), { title, content, timestamp: serverTimestamp() });
+                    // Normalize standard dates: replace slashes with hyphens, remove spaces
+                    let docId = titleInput.replace(/\//g, '-').replace(/\s+/g, '');
+                    
+                    // Simple pattern to validate and extract format parameters
+                    const datePattern = /^\d{1,2}-\d{1,2}-\d{4}$/;
+                    if (!datePattern.test(docId)) {
+                        return showToast("Please write a date in MM-DD-YYYY or MM/DD/YYYY format for the title to assign the custom ID.", "error");
+                    }
+
+                    // Zero pad month & day if they entered e.g. "1-2-2026" -> "01-02-2026"
+                    const parts = docId.split('-');
+                    const mm = parts[0].padStart(2, '0');
+                    const dd = parts[1].padStart(2, '0');
+                    const yyyy = parts[2];
+                    const formattedDocId = `${mm}-${dd}-${yyyy}`;
+
+                    // Set standard document key directly with customized ID
+                    await setDoc(doc(db, "blog_posts", formattedDocId), { 
+                        title: titleInput, 
+                        content, 
+                        timestamp: serverTimestamp() 
+                    });
+                    showToast(`Post created successfully with ID: ${formattedDocId}`, "success");
                 }
                 resetPostForm();
-            } catch(e) { alert("Error: " + e.message); }
+            } catch(e) { 
+                showToast("Error saving post: " + e.message, "error"); 
+            }
         };
 
         // Lyric Save
@@ -313,16 +407,22 @@
             const lyric = document.getElementById('lyric-text').value;
             const editId = document.getElementById('lyric-edit-id').value;
 
-            if (!date || !song || !lyric) return alert("Fill all fields!");
+            if (!date || !song || !lyric) {
+                return showToast("Please fill in all lyric fields!", "error");
+            }
 
             try {
                 if (editId) {
                     await updateDoc(doc(db, "lyric_of_the_day", editId), { date, song, lyric });
+                    showToast("Lyric updated successfully!", "success");
                 } else {
                     await addDoc(collection(db, "lyric_of_the_day"), { date, song, lyric, createdAt: serverTimestamp() });
+                    showToast("Lyric scheduled successfully!", "success");
                 }
                 resetLyricForm();
-            } catch(e) { alert("Error: " + e.message); }
+            } catch(e) { 
+                showToast("Error: " + e.message, "error"); 
+            }
         };
 
         // Reset Functions
