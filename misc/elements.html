@@ -403,6 +403,9 @@
     let streak = 0;
     let isSubmitted = false;
 
+    // Elements successfully answered during current run
+    let correctlyGuessed = []; 
+
     // Element Pool tracking
     let remainingElements = []; // Stores unvisited elements to prevent duplication
     let cycleNotificationPending = false; // Flag to show a celebratory completion banner
@@ -450,6 +453,7 @@
         const isTarget = currentElement && currentElement.n === el.n;
         const inRange = el.n >= activeRange.min && el.n <= activeRange.max;
         const colorClass = getCleanCategoryClass(el.c);
+        const hasBeenCorrectlyGuessed = correctlyGuessed.includes(el.n);
 
         cell.className = `relative rounded-lg border aspect-square flex flex-col transition-all duration-300 ease-in-out cursor-default overflow-hidden ${colorClass} `;
         
@@ -464,15 +468,27 @@
             </div>
           `;
         } else if (inRange) {
-          // Blind Mode: active range elements are hidden!
-          cell.className += 'border-gray-800/50';
-          cell.innerHTML = `
-            <div class="flex flex-col items-center justify-center h-full w-full opacity-90 hover:opacity-100 bg-gray-950/50">
-              <div class="text-[9px] text-indigo-400 font-bold">${el.n}</div>
-              <div class="text-xs text-gray-600 font-semibold">•</div>
-              <div class="text-[8px] truncate w-full text-center px-0.5 text-gray-700">???</div>
-            </div>
-          `;
+          if (hasBeenCorrectlyGuessed) {
+            // Already answered correctly! Reveal completely
+            cell.className += 'border-green-500/50 bg-green-500/10 shadow-[inset_0_0_8px_rgba(34,197,94,0.15)]';
+            cell.innerHTML = `
+              <div class="flex flex-col items-center justify-center h-full w-full opacity-100">
+                <div class="text-[9px] text-green-400 font-bold">${el.n}</div>
+                <div class="font-bold text-sm md:text-base text-green-100">${el.s}</div>
+                <div class="text-[8px] truncate w-full text-center px-0.5 text-green-200/80">${el.nm}</div>
+              </div>
+            `;
+          } else {
+            // Blind Mode: active range elements are hidden!
+            cell.className += 'border-gray-800/50';
+            cell.innerHTML = `
+              <div class="flex flex-col items-center justify-center h-full w-full opacity-90 hover:opacity-100 bg-gray-950/50">
+                <div class="text-[9px] text-indigo-400 font-bold">${el.n}</div>
+                <div class="text-xs text-gray-600 font-semibold">•</div>
+                <div class="text-[8px] truncate w-full text-center px-0.5 text-gray-700">???</div>
+              </div>
+            `;
+          }
         } else {
           // Outside study range: visible but dimmed
           cell.className += 'border-gray-800/50 opacity-35 hover:opacity-60';
@@ -517,6 +533,7 @@
         resetPool();
         if (remainingElements.length === 0) return; // Fail-safe fallback
         cycleNotificationPending = true;
+        correctlyGuessed = []; // Clear revealed items when starting a completely new cycle run
       }
 
       const nextElement = remainingElements.shift();
@@ -589,6 +606,7 @@
       rangeInputEl.value = `${min}-${max}`;
       streak = 0;
       streakDisplay.textContent = streak;
+      correctlyGuessed = []; // Clear correctly guessed list on a new range setting
 
       // Update badge metadata
       updateBadge();
@@ -632,6 +650,11 @@
         scoreDisplay.textContent = score;
         streakDisplay.textContent = streak;
 
+        // Remember correctly answered item
+        if (!correctlyGuessed.includes(currentElement.n)) {
+          correctlyGuessed.push(currentElement.n);
+        }
+
         submissionBanner.className = "mt-6 p-4 rounded-xl text-center font-bold border bg-green-500/10 border-green-500/20 text-green-400";
         submissionBanner.innerHTML = `<span>🎉 Perfect Score! Both answers match the element! (+1 Score & Streak)</span>`;
       } else {
@@ -646,6 +669,9 @@
       skipBtn.classList.add('hidden');
       submitBtn.classList.add('hidden');
       nextBtn.classList.remove('hidden');
+
+      // Re-render immediately to show correctly guessed highlight (if applicable)
+      renderTable();
     });
 
     function applyGradingStyle(inputEl, feedbackEl, isCorrect, correctAns) {
@@ -681,6 +707,9 @@
       skipBtn.classList.add('hidden');
       submitBtn.classList.add('hidden');
       nextBtn.classList.remove('hidden');
+
+      // Re-render board state
+      renderTable();
     });
 
     // Next Button Handler
