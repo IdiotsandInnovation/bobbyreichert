@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en">  
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -145,36 +145,21 @@
         <div id="badge-display" class="inline-flex items-center gap-2 bg-indigo-500/10 text-indigo-400 px-3 py-1 rounded-full text-xs font-bold mb-3 border border-indigo-500/20">
           Study Range: 1 - 118, in Random Order
         </div>
-        <h2 class="text-lg md:text-xl font-medium text-gray-300">
-          Try not to fail :)
+        <h2 id="target-prompt" class="text-xl md:text-2xl font-extrabold text-slate-100 mb-2">
+          Identify the element at Atomic Number <span class="text-blue-400" id="prompt-atomic-number">?</span>:
         </h2>
-        <p class="text-xs text-indigo-300/80 mt-1">
-          Find the glowing target element in the table and provide all three answers:
+        <p class="text-xs text-indigo-300/80">
+          Look at the highlighted target glowing on the table, then submit its Symbol and Name.
         </p>
       </div>
 
       <form id="quiz-form" class="space-y-4">
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-          
-          <!-- Guess 1: Atomic Number -->
-          <div class="relative">
-            <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1.5">
-              1. Atomic Number
-            </label>
-            <input
-              id="input-num"
-              type="number"
-              placeholder="e.g. 6"
-              class="w-full bg-gray-950 text-white rounded-xl px-4 py-3 border-2 border-gray-800 focus:outline-none focus:border-blue-500 transition-all"
-              required
-            />
-            <div id="feedback-num" class="mt-1.5 text-xs font-bold hidden"></div>
-          </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 
-          <!-- Guess 2: Chemical Symbol -->
+          <!-- Guess 1: Chemical Symbol -->
           <div class="relative">
             <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1.5">
-              2. Chemical Symbol
+              1. Chemical Symbol
             </label>
             <input
               id="input-symbol"
@@ -186,10 +171,10 @@
             <div id="feedback-symbol" class="mt-1.5 text-xs font-bold hidden"></div>
           </div>
 
-          <!-- Guess 3: Element Name -->
+          <!-- Guess 2: Element Name -->
           <div class="relative">
             <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1.5">
-              3. Element Name
+              2. Element Name
             </label>
             <input
               id="input-name"
@@ -229,7 +214,7 @@
               id="next-btn"
               class="w-full sm:w-auto px-10 py-3 rounded-xl bg-green-600 hover:bg-green-500 text-white font-extrabold text-sm shadow-lg shadow-green-500/20 transition animate-pulse hidden"
             >
-              Next Mystery Element →
+              Next →
             </button>
           </div>
         </div>
@@ -429,13 +414,12 @@
     const scoreDisplay = document.getElementById('score-display');
     const streakDisplay = document.getElementById('streak-display');
     const badgeDisplay = document.getElementById('badge-display');
+    const promptAtomicNumber = document.getElementById('prompt-atomic-number');
     
     const quizForm = document.getElementById('quiz-form');
-    const inputNum = document.getElementById('input-num');
     const inputSymbol = document.getElementById('input-symbol');
     const inputName = document.getElementById('input-name');
 
-    const feedbackNum = document.getElementById('feedback-num');
     const feedbackSymbol = document.getElementById('feedback-symbol');
     const feedbackName = document.getElementById('feedback-name');
 
@@ -470,11 +454,12 @@
         cell.className = `relative rounded-lg border aspect-square flex flex-col transition-all duration-300 ease-in-out cursor-default overflow-hidden ${colorClass} `;
         
         if (isTarget) {
+          // Highlighted element clearly displays its Atomic Number (it is no longer a mystery)
           cell.className += 'ring-4 ring-blue-400 ring-offset-4 ring-offset-gray-950 scale-110 z-20 bg-opacity-100 shadow-[0_0_25px_rgba(59,130,246,0.6)] border-blue-400';
           cell.innerHTML = `
             <div class="flex flex-col items-center justify-center h-full w-full relative z-10 font-bold bg-blue-500/20">
-              <span class="text-[10px] text-blue-300">?</span>
-              <span class="text-lg text-white animate-bounce font-extrabold">?</span>
+              <span class="text-xs text-blue-300">${el.n}</span>
+              <span class="text-lg text-white animate-pulse font-extrabold">?</span>
               <span class="text-[8px] text-blue-300 uppercase tracking-widest font-black">GUESS</span>
             </div>
           `;
@@ -541,14 +526,15 @@
         
         // Reset state
         isSubmitted = false;
-        inputNum.value = '';
         inputSymbol.value = '';
         inputName.value = '';
 
         // Reset Inputs styles
-        resetInputStyles(inputNum, feedbackNum);
         resetInputStyles(inputSymbol, feedbackSymbol);
         resetInputStyles(inputName, feedbackName);
+
+        // Update target prompt with current atomic number
+        promptAtomicNumber.textContent = currentElement.n;
 
         // Toggle Buttons visibility
         skipBtn.classList.remove('hidden');
@@ -565,15 +551,14 @@
           submissionBanner.classList.add('hidden');
         }
 
-        inputNum.disabled = false;
         inputSymbol.disabled = false;
         inputName.disabled = false;
 
         // Render the board
         renderTable();
 
-        // Autofocus first field
-        inputNum.focus();
+        // Autofocus first guess field
+        inputSymbol.focus();
       }
     }
 
@@ -624,26 +609,22 @@
       e.preventDefault();
       if (!currentElement || isSubmitted) return;
 
-      const answerNum = parseInt(inputNum.value.trim(), 10);
       const answerSymbol = inputSymbol.value.trim().toLowerCase();
       const answerName = inputName.value.trim().toLowerCase();
 
-      const isNumCorrect = answerNum === currentElement.n;
       const isSymbolCorrect = answerSymbol === currentElement.s.toLowerCase();
       const isNameCorrect = answerName === currentElement.nm.toLowerCase();
 
       // Display validation
-      applyGradingStyle(inputNum, feedbackNum, isNumCorrect, currentElement.n);
       applyGradingStyle(inputSymbol, feedbackSymbol, isSymbolCorrect, currentElement.s);
       applyGradingStyle(inputName, feedbackName, isNameCorrect, currentElement.nm);
 
-      inputNum.disabled = true;
       inputSymbol.disabled = true;
       inputName.disabled = true;
 
       isSubmitted = true;
       
-      const allCorrect = isNumCorrect && isSymbolCorrect && isNameCorrect;
+      const allCorrect = isSymbolCorrect && isNameCorrect;
 
       if (allCorrect) {
         score++;
@@ -652,7 +633,7 @@
         streakDisplay.textContent = streak;
 
         submissionBanner.className = "mt-6 p-4 rounded-xl text-center font-bold border bg-green-500/10 border-green-500/20 text-green-400";
-        submissionBanner.innerHTML = `<span>🎉 Perfect Score! All three answers match the element! (+1 Score & Streak)</span>`;
+        submissionBanner.innerHTML = `<span>🎉 Perfect Score! Both answers match the element! (+1 Score & Streak)</span>`;
       } else {
         streak = 0;
         streakDisplay.textContent = streak;
@@ -685,11 +666,9 @@
       streak = 0;
       streakDisplay.textContent = streak;
 
-      applyGradingStyle(inputNum, feedbackNum, false, currentElement.n);
       applyGradingStyle(inputSymbol, feedbackSymbol, false, currentElement.s);
       applyGradingStyle(inputName, feedbackName, false, currentElement.nm);
 
-      inputNum.disabled = true;
       inputSymbol.disabled = true;
       inputName.disabled = true;
 
