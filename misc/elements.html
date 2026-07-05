@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Periodic Table Quiz Practice</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style> 
+    /* Category Colors classes mapped dynamically */
+    .cat-diatomic-nonmetal { background-color: rgba(22, 163, 74, 0.3); border-color: rgba(34, 197, 94, 0.7); color: #f0fdf4; }
+    .cat-polyatomic-nonmetal { background-color: rgba(22, 163, 74, 0.3); border-color: rgba(34, 197, 94, 0.7); color: #f0fdf4; }
+    .cat-noble-gas { background-color: rgba(147, 51, 234, 0.3); border-color: rgba(168, 85, 247, 0.7); color: #faf5ff; }
+    .cat-alkali-metal { background-color: rgba(220, 38, 38, 0.3); border-color: rgba(239, 68, 68, 0.7); color: #fef2f2; }
+    .cat-alkaline-earth-metal { background-color: rgba(234, 88, 12, 0.3); border-color: rgba(249, 115, 22, 0.7); color: #fff7ed; }
+    .cat-metalloid { background-color: rgba(13, 148, 136, 0.3); border-color: rgba(20, 184, 166, 0.7); color: #f0fdfa; }
+    .cat-halogen { background-color: rgba(8, 145, 178, 0.3); border-color: rgba(6, 182, 212, 0.7); color: #ecfeff; }
+    .cat-transition-metal { background-color: rgba(202, 138, 4, 0.3); border-color: rgba(234, 179, 8, 0.7); color: #fefdf0; }
+    .cat-post-transition-metal { background-color: rgba(37, 99, 235, 0.3); border-color: rgba(59, 130, 246, 0.7); color: #eff6ff; }
+    .cat-lanthanide { background-color: rgba(219, 39, 119, 0.3); border-color: rgba(236, 72, 153, 0.7); color: #fdf2f8; }
+    .cat-actinide { background-color: rgba(225, 29, 72, 0.3); border-color: rgba(244, 63, 94, 0.7); color: #fff1f2; }
+    .cat-unknown { background-color: rgba(75, 85, 99, 0.3); border-color: rgba(107, 114, 128, 0.7); color: #f9fafb; }
+
+    /* Legend Color Dots fallback classes */
+    .bg-green-500 { background-color: #22c55e; }
+    .bg-purple-500 { background-color: #a855f7; }
+    .bg-red-500 { background-color: #ef4444; }
+    .bg-orange-500 { background-color: #f97316; }
+    .bg-teal-500 { background-color: #14b8a6; }
+    .bg-cyan-500 { background-color: #06b6d4; }
+    .bg-yellow-500 { background-color: #eab308; }
+    .bg-blue-500 { background-color: #3b82f6; }
+    .bg-pink-500 { background-color: #ec4899; }
+    .bg-rose-500 { background-color: #f43f5e; }
+    .bg-gray-500 { background-color: #6b7280; }
+    
+    .custom-scrollbar::-webkit-scrollbar {
+      height: 8px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: #0b0f19; 
+      border-radius: 9999px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #1e293b; 
+      border-radius: 9999px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: #334155; 
+    }
+  </style>
+</head>
+<body class="min-h-screen bg-gray-950 text-slate-100 font-sans flex flex-col selection:bg-blue-500 selection:text-white">
+
+  <!-- Header Panel -->
+  <header class="bg-gray-900/90 backdrop-blur-md border-b border-gray-800 p-4 sticky top-0 z-30 shadow-lg">
+    <div class="max-w-7xl mx-auto flex flex-col lg:flex-row items-center justify-between gap-4">
+      
+      <!-- Logo & Subtitle -->
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-500 flex items-center justify-center shadow-md shadow-blue-500/20">
+          <span class="font-black text-white text-lg">BR</span>
+        </div>
+        <div>
+          <h1 class="text-xl font-extrabold tracking-tight text-white flex flex-wrap items-center gap-2">
+            Periodic Table Quiz Practice 
+            <span class="text-xs bg-indigo-500/20 border border-indigo-500/30 text-indigo-300 px-2 py-0.5 rounded-full font-medium">
+              Partially vibe-coded by Bobby Reichert ('◡')
+            </span>
+          </h1>
+          <p class="text-xs text-gray-400">To practice for my chem class.</p>
+        </div>
+      </div>
+
+      <!-- Quick Ranges, Order Selector & Custom inputs -->
+      <div class="flex flex-wrap items-center gap-3 bg-gray-950/60 p-2 rounded-xl border border-gray-800">
+        <!-- Range controls -->
+        <div class="flex items-center gap-2">
+          <span class="text-xs font-bold text-gray-400 px-1">Range:</span>
+          <button id="btn-1-20" class="range-btn px-2 py-1 text-xs rounded-lg font-semibold transition bg-gray-800 hover:bg-gray-700 text-gray-300">
+            1-20
+          </button>
+          <button id="btn-1-54" class="range-btn px-2 py-1 text-xs rounded-lg font-semibold transition bg-gray-800 hover:bg-gray-700 text-gray-300">
+            1-54
+          </button>
+          <button id="btn-1-118" class="range-btn px-2 py-1 text-xs rounded-lg font-semibold transition bg-blue-600 text-white">
+            All 118
+          </button>
+          <input
+            type="text"
+            id="range-input"
+            value="1-118"
+            class="w-16 bg-gray-900 border border-gray-700 rounded px-1.5 py-0.5 text-xs text-center font-bold text-blue-300 focus:outline-none focus:border-blue-500"
+            placeholder="1-118"
+          />
+        </div>
+
+        <div class="h-4 w-px bg-gray-850 hidden sm:block"></div>
+
+        <!-- Order Toggle -->
+        <div class="flex items-center gap-1">
+          <span class="text-xs font-bold text-gray-400 pr-1">Order:</span>
+          <button
+            id="order-random"
+            class="px-2 py-1 text-xs rounded-lg font-semibold transition bg-indigo-600 text-white"
+            title="Quiz elements in random order"
+          >
+            Random
+          </button>
+          <button
+            id="order-sequential"
+            class="px-2 py-1 text-xs rounded-lg font-semibold transition bg-gray-800 hover:bg-gray-700 text-gray-300"
+            title="Quiz elements in sequence of atomic number"
+          >
+            In Order
+          </button>
+        </div>
+      </div>
+
+      <!-- Leaderboard stats -->
+      <div class="flex items-center gap-6 bg-gray-950/60 p-2 px-4 rounded-xl border border-gray-800">
+        <div class="text-center">
+          <div class="text-[10px] text-gray-500 uppercase font-black">Score</div>
+          <div id="score-display" class="text-xl font-extrabold text-blue-400">0</div>
+        </div>
+        <div class="h-6 w-px bg-gray-800"></div>
+        <div class="text-center">
+          <div class="text-[10px] text-gray-500 uppercase font-black">Streak</div>
+          <div class="text-xl font-extrabold text-orange-400 flex items-center justify-center gap-1">
+            <span id="streak-display">0</span>
+            <span class="text-xs">🔥</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="flex-1 flex flex-col items-center p-4 md:p-6">
+    
+    <!-- Quiz Board -->
+    <div class="w-full max-w-3xl bg-gray-900 border border-gray-800 rounded-3xl p-6 md:p-8 shadow-2xl mb-8">
+      <div class="text-center mb-6">
+        <div id="badge-display" class="inline-flex items-center gap-2 bg-indigo-500/10 text-indigo-400 px-3 py-1 rounded-full text-xs font-bold mb-3 border border-indigo-500/20">
+          Study Range: 1 - 118, in Random Order
+        </div>
+        <h2 class="text-lg md:text-xl font-medium text-gray-300">
+          Try not to fail :)
+        </h2>
+        <p class="text-xs text-indigo-300/80 mt-1">
+          Find the glowing target element in the table and provide all three answers:
+        </p>
+      </div>
+
+      <form id="quiz-form" class="space-y-4">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          
+          <!-- Guess 1: Atomic Number -->
+          <div class="relative">
+            <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1.5">
+              1. Atomic Number
+            </label>
+            <input
+              id="input-num"
+              type="number"
+              placeholder="e.g. 6"
+              class="w-full bg-gray-950 text-white rounded-xl px-4 py-3 border-2 border-gray-800 focus:outline-none focus:border-blue-500 transition-all"
+              required
+            />
+            <div id="feedback-num" class="mt-1.5 text-xs font-bold hidden"></div>
+          </div>
+
+          <!-- Guess 2: Chemical Symbol -->
+          <div class="relative">
+            <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1.5">
+              2. Chemical Symbol
+            </label>
+            <input
+              id="input-symbol"
+              type="text"
+              placeholder="e.g. C"
+              class="w-full bg-gray-950 text-white rounded-xl px-4 py-3 border-2 border-gray-800 focus:outline-none focus:border-blue-500 transition-all"
+              required
+            />
+            <div id="feedback-symbol" class="mt-1.5 text-xs font-bold hidden"></div>
+          </div>
+
+          <!-- Guess 3: Element Name -->
+          <div class="relative">
+            <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1.5">
+              3. Element Name
+            </label>
+            <input
+              id="input-name"
+              type="text"
+              placeholder="e.g. Carbon"
+              class="w-full bg-gray-950 text-white rounded-xl px-4 py-3 border-2 border-gray-800 focus:outline-none focus:border-blue-500 transition-all"
+              required
+            />
+            <div id="feedback-name" class="mt-1.5 text-xs font-bold hidden"></div>
+          </div>
+
+        </div>
+
+        <!-- Actions panel -->
+        <div class="flex flex-col sm:flex-row items-center justify-between pt-4 border-t border-gray-800/80 gap-3">
+          <div class="text-xs text-gray-400 text-center sm:text-left">
+            Check your spelling! Capitalization does not matter.
+          </div>
+
+          <div class="flex items-center gap-3 w-full sm:w-auto">
+            <button
+              type="button"
+              id="skip-btn"
+              class="flex-1 sm:flex-none px-5 py-3 rounded-xl bg-gray-800 hover:bg-gray-700 font-bold text-sm text-gray-300 hover:text-white transition"
+            >
+              Skip Element
+            </button>
+            <button
+              type="submit"
+              id="submit-btn"
+              class="flex-1 sm:flex-none px-8 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-extrabold text-sm shadow-lg shadow-indigo-500/10 transition"
+            >
+              Check All Answers
+            </button>
+            <button
+              type="button"
+              id="next-btn"
+              class="w-full sm:w-auto px-10 py-3 rounded-xl bg-green-600 hover:bg-green-500 text-white font-extrabold text-sm shadow-lg shadow-green-500/20 transition animate-pulse hidden"
+            >
+              Next Mystery Element →
+            </button>
+          </div>
+        </div>
+      </form>
+
+      <!-- Submission Banner Message -->
+      <div id="submission-banner" class="mt-6 p-4 rounded-xl text-center font-bold border hidden"></div>
+    </div>
+
+    <!-- Periodic Table Grid Layout -->
+    <div class="w-full max-w-7xl overflow-x-auto pb-6 custom-scrollbar">
+      <div 
+        id="periodic-table"
+        class="grid gap-1 min-w-[960px] p-2 bg-gray-900/50 rounded-2xl border border-gray-800/60" 
+        style="grid-template-columns: repeat(18, minmax(0, 1fr)); grid-template-rows: repeat(10, minmax(0, 1fr));"
+      >
+        <!-- Generated Dynamically via JS -->
+      </div>
+    </div>
+    
+    <!-- Legend -->
+    <div id="legend-container" class="w-full max-w-5xl mt-2 flex flex-wrap justify-center gap-2.5 text-[11px] font-medium">
+      <!-- Generated Dynamically via JS -->
+    </div>
+
+  </main>
+
+  <script>
+    // --- DATA ---
+    const elementsData = [
+      { n: 1, s: 'H', nm: 'Hydrogen', c: 'Diatomic Nonmetal', r: 1, col: 1 },
+      { n: 2, s: 'He', nm: 'Helium', c: 'Noble Gas', r: 1, col: 18 },
+      { n: 3, s: 'Li', nm: 'Lithium', c: 'Alkali Metal', r: 2, col: 1 },
+      { n: 4, s: 'Be', nm: 'Beryllium', c: 'Alkaline Earth Metal', r: 2, col: 2 },
+      { n: 5, s: 'B', nm: 'Boron', c: 'Metalloid', r: 2, col: 13 },
+      { n: 6, s: 'C', nm: 'Carbon', c: 'Polyatomic Nonmetal', r: 2, col: 14 },
+      { n: 7, s: 'N', nm: 'Nitrogen', c: 'Diatomic Nonmetal', r: 2, col: 15 },
+      { n: 8, s: 'O', nm: 'Oxygen', c: 'Diatomic Nonmetal', r: 2, col: 16 },
+      { n: 9, s: 'F', nm: 'Fluorine', c: 'Halogen', r: 2, col: 17 },
+      { n: 10, s: 'Ne', nm: 'Neon', c: 'Noble Gas', r: 2, col: 18 },
+      { n: 11, s: 'Na', nm: 'Sodium', c: 'Alkali Metal', r: 3, col: 1 },
+      { n: 12, s: 'Mg', nm: 'Magnesium', c: 'Alkaline Earth Metal', r: 3, col: 2 },
+      { n: 13, s: 'Al', nm: 'Aluminum', c: 'Post-Transition Metal', r: 3, col: 13 },
+      { n: 14, s: 'Si', nm: 'Silicon', c: 'Metalloid', r: 3, col: 14 },
+      { n: 15, s: 'P', nm: 'Phosphorus', c: 'Polyatomic Nonmetal', r: 3, col: 15 },
+      { n: 16, s: 'S', nm: 'Sulfur', c: 'Polyatomic Nonmetal', r: 3, col: 16 },
+      { n: 17, s: 'Cl', nm: 'Chlorine', c: 'Halogen', r: 3, col: 17 },
+      { n: 18, s: 'Ar', nm: 'Argon', c: 'Noble Gas', r: 3, col: 18 },
+      { n: 19, s: 'K', nm: 'Potassium', c: 'Alkali Metal', r: 4, col: 1 },
+      { n: 20, s: 'Ca', nm: 'Calcium', c: 'Alkaline Earth Metal', r: 4, col: 2 },
+      { n: 21, s: 'Sc', nm: 'Scandium', c: 'Transition Metal', r: 4, col: 3 },
+      { n: 22, s: 'Ti', nm: 'Titanium', c: 'Transition Metal', r: 4, col: 4 },
+      { n: 23, s: 'V', nm: 'Vanadium', c: 'Transition Metal', r: 4, col: 5 },
+      { n: 24, s: 'Cr', nm: 'Chromium', c: 'Transition Metal', r: 4, col: 6 },
+      { n: 25, s: 'Mn', nm: 'Manganese', c: 'Transition Metal', r: 4, col: 7 },
+      { n: 26, s: 'Fe', nm: 'Iron', c: 'Transition Metal', r: 4, col: 8 },
+      { n: 27, s: 'Co', nm: 'Cobalt', c: 'Transition Metal', r: 4, col: 9 },
+      { n: 28, s: 'Ni', nm: 'Nickel', c: 'Transition Metal', r: 4, col: 10 },
+      { n: 29, s: 'Cu', nm: 'Copper', c: 'Transition Metal', r: 4, col: 11 },
+      { n: 30, s: 'Zn', nm: 'Zinc', c: 'Transition Metal', r: 4, col: 12 },
+      { n: 31, s: 'Ga', nm: 'Gallium', c: 'Post-Transition Metal', r: 4, col: 13 },
+      { n: 32, s: 'Ge', nm: 'Germanium', c: 'Metalloid', r: 4, col: 14 },
+      { n: 33, s: 'As', nm: 'Arsenic', c: 'Metalloid', r: 4, col: 15 },
+      { n: 34, s: 'Se', nm: 'Selenium', c: 'Polyatomic Nonmetal', r: 4, col: 16 },
+      { n: 35, s: 'Br', nm: 'Bromine', c: 'Halogen', r: 4, col: 17 },
+      { n: 36, s: 'Kr', nm: 'Krypton', c: 'Noble Gas', r: 4, col: 18 },
+      { n: 37, s: 'Rb', nm: 'Rubidium', c: 'Alkali Metal', r: 5, col: 1 },
+      { n: 38, s: 'Sr', nm: 'Strontium', c: 'Alkaline Earth Metal', r: 5, col: 2 },
+      { n: 39, s: 'Y', nm: 'Yttrium', c: 'Transition Metal', r: 5, col: 3 },
+      { n: 40, s: 'Zr', nm: 'Zirconium', c: 'Transition Metal', r: 5, col: 4 },
+      { n: 41, s: 'Nb', nm: 'Niobium', c: 'Transition Metal', r: 5, col: 5 },
+      { n: 42, s: 'Mo', nm: 'Molybdenum', c: 'Transition Metal', r: 5, col: 6 },
+      { n: 43, s: 'Tc', nm: 'Technetium', c: 'Transition Metal', r: 5, col: 7 },
+      { n: 44, s: 'Ru', nm: 'Ruthenium', c: 'Transition Metal', r: 5, col: 8 },
+      { n: 45, h: 'Rh', s: 'Rh', nm: 'Rhodium', c: 'Transition Metal', r: 5, col: 9 },
+      { n: 46, s: 'Pd', nm: 'Palladium', c: 'Transition Metal', r: 5, col: 10 },
+      { n: 47, s: 'Ag', nm: 'Silver', c: 'Transition Metal', r: 5, col: 11 },
+      { n: 48, s: 'Cd', nm: 'Cadmium', c: 'Transition Metal', r: 5, col: 12 },
+      { n: 49, s: 'In', nm: 'Indium', c: 'Post-Transition Metal', r: 5, col: 13 },
+      { n: 50, s: 'Sn', nm: 'Tin', c: 'Post-Transition Metal', r: 5, col: 14 },
+      { n: 51, s: 'Sb', nm: 'Antimony', c: 'Metalloid', r: 5, col: 15 },
+      { n: 52, s: 'Te', nm: 'Tellurium', c: 'Metalloid', r: 5, col: 16 },
+      { n: 53, s: 'I', nm: 'Iodine', c: 'Halogen', r: 5, col: 17 },
+      { n: 54, s: 'Xe', nm: 'Xenon', c: 'Noble Gas', r: 5, col: 18 },
+      { n: 55, s: 'Cs', nm: 'Cesium', c: 'Alkali Metal', r: 6, col: 1 },
+      { n: 56, s: 'Ba', nm: 'Barium', c: 'Alkaline Earth Metal', r: 6, col: 2 },
+      { n: 57, s: 'La', nm: 'Lanthanum', c: 'Lanthanide', r: 9, col: 4 },
+      { n: 58, s: 'Ce', nm: 'Cerium', c: 'Lanthanide', r: 9, col: 5 },
+      { n: 59, s: 'Pr', nm: 'Praseodymium', c: 'Lanthanide', r: 9, col: 6 },
+      { n: 60, s: 'Nd', nm: 'Neodymium', c: 'Lanthanide', r: 9, col: 7 },
+      { n: 61, s: 'Pm', nm: 'Promethium', c: 'Lanthanide', r: 9, col: 8 },
+      { n: 62, s: 'Sm', nm: 'Samarium', c: 'Lanthanide', r: 9, col: 9 },
+      { n: 63, s: 'Eu', nm: 'Europium', c: 'Lanthanide', r: 9, col: 10 },
+      { n: 64, s: 'Gd', nm: 'Gadolinium', c: 'Lanthanide', r: 9, col: 11 },
+      { n: 65, s: 'Tb', nm: 'Terbium', c: 'Lanthanide', r: 9, col: 12 },
+      { n: 66, s: 'Dy', nm: 'Dysprosium', c: 'Lanthanide', r: 9, col: 13 },
+      { n: 67, s: 'Ho', nm: 'Holmium', c: 'Lanthanide', r: 9, col: 14 },
+      { n: 68, s: 'Er', nm: 'Erbium', c: 'Lanthanide', r: 9, col: 15 },
+      { n: 69, s: 'Tm', nm: 'Thulium', c: 'Lanthanide', r: 9, col: 16 },
+      { n: 70, s: 'Yb', nm: 'Ytterbium', c: 'Lanthanide', r: 9, col: 17 },
+      { n: 71, s: 'Lu', nm: 'Lutetium', c: 'Lanthanide', r: 9, col: 18 },
+      { n: 72, s: 'Hf', nm: 'Hafnium', c: 'Transition Metal', r: 6, col: 4 },
+      { n: 73, s: 'Ta', nm: 'Tantalum', c: 'Transition Metal', r: 6, col: 5 },
+      { n: 74, s: 'W', nm: 'Tungsten', c: 'Transition Metal', r: 6, col: 6 },
+      { n: 75, s: 'Re', nm: 'Rhenium', c: 'Transition Metal', r: 6, col: 7 },
+      { n: 76, s: 'Os', nm: 'Osmium', c: 'Transition Metal', r: 6, col: 8 },
+      { n: 77, s: 'Ir', nm: 'Iridium', c: 'Transition Metal', r: 6, col: 9 },
+      { n: 78, s: 'Pt', nm: 'Platinum', c: 'Transition Metal', r: 6, col: 10 },
+      { n: 79, s: 'Au', nm: 'Gold', c: 'Transition Metal', r: 6, col: 11 },
+      { n: 80, s: 'Hg', nm: 'Mercury', c: 'Transition Metal', r: 6, col: 12 },
+      { n: 81, s: 'Tl', nm: 'Thallium', c: 'Post-Transition Metal', r: 6, col: 13 },
+      { n: 82, s: 'Pb', nm: 'Lead', c: 'Post-Transition Metal', r: 6, col: 14 },
+      { n: 83, s: 'Bi', nm: 'Bismuth', c: 'Post-Transition Metal', r: 6, col: 15 },
+      { n: 84, s: 'Po', nm: 'Polonium', c: 'Metalloid', r: 6, col: 16 },
+      { n: 85, s: 'At', nm: 'Astatine', c: 'Halogen', r: 6, col: 17 },
+      { n: 86, s: 'Rn', nm: 'Radon', c: 'Noble Gas', r: 6, col: 18 },
+      { n: 87, s: 'Fr', nm: 'Francium', c: 'Alkali Metal', r: 7, col: 1 },
+      { n: 88, s: 'Ra', nm: 'Radium', c: 'Alkaline Earth Metal', r: 7, col: 2 },
+      { n: 89, s: 'Ac', nm: 'Actinium', c: 'Actinide', r: 10, col: 4 },
+      { n: 90, s: 'Th', nm: 'Thorium', c: 'Actinide', r: 10, col: 5 },
+      { n: 91, s: 'Pa', nm: 'Protactinium', c: 'Actinide', r: 10, col: 6 },
+      { n: 92, s: 'U', nm: 'Uranium', c: 'Actinide', r: 10, col: 7 },
+      { n: 93, s: 'Np', nm: 'Neptunium', c: 'Actinide', r: 10, col: 8 },
+      { n: 94, s: 'Pu', nm: 'Plutonium', c: 'Actinide', r: 10, col: 9 },
+      { n: 95, s: 'Am', nm: 'Americium', c: 'Actinide', r: 10, col: 10 },
+      { n: 96, s: 'Cm', nm: 'Curium', c: 'Actinide', r: 10, col: 11 },
+      { n: 97, s: 'Bk', nm: 'Berkelium', c: 'Actinide', r: 10, col: 12 },
+      { n: 98, s: 'Cf', nm: 'Californium', c: 'Actinide', r: 10, col: 13 },
+      { n: 99, s: 'Es', nm: 'Einsteinium', c: 'Actinide', r: 10, col: 14 },
+      { n: 100, s: 'Fm', nm: 'Fermium', c: 'Actinide', r: 10, col: 15 },
+      { n: 101, s: 'Md', nm: 'Mendelevium', c: 'Actinide', r: 10, col: 16 },
+      { n: 102, s: 'No', nm: 'Nobelium', c: 'Actinide', r: 10, col: 17 },
+      { n: 103, s: 'Lr', nm: 'Lawrencium', c: 'Actinide', r: 10, col: 18 },
+      { n: 104, s: 'Rf', nm: 'Rutherfordium', c: 'Transition Metal', r: 7, col: 4 },
+      { n: 105, s: 'Db', nm: 'Dubnium', c: 'Transition Metal', r: 7, col: 5 },
+      { n: 106, s: 'Sg', nm: 'Seaborgium', c: 'Transition Metal', r: 7, col: 6 },
+      { n: 107, s: 'Bh', nm: 'Bohrium', c: 'Transition Metal', r: 7, col: 7 },
+      { n: 108, s: 'Hs', nm: 'Hassium', c: 'Transition Metal', r: 7, col: 8 },
+      { n: 109, s: 'Mt', nm: 'Meitnerium', c: 'Unknown', r: 7, col: 9 },
+      { n: 110, s: 'Ds', nm: 'Darmstadtium', c: 'Unknown', r: 7, col: 10 },
+      { n: 111, s: 'Rg', nm: 'Roentgenium', c: 'Unknown', r: 7, col: 11 },
+      { n: 112, s: 'Cn', nm: 'Copernicium', c: 'Transition Metal', r: 7, col: 12 },
+      { n: 113, s: 'Nh', nm: 'Nihonium', c: 'Unknown', r: 7, col: 13 },
+      { n: 114, s: 'Fl', nm: 'Flerovium', c: 'Unknown', r: 7, col: 14 },
+      { n: 115, s: 'Mc', nm: 'Moscovium', c: 'Unknown', r: 7, col: 15 },
+      { n: 116, s: 'Lv', nm: 'Livermorium', c: 'Unknown', r: 7, col: 16 },
+      { n: 117, s: 'Ts', nm: 'Tennessine', c: 'Unknown', r: 7, col: 17 },
+      { n: 118, s: 'Og', nm: 'Oganesson', c: 'Unknown', r: 7, col: 18 },
+    ];
+
+    const categoryColors = {
+      'Diatomic Nonmetal': 'cat-diatomic-nonmetal',
+      'Polyatomic Nonmetal': 'cat-polyatomic-nonmetal',
+      'Noble Gas': 'cat-noble-gas',
+      'Alkali Metal': 'cat-alkali-metal',
+      'Alkaline Earth Metal': 'cat-alkaline-earth-metal',
+      'Metalloid': 'cat-metalloid',
+      'Halogen': 'cat-halogen',
+      'Transition Metal': 'cat-transition-metal',
+      'Post-Transition Metal': 'cat-post-transition-metal',
+      'Lanthanide': 'cat-lanthanide',
+      'Actinide': 'cat-actinide',
+      'Unknown': 'cat-unknown',
+    };
+
+    const legendColors = {
+      'Diatomic Nonmetal': 'green',
+      'Polyatomic Nonmetal': 'green',
+      'Noble Gas': 'purple',
+      'Alkali Metal': 'red',
+      'Alkaline Earth Metal': 'orange',
+      'Metalloid': 'teal',
+      'Halogen': 'cyan',
+      'Transition Metal': 'yellow',
+      'Post-Transition Metal': 'blue',
+      'Lanthanide': 'pink',
+      'Actinide': 'rose',
+      'Unknown': 'gray',
+    };
+
+    // --- APPLICATION STATE ---
+    let activeRange = { min: 1, max: 118 };
+    let quizOrder = 'random'; // 'random' or 'sequential'
+    let currentElement = null;
+    let score = 0;
+    let streak = 0;
+    let isSubmitted = false;
+
+    // Element Pool tracking
+    let remainingElements = []; // Stores unvisited elements to prevent duplication
+    let cycleNotificationPending = false; // Flag to show a celebratory completion banner
+
+    // DOM Elements
+    const rangeInputEl = document.getElementById('range-input');
+    const orderRandomBtn = document.getElementById('order-random');
+    const orderSequentialBtn = document.getElementById('order-sequential');
+    const scoreDisplay = document.getElementById('score-display');
+    const streakDisplay = document.getElementById('streak-display');
+    const badgeDisplay = document.getElementById('badge-display');
+    
+    const quizForm = document.getElementById('quiz-form');
+    const inputNum = document.getElementById('input-num');
+    const inputSymbol = document.getElementById('input-symbol');
+    const inputName = document.getElementById('input-name');
+
+    const feedbackNum = document.getElementById('feedback-num');
+    const feedbackSymbol = document.getElementById('feedback-symbol');
+    const feedbackName = document.getElementById('feedback-name');
+
+    const skipBtn = document.getElementById('skip-btn');
+    const submitBtn = document.getElementById('submit-btn');
+    const nextBtn = document.getElementById('next-btn');
+    const submissionBanner = document.getElementById('submission-banner');
+    
+    const periodicTableContainer = document.getElementById('periodic-table');
+    const legendContainer = document.getElementById('legend-container');
+
+    // --- GAME ENGINE FUNCTIONS ---
+
+    // Clean class categories for legend matching
+    function getCleanCategoryClass(category) {
+      return categoryColors[category] || 'cat-unknown';
+    }
+
+    // Render Periodic Table Grid
+    function renderTable() {
+      periodicTableContainer.innerHTML = '';
+      
+      elementsData.forEach(el => {
+        const cell = document.createElement('div');
+        cell.style.gridColumn = el.col;
+        cell.style.gridRow = el.r;
+        
+        const isTarget = currentElement && currentElement.n === el.n;
+        const inRange = el.n >= activeRange.min && el.n <= activeRange.max;
+        const colorClass = getCleanCategoryClass(el.c);
+
+        cell.className = `relative rounded-lg border aspect-square flex flex-col transition-all duration-300 ease-in-out cursor-default overflow-hidden ${colorClass} `;
+        
+        if (isTarget) {
+          cell.className += 'ring-4 ring-blue-400 ring-offset-4 ring-offset-gray-950 scale-110 z-20 bg-opacity-100 shadow-[0_0_25px_rgba(59,130,246,0.6)] border-blue-400';
+          cell.innerHTML = `
+            <div class="flex flex-col items-center justify-center h-full w-full relative z-10 font-bold bg-blue-500/20">
+              <span class="text-[10px] text-blue-300">?</span>
+              <span class="text-lg text-white animate-bounce font-extrabold">?</span>
+              <span class="text-[8px] text-blue-300 uppercase tracking-widest font-black">GUESS</span>
+            </div>
+          `;
+        } else if (inRange) {
+          // Blind Mode: active range elements are hidden!
+          cell.className += 'border-gray-800/50';
+          cell.innerHTML = `
+            <div class="flex flex-col items-center justify-center h-full w-full opacity-90 hover:opacity-100 bg-gray-950/50">
+              <div class="text-[9px] text-indigo-400 font-bold">${el.n}</div>
+              <div class="text-xs text-gray-600 font-semibold">•</div>
+              <div class="text-[8px] truncate w-full text-center px-0.5 text-gray-700">???</div>
+            </div>
+          `;
+        } else {
+          // Outside study range: visible but dimmed
+          cell.className += 'border-gray-800/50 opacity-35 hover:opacity-60';
+          cell.innerHTML = `
+            <div class="flex flex-col items-center justify-center h-full w-full">
+              <div class="text-[9px] opacity-70">${el.n}</div>
+              <div class="font-bold text-sm md:text-base">${el.s}</div>
+              <div class="text-[8px] truncate w-full text-center px-0.5 opacity-80">${el.nm}</div>
+            </div>
+          `;
+        }
+
+        periodicTableContainer.appendChild(cell);
+      });
+    }
+
+    // Generate non-repeating element pool for active range
+    function resetPool() {
+      // Collect elements inside active boundary
+      const elementsInRange = elementsData.filter(
+        el => el.n >= activeRange.min && el.n <= activeRange.max
+      );
+
+      if (quizOrder === 'sequential') {
+        // Sequential Mode: Sort elements ascending by atomic number
+        remainingElements = [...elementsInRange].sort((a, b) => a.n - b.n);
+      } else {
+        // Random Mode: Shuffle elements randomly using Durstenfeld Shuffle
+        const shuffled = [...elementsInRange];
+        for (let i = shuffled.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+        }
+        remainingElements = shuffled;
+      }
+    }
+
+    // Pick Next Target securely
+    function pickNextElement() {
+      // If the pool is empty, we have completed the range! Reset and notify
+      if (remainingElements.length === 0) {
+        resetPool();
+        if (remainingElements.length === 0) return; // Fail-safe fallback
+        cycleNotificationPending = true;
+      }
+
+      const nextElement = remainingElements.shift();
+
+      if (nextElement) {
+        currentElement = nextElement;
+        
+        // Reset state
+        isSubmitted = false;
+        inputNum.value = '';
+        inputSymbol.value = '';
+        inputName.value = '';
+
+        // Reset Inputs styles
+        resetInputStyles(inputNum, feedbackNum);
+        resetInputStyles(inputSymbol, feedbackSymbol);
+        resetInputStyles(inputName, feedbackName);
+
+        // Toggle Buttons visibility
+        skipBtn.classList.remove('hidden');
+        submitBtn.classList.remove('hidden');
+        nextBtn.classList.add('hidden');
+        
+        if (cycleNotificationPending) {
+          // Display satisfactory milestone banner
+          submissionBanner.className = "mt-6 p-4 rounded-xl text-center font-bold border bg-indigo-500/10 border-indigo-500/20 text-indigo-400";
+          submissionBanner.innerHTML = `<span>🎓 Great job! You successfully completed all elements in this range. Resetting unvisited list!</span>`;
+          submissionBanner.classList.remove('hidden');
+          cycleNotificationPending = false;
+        } else {
+          submissionBanner.classList.add('hidden');
+        }
+
+        inputNum.disabled = false;
+        inputSymbol.disabled = false;
+        inputName.disabled = false;
+
+        // Render the board
+        renderTable();
+
+        // Autofocus first field
+        inputNum.focus();
+      }
+    }
+
+    function resetInputStyles(inputEl, feedbackEl) {
+      inputEl.className = "w-full bg-gray-950 text-white rounded-xl px-4 py-3 border-2 border-gray-800 focus:outline-none focus:border-blue-500 transition-all";
+      feedbackEl.classList.add('hidden');
+      feedbackEl.innerHTML = '';
+    }
+
+    // Apply active ranges securely
+    function applyRangeAndOrder(minVal, maxVal, nextOrder = quizOrder) {
+      let min = parseInt(minVal, 10);
+      let max = parseInt(maxVal, 10);
+
+      if (isNaN(min)) min = 1;
+      if (isNaN(max)) max = 118;
+
+      if (min < 1) min = 1;
+      if (max > 118) max = 118;
+      if (min > max) {
+        const temp = min;
+        min = max;
+        max = temp;
+      }
+
+      activeRange = { min, max };
+      quizOrder = nextOrder;
+      rangeInputEl.value = `${min}-${max}`;
+      streak = 0;
+      streakDisplay.textContent = streak;
+
+      // Update badge metadata
+      updateBadge();
+
+      // Clear layout elements, reset remaining elements pool
+      resetPool();
+
+      // Pull first element out of freshly sorted/shuffled range
+      pickNextElement();
+    }
+
+    function updateBadge() {
+      badgeDisplay.textContent = `Study Range: ${activeRange.min} - ${activeRange.max}, in ${quizOrder === 'random' ? 'Random' : 'Sequential'} Order`;
+    }
+
+    // Submit Action Handlers
+    quizForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      if (!currentElement || isSubmitted) return;
+
+      const answerNum = parseInt(inputNum.value.trim(), 10);
+      const answerSymbol = inputSymbol.value.trim().toLowerCase();
+      const answerName = inputName.value.trim().toLowerCase();
+
+      const isNumCorrect = answerNum === currentElement.n;
+      const isSymbolCorrect = answerSymbol === currentElement.s.toLowerCase();
+      const isNameCorrect = answerName === currentElement.nm.toLowerCase();
+
+      // Display validation
+      applyGradingStyle(inputNum, feedbackNum, isNumCorrect, currentElement.n);
+      applyGradingStyle(inputSymbol, feedbackSymbol, isSymbolCorrect, currentElement.s);
+      applyGradingStyle(inputName, feedbackName, isNameCorrect, currentElement.nm);
+
+      inputNum.disabled = true;
+      inputSymbol.disabled = true;
+      inputName.disabled = true;
+
+      isSubmitted = true;
+      
+      const allCorrect = isNumCorrect && isSymbolCorrect && isNameCorrect;
+
+      if (allCorrect) {
+        score++;
+        streak++;
+        scoreDisplay.textContent = score;
+        streakDisplay.textContent = streak;
+
+        submissionBanner.className = "mt-6 p-4 rounded-xl text-center font-bold border bg-green-500/10 border-green-500/20 text-green-400";
+        submissionBanner.innerHTML = `<span>🎉 Perfect Score! All three answers match the element! (+1 Score & Streak)</span>`;
+      } else {
+        streak = 0;
+        streakDisplay.textContent = streak;
+
+        submissionBanner.className = "mt-6 p-4 rounded-xl text-center font-bold border bg-red-500/10 border-red-500/20 text-red-400";
+        submissionBanner.innerHTML = `<span>⚠️ Some values were incorrect or skipped. Study them above and try the next one!</span>`;
+      }
+
+      submissionBanner.classList.remove('hidden');
+      skipBtn.classList.add('hidden');
+      submitBtn.classList.add('hidden');
+      nextBtn.classList.remove('hidden');
+    });
+
+    function applyGradingStyle(inputEl, feedbackEl, isCorrect, correctAns) {
+      if (isCorrect) {
+        inputEl.className = "w-full bg-green-950/20 text-white rounded-xl px-4 py-3 border-2 border-green-500/80 focus:outline-none transition-all";
+        feedbackEl.className = "mt-1.5 text-xs font-bold text-green-400";
+        feedbackEl.innerHTML = "✓ Correct";
+      } else {
+        inputEl.className = "w-full bg-red-950/20 text-white rounded-xl px-4 py-3 border-2 border-red-500/80 focus:outline-none transition-all";
+        feedbackEl.className = "mt-1.5 text-xs font-bold text-red-400";
+        feedbackEl.innerHTML = `✗ Correct: ${correctAns}`;
+      }
+      feedbackEl.classList.remove('hidden');
+    }
+
+    // Skip Button Handler
+    skipBtn.addEventListener('click', () => {
+      streak = 0;
+      streakDisplay.textContent = streak;
+
+      applyGradingStyle(inputNum, feedbackNum, false, currentElement.n);
+      applyGradingStyle(inputSymbol, feedbackSymbol, false, currentElement.s);
+      applyGradingStyle(inputName, feedbackName, false, currentElement.nm);
+
+      inputNum.disabled = true;
+      inputSymbol.disabled = true;
+      inputName.disabled = true;
+
+      isSubmitted = true;
+
+      submissionBanner.className = "mt-6 p-4 rounded-xl text-center font-bold border bg-red-500/10 border-red-500/20 text-red-400";
+      submissionBanner.innerHTML = `<span>⚠️ Element skipped. See correct values above.</span>`;
+      submissionBanner.classList.remove('hidden');
+
+      skipBtn.classList.add('hidden');
+      submitBtn.classList.add('hidden');
+      nextBtn.classList.remove('hidden');
+    });
+
+    // Next Button Handler
+    nextBtn.addEventListener('click', () => {
+      pickNextElement();
+    });
+
+    // --- RANGE PRESETS ---
+    document.getElementById('btn-1-20').addEventListener('click', (e) => {
+      toggleRangeButtonActive(e.target);
+      applyRangeAndOrder(1, 20);
+    });
+
+    document.getElementById('btn-1-54').addEventListener('click', (e) => {
+      toggleRangeButtonActive(e.target);
+      applyRangeAndOrder(1, 54);
+    });
+
+    document.getElementById('btn-1-118').addEventListener('click', (e) => {
+      toggleRangeButtonActive(e.target);
+      applyRangeAndOrder(1, 118);
+    });
+
+    function toggleRangeButtonActive(clickedBtn) {
+      document.querySelectorAll('.range-btn').forEach(btn => {
+        btn.className = "range-btn px-2 py-1 text-xs rounded-lg font-semibold transition bg-gray-800 hover:bg-gray-700 text-gray-300";
+      });
+      if (clickedBtn) {
+        clickedBtn.className = "range-btn px-2 py-1 text-xs rounded-lg font-semibold transition bg-blue-600 text-white";
+      }
+    }
+
+    // Helper to clear blue highlight from all preset buttons
+    function clearRangePresetHighlights() {
+      toggleRangeButtonActive(null);
+    }
+
+    // Custom range inputs
+    rangeInputEl.addEventListener('blur', () => {
+      const val = rangeInputEl.value;
+      clearRangePresetHighlights(); // Unselect preset buttons on custom entry
+      if (val.includes('-')) {
+        const parts = val.split('-');
+        applyRangeAndOrder(parts[0], parts[1]);
+      } else {
+        applyRangeAndOrder(1, val);
+      }
+    });
+
+    rangeInputEl.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        rangeInputEl.blur();
+      }
+    });
+
+    // Order Selector
+    orderRandomBtn.addEventListener('click', () => {
+      orderRandomBtn.className = "px-2 py-1 text-xs rounded-lg font-semibold transition bg-indigo-600 text-white";
+      orderSequentialBtn.className = "px-2 py-1 text-xs rounded-lg font-semibold transition bg-gray-800 hover:bg-gray-700 text-gray-300";
+      applyRangeAndOrder(activeRange.min, activeRange.max, 'random');
+    });
+
+    orderSequentialBtn.addEventListener('click', () => {
+      orderRandomBtn.className = "px-2 py-1 text-xs rounded-lg font-semibold transition bg-gray-800 hover:bg-gray-700 text-gray-300";
+      orderSequentialBtn.className = "px-2 py-1 text-xs rounded-lg font-semibold transition bg-indigo-600 text-white";
+      // Instantly resets and switches order starting at first active index
+      applyRangeAndOrder(activeRange.min, activeRange.max, 'sequential');
+    });
+
+    // Build Legend Categories Elements on launch
+    function createLegend() {
+      const addedCategories = new Set();
+      elementsData.forEach(el => {
+        if (!addedCategories.has(el.c)) {
+          addedCategories.add(el.c);
+          
+          const item = document.createElement('div');
+          item.className = "flex items-center gap-1.5 bg-gray-900/80 px-2.5 py-1 rounded-full border border-gray-800/80 text-gray-300";
+          
+          const dotColor = legendColors[el.c] || 'gray';
+          item.innerHTML = `
+            <span class="w-2.5 h-2.5 rounded-full bg-${dotColor}-500 inline-block"></span>
+            <span>${el.c}</span>
+          `;
+          legendContainer.appendChild(item);
+        }
+      });
+    }
+
+    // Game Initiation
+    createLegend();
+    resetPool();
+    pickNextElement();
+
+  </script>
+</body>
+</html>
