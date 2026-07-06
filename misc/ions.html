@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Polyatomic Ions Practice</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* Flashcard 3D Flip Animations */
+    .perspective {
+      perspective: 1000px;
+    }
+    .preserve-3d {
+      transform-style: preserve-3d;
+      transition: transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1);
+    }
+    .backface-hidden {
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+    }
+    .rotate-y-180 {
+      transform: rotateY(180deg);
+    }
+    
+    /* Option button animations */
+    .mcq-btn {
+      transition: all 0.2s ease-in-out;
+    }
+    .mcq-btn:active:not(:disabled) {
+      transform: scale(0.97);
+    }
+    
+    /* Input custom glow */
+    .input-glow:focus {
+      box-shadow: 0 0 15px rgba(59, 130, 246, 0.3);
+    }
+  </style>
+</head>
+<body class="min-h-screen bg-gray-950 text-slate-100 font-sans flex flex-col selection:bg-indigo-500 selection:text-white">
+
+  <!-- Header Panel -->
+  <header class="bg-gray-900/90 backdrop-blur-md border-b border-gray-800 p-4 sticky top-0 z-30 shadow-lg">
+    <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+      
+      <!-- Logo & Subtitle -->
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-purple-600 to-indigo-500 flex items-center justify-center shadow-md shadow-indigo-500/20">
+          <span class="font-black text-white text-lg">BR</span>
+        </div>
+        <div>
+          <h1 class="text-xl font-extrabold tracking-tight text-white flex items-center gap-2">
+            Polyatomic Ions Study Thing
+          </h1>
+          <p class="text-xs text-gray-400"><i>Also</i> for my chem class.</p>
+        </div>
+      </div>
+
+      <!-- Mode Selector Tabs -->
+      <div class="flex bg-gray-950/80 p-1.5 rounded-xl border border-gray-800">
+        <button id="tab-flashcards" class="mode-tab px-4 py-1.5 text-sm font-bold rounded-lg transition-all bg-indigo-600 text-white shadow-md">
+          Flashcards
+        </button>
+        <button id="tab-mcq" class="mode-tab px-4 py-1.5 text-sm font-bold rounded-lg transition-all text-gray-400 hover:text-white hover:bg-gray-800">
+          Multiple Choice
+        </button>
+        <button id="tab-frq" class="mode-tab px-4 py-1.5 text-sm font-bold rounded-lg transition-all text-gray-400 hover:text-white hover:bg-gray-800">
+          Free Response
+        </button>
+      </div>
+
+      <!-- Stats (Hidden in Flashcard Mode) -->
+      <div id="stats-container" class="flex items-center gap-6 bg-gray-950/60 p-2 px-4 rounded-xl border border-gray-800 hidden opacity-0 transition-opacity duration-300">
+        <div class="text-center">
+          <div class="text-[10px] text-gray-500 uppercase font-black">Score</div>
+          <div id="score-display" class="text-xl font-extrabold text-indigo-400">0</div>
+        </div>
+        <div class="h-6 w-px bg-gray-800"></div>
+        <div class="text-center">
+          <div class="text-[10px] text-gray-500 uppercase font-black">Streak</div>
+          <div class="text-xl font-extrabold text-orange-400 flex items-center justify-center gap-1">
+            <span id="streak-display">0</span>
+            <span class="text-xs">🔥</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- Main Content Area -->
+  <main class="flex-1 flex flex-col items-center justify-center p-4 md:p-6 relative">
+    
+    <!-- ============================================== -->
+    <!-- VIEW 1: FLASHCARDS -->
+    <!-- ============================================== -->
+    <div id="view-flashcards" class="w-full max-w-2xl flex flex-col items-center gap-8 transition-all duration-500">
+      
+      <div class="text-center">
+        <h2 class="text-xl font-bold text-gray-300">Study Mode</h2>
+        <p class="text-sm text-gray-500 mt-1">Y'know, it's like a Quizlet ripoff.</p>
+      </div>
+
+      <!-- Card Container -->
+      <div class="perspective w-full h-72 md:h-80 cursor-pointer group" id="flashcard-container">
+        <div id="flashcard-inner" class="relative w-full h-full preserve-3d shadow-2xl rounded-3xl group-hover:shadow-indigo-500/10 transition-shadow">
+          
+          <!-- Front (Formula) -->
+          <div class="absolute w-full h-full backface-hidden flex flex-col items-center justify-center bg-gray-900 border-2 border-gray-800 rounded-3xl p-6">
+            <div class="text-xs font-bold text-gray-500 uppercase tracking-widest absolute top-6">Formula & Charge</div>
+            <div id="flashcard-front" class="text-6xl md:text-7xl font-black text-white text-center tracking-wider">
+              <!-- Content injected via JS -->
+            </div>
+            <div class="text-xs text-gray-600 absolute bottom-6 flex items-center gap-2">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2v6h-6"></path><path d="M3 12a9 9 0 0 1 15-6.7L21 8"></path><path d="M3 22v-6h6"></path><path d="M21 12a9 9 0 0 1-15 6.7L3 16"></path></svg>
+              Click to Flip
+            </div>
+          </div>
+          
+          <!-- Back (Name) -->
+          <div class="absolute w-full h-full backface-hidden rotate-y-180 flex flex-col items-center justify-center bg-indigo-900/40 border-2 border-indigo-500/50 rounded-3xl p-6 shadow-[inset_0_0_50px_rgba(99,102,241,0.2)]">
+            <div class="text-xs font-bold text-indigo-300 uppercase tracking-widest absolute top-6">Ion Name</div>
+            <div id="flashcard-back" class="text-4xl md:text-5xl font-black text-indigo-100 text-center">
+              <!-- Content injected via JS -->
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Flashcard Controls -->
+      <div class="flex items-center gap-4 w-full justify-between px-2">
+        <button id="fc-prev" class="px-6 py-3 rounded-xl bg-gray-800 hover:bg-gray-700 font-bold text-gray-300 transition-colors flex items-center gap-2">
+          &larr; Prev
+        </button>
+        <div id="fc-counter" class="text-sm font-bold text-gray-500 bg-gray-900 px-4 py-2 rounded-lg border border-gray-800">
+          1 / 25
+        </div>
+        <button id="fc-next" class="px-6 py-3 rounded-xl bg-gray-800 hover:bg-gray-700 font-bold text-gray-300 transition-colors flex items-center gap-2">
+          Next &rarr;
+        </button>
+      </div>
+    </div>
+
+
+    <!-- ============================================== -->
+    <!-- VIEW 2: MULTIPLE CHOICE -->
+    <!-- ============================================== -->
+    <div id="view-mcq" class="w-full max-w-3xl hidden flex flex-col gap-6 opacity-0 transition-opacity duration-500">
+      
+      <div class="bg-gray-900 border border-gray-800 rounded-3xl p-6 md:p-8 shadow-2xl text-center">
+        <div class="inline-block bg-indigo-500/10 text-indigo-400 px-3 py-1 rounded-full text-xs font-bold mb-4 border border-indigo-500/20">
+          Multiple Choice Thing
+        </div>
+        <h2 id="mcq-prompt" class="text-2xl md:text-3xl font-extrabold text-white mb-8 leading-tight">
+          <!-- Prompt injected via JS -->
+        </h2>
+
+        <!-- Grid of 4 Options -->
+        <div id="mcq-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <!-- Buttons injected via JS -->
+        </div>
+
+        <!-- Next Button Container -->
+        <div id="mcq-next-container" class="mt-8 hidden">
+          <button id="mcq-next" class="px-10 py-4 rounded-xl bg-green-600 hover:bg-green-500 text-white font-extrabold shadow-lg shadow-green-500/20 transition-all animate-pulse">
+            Next Question &rarr;
+          </button>
+        </div>
+      </div>
+
+    </div>
+
+
+    <!-- ============================================== -->
+    <!-- VIEW 3: FREE RESPONSE -->
+    <!-- ============================================== -->
+    <div id="view-frq" class="w-full max-w-2xl hidden flex flex-col gap-6 opacity-0 transition-opacity duration-500">
+      
+      <div class="bg-gray-900 border border-gray-800 rounded-3xl p-6 md:p-8 shadow-2xl">
+        <div class="text-center mb-8">
+          <div class="inline-block bg-purple-500/10 text-purple-400 px-3 py-1 rounded-full text-xs font-bold mb-4 border border-purple-500/20">
+            Free Response 
+          </div>
+          <p id="frq-prompt-label" class="text-gray-400 text-sm font-bold uppercase tracking-widest mb-2">Identify the Ion:</p>
+          <div id="frq-prompt" class="text-3xl md:text-5xl font-black text-white bg-gray-950 py-8 rounded-2xl border border-gray-800 shadow-inner px-4 flex items-center justify-center min-h-[140px]">
+            <!-- Formula or Name injected via JS -->
+          </div>
+
+          <!-- Live Preview for Formula Typing Mode -->
+          <div id="frq-live-preview-container" class="mt-4 hidden p-4 bg-gray-950/60 rounded-xl border border-gray-800">
+            <span class="text-xs text-gray-500 uppercase tracking-widest block mb-1">Live Formula Preview:</span>
+            <span id="frq-live-preview" class="text-4xl font-black text-indigo-400 tracking-wider"></span>
+          </div>
+        </div>
+
+        <form id="frq-form" class="space-y-4">
+          <div class="relative">
+            <input
+              id="frq-input"
+              type="text"
+              placeholder="Type your answer..."
+              autocomplete="off"
+              class="w-full bg-gray-950 text-white rounded-xl px-6 py-4 border-2 border-gray-700 focus:outline-none focus:border-purple-500 text-lg input-glow transition-all"
+            />
+            
+            <!-- Help guidelines on subscript and exponent format -->
+            <div id="frq-help-text" class="text-xs text-gray-500 mt-2 hidden text-left px-2 leading-relaxed">
+              Use <b class="text-indigo-400">_</b> for subscripts and <b class="text-indigo-400">^</b> for exponents. Example: <code class="bg-gray-950 text-indigo-300 px-1.5 py-0.5 rounded border border-gray-800">NH_4^+</code> represents NH<sub>4</sub><sup>+</sup>
+            </div>
+            
+            <div id="frq-feedback" class="mt-2 text-sm font-bold hidden text-left px-2"></div>
+          </div>
+
+          <div class="flex flex-col sm:flex-row gap-3 pt-2">
+            <button
+              type="button"
+              id="frq-skip"
+              class="px-6 py-4 rounded-xl bg-gray-800 hover:bg-gray-700 font-bold text-gray-300 transition-colors"
+            >
+              Skip
+            </button>
+            <button
+              type="submit"
+              id="frq-submit"
+              class="flex-1 px-8 py-4 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-extrabold text-lg shadow-lg shadow-indigo-500/20 transition-all"
+            >
+              Check Answer
+            </button>
+            <button
+              type="button"
+              id="frq-next"
+              class="flex-1 px-8 py-4 rounded-xl bg-green-600 hover:bg-green-500 text-white font-extrabold text-lg shadow-lg shadow-green-500/20 transition-all hidden animate-pulse"
+            >
+              Next Ion &rarr;
+            </button>
+          </div>
+        </form>
+      </div>
+
+    </div>
+
+  </main>
+
+  <script>
+    // ==========================================
+    // DATA: POLYATOMIC IONS (Exact list of 25)
+    // ==========================================
+    const ionData = [
+      { names: ["ammonium"], display: "Ammonium", html: "NH<sub>4</sub><sup>+</sup>", formula: "NH_4^+" },
+      { names: ["nitrate"], display: "Nitrate", html: "NO<sub>3</sub><sup>-</sup>", formula: "NO_3^-" },
+      { names: ["nitrite"], display: "Nitrite", html: "NO<sub>2</sub><sup>-</sup>", formula: "NO_2^-" },
+      { names: ["sulfate"], display: "Sulfate", html: "SO<sub>4</sub><sup>2-</sup>", formula: "SO_4^2-" },
+      { names: ["sulfite"], display: "Sulfite", html: "SO<sub>3</sub><sup>2-</sup>", formula: "SO_3^2-" },
+      { names: ["phosphate"], display: "Phosphate", html: "PO<sub>4</sub><sup>3-</sup>", formula: "PO_4^3-" },
+      { names: ["phosphite"], display: "Phosphite", html: "PO<sub>3</sub><sup>3-</sup>", formula: "PO_3^3-" },
+      { names: ["hydroxide"], display: "Hydroxide", html: "OH<sup>-</sup>", formula: "OH^-" },
+      { names: ["carbonate"], display: "Carbonate", html: "CO<sub>3</sub><sup>2-</sup>", formula: "CO_3^2-" },
+      { names: ["hydronium"], display: "Hydronium", html: "H<sub>3</sub>O<sup>+</sup>", formula: "H_3O^+" },
+      { names: ["hydrogen carbonate", "bicarbonate"], display: "Hydrogen Carbonate / Bicarbonate", html: "HCO<sub>3</sub><sup>-</sup>", formula: "HCO_3^-" },
+      { names: ["hydrogen sulfate", "bisulfate"], display: "Hydrogen Sulfate / Bisulfate", html: "HSO<sub>4</sub><sup>-</sup>", formula: "HSO_4^-" },
+      { names: ["peroxide"], display: "Peroxide", html: "O<sub>2</sub><sup>2-</sup>", formula: "O_2^2-" },
+      { names: ["chromate"], display: "Chromate", html: "CrO<sub>4</sub><sup>2-</sup>", formula: "CrO_4^2-" },
+      { names: ["dichromate"], display: "Dichromate", html: "Cr<sub>2</sub>O<sub>7</sub><sup>2-</sup>", formula: "Cr_2O_7^2-" },
+      { names: ["permanganate"], display: "Permanganate", html: "MnO<sub>4</sub><sup>-</sup>", formula: "MnO_4^-" },
+      { names: ["hypochlorite"], display: "Hypochlorite", html: "ClO<sup>-</sup>", formula: "ClO^-" },
+      { names: ["chlorite"], display: "Chlorite", html: "ClO<sub>2</sub><sup>-</sup>", formula: "ClO_2^-" },
+      { names: ["chlorate"], display: "Chlorate", html: "ClO<sub>3</sub><sup>-</sup>", formula: "ClO_3^-" },
+      { names: ["perchlorate"], display: "Perchlorate", html: "ClO<sub>4</sub><sup>-</sup>", formula: "ClO_4^-" },
+      { names: ["cyanide"], display: "Cyanide", html: "CN<sup>-</sup>", formula: "CN^-" },
+      { names: ["azide"], display: "Azide", html: "N<sub>3</sub><sup>-</sup>", formula: "N_3^-" },
+      { names: ["acetate"], display: "Acetate", html: "C<sub>2</sub>H<sub>3</sub>O<sub>2</sub><sup>-</sup>", formula: "C_2H_3O_2^-" },
+      { names: ["mercury", "mercury(i)", "mercurous", "mercury i"], display: "Mercury(I) / Mercurous", html: "Hg<sub>2</sub><sup>2+</sup>", formula: "Hg_2^2+" },
+      { names: ["oxalate"], display: "Oxalate", html: "C<sub>2</sub>O<sub>4</sub><sup>2-</sup>", formula: "C_2O_4^2-" }
+    ];
+
+    // ==========================================
+    // GLOBAL STATE & UTILS
+    // ==========================================
+    let currentMode = 'flashcards'; // 'flashcards', 'mcq', 'frq'
+    let score = 0;
+    let streak = 0;
+
+    // DOM Elements - General
+    const tabFlashcards = document.getElementById('tab-flashcards');
+    const tabMCQ = document.getElementById('tab-mcq');
+    const tabFRQ = document.getElementById('tab-frq');
+    
+    const viewFlashcards = document.getElementById('view-flashcards');
+    const viewMCQ = document.getElementById('view-mcq');
+    const viewFRQ = document.getElementById('view-frq');
+    
+    const statsContainer = document.getElementById('stats-container');
+    const scoreDisplay = document.getElementById('score-display');
+    const streakDisplay = document.getElementById('streak-display');
+
+    // Utility: Shuffle an array
+    function shuffleArray(arr) {
+      let array = [...arr];
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+      return array;
+    }
+
+    // Utility: Format chemical input into formatted HTML structure
+    function formatChemicalFormula(str) {
+      if (!str) return '';
+      // Escape HTML chars first
+      let html = str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+      // Replace subscripts _X or _{X}
+      html = html.replace(/_([A-Za-z0-9+-]+)/g, '<sub>$1</sub>');
+      // Replace superscripts ^Y or ^{Y}
+      html = html.replace(/\^([A-Za-z0-9+-]+)/g, '<sup>$1</sup>');
+      return html;
+    }
+
+    // Utility: Update Score Display
+    function updateStats(won) {
+      if (won) {
+        score++;
+        streak++;
+      } else {
+        streak = 0;
+      }
+      scoreDisplay.textContent = score;
+      streakDisplay.textContent = streak;
+    }
+
+    // Utility: Reset Stats
+    function resetStats() {
+      score = 0;
+      streak = 0;
+      scoreDisplay.textContent = score;
+      streakDisplay.textContent = streak;
+    }
+
+    // ==========================================
+    // FLASHCARD LOGIC
+    // ==========================================
+    let fcQueue = [];
+    let fcIndex = 0;
+    let isFlipped = false;
+
+    const fcContainer = document.getElementById('flashcard-inner');
+    const fcFront = document.getElementById('flashcard-front');
+    const fcBack = document.getElementById('flashcard-back');
+    const fcCounter = document.getElementById('fc-counter');
+    const fcPrev = document.getElementById('fc-prev');
+    const fcNext = document.getElementById('fc-next');
+
+    function initFlashcards() {
+      fcQueue = shuffleArray(ionData);
+      fcIndex = 0;
+      renderFlashcard();
+    }
+
+    function renderFlashcard() {
+      // Enforce flip reset smoothly or instantly if needed
+      if (isFlipped) {
+        isFlipped = false;
+        fcContainer.classList.remove('rotate-y-180');
+        // Wait for flip back before changing content to prevent visual bugs
+        setTimeout(() => setContent(), 200); 
+      } else {
+        setContent();
+      }
+
+      function setContent() {
+        const ion = fcQueue[fcIndex];
+        fcFront.innerHTML = ion.html;
+        fcBack.textContent = ion.display;
+        fcCounter.textContent = `${fcIndex + 1} / ${fcQueue.length}`;
+        
+        fcPrev.disabled = fcIndex === 0;
+        fcPrev.style.opacity = fcIndex === 0 ? "0.3" : "1";
+        fcPrev.style.cursor = fcIndex === 0 ? "not-allowed" : "pointer";
+      }
+    }
+
+    // Event Listeners for Flashcards
+    document.getElementById('flashcard-container').addEventListener('click', () => {
+      isFlipped = !isFlipped;
+      if (isFlipped) {
+        fcContainer.classList.add('rotate-y-180');
+      } else {
+        fcContainer.classList.remove('rotate-y-180');
+      }
+    });
+
+    fcPrev.addEventListener('click', (e) => {
+      e.stopPropagation(); // prevent flipping
+      if (fcIndex > 0) {
+        fcIndex--;
+        renderFlashcard();
+      }
+    });
+
+    fcNext.addEventListener('click', (e) => {
+      e.stopPropagation(); // prevent flipping
+      fcIndex++;
+      if (fcIndex >= fcQueue.length) {
+        fcQueue = shuffleArray(ionData); // reshuffle infinitely
+        fcIndex = 0;
+      }
+      renderFlashcard();
+    });
+
+
+    // ==========================================
+    // MULTIPLE CHOICE LOGIC
+    // ==========================================
+    let mcqQueue = [];
+    let currentMCQ = null;
+    let mcqAnswered = false;
+
+    const mcqPrompt = document.getElementById('mcq-prompt');
+    const mcqGrid = document.getElementById('mcq-grid');
+    const mcqNextContainer = document.getElementById('mcq-next-container');
+    const mcqNextBtn = document.getElementById('mcq-next');
+
+    function initMCQ() {
+      mcqQueue = shuffleArray(ionData);
+      nextMCQ();
+    }
+
+    function nextMCQ() {
+      mcqAnswered = false;
+      mcqNextContainer.classList.add('hidden');
+      mcqGrid.innerHTML = '';
+
+      if (mcqQueue.length === 0) {
+        mcqQueue = shuffleArray(ionData); // Reshuffle when empty
+      }
+
+      currentMCQ = mcqQueue.shift();
+
+      // Determine Question Type (0 = Give Formula ask Name, 1 = Give Name ask Formula)
+      const qType = Math.random() > 0.5 ? 0 : 1; 
+
+      if (qType === 0) {
+        mcqPrompt.innerHTML = `What is the name of <span class="text-indigo-400 text-4xl ml-2 font-black">${currentMCQ.html}</span> ?`;
+      } else {
+        mcqPrompt.innerHTML = `What is the formula for <span class="text-indigo-400">${currentMCQ.display}</span> ?`;
+      }
+
+      // Generate Options
+      let options = [currentMCQ];
+      let pool = shuffleArray(ionData).filter(i => i.display !== currentMCQ.display);
+      
+      options.push(pool.pop());
+      options.push(pool.pop());
+      options.push(pool.pop());
+      
+      options = shuffleArray(options); // shuffle placement
+
+      options.forEach(opt => {
+        const btn = document.createElement('button');
+        btn.className = "mcq-btn w-full bg-gray-800 hover:bg-gray-700 border-2 border-gray-700 text-white font-bold py-6 px-4 rounded-2xl text-xl flex items-center justify-center";
+        
+        if (qType === 0) {
+          btn.innerHTML = opt.display; // Provide names
+        } else {
+          btn.innerHTML = opt.html; // Provide formulas
+        }
+
+        btn.onclick = () => handleMCQClick(btn, opt);
+        mcqGrid.appendChild(btn);
+      });
+    }
+
+    function handleMCQClick(btn, selectedIon) {
+      if (mcqAnswered) return;
+      mcqAnswered = true;
+
+      const isCorrect = selectedIon.display === currentMCQ.display;
+      updateStats(isCorrect);
+
+      // Reveal Answers visually
+      const buttons = mcqGrid.querySelectorAll('button');
+      buttons.forEach(b => {
+        b.disabled = true;
+        b.classList.remove('hover:bg-gray-700');
+        
+        // Is this specific button the fundamentally correct answer?
+        const isThisCorrectBtn = (b.innerHTML === currentMCQ.display) || (b.innerHTML === currentMCQ.html);
+
+        if (isThisCorrectBtn) {
+          b.className = "mcq-btn w-full bg-green-500/20 border-2 border-green-500 text-green-400 font-bold py-6 px-4 rounded-2xl text-xl flex items-center justify-center shadow-[0_0_20px_rgba(34,197,94,0.3)]";
+        } else if (b === btn && !isCorrect) {
+          b.className = "mcq-btn w-full bg-red-500/20 border-2 border-red-500 text-red-400 font-bold py-6 px-4 rounded-2xl text-xl flex items-center justify-center";
+        } else {
+          b.className = "mcq-btn w-full bg-gray-900 border-2 border-gray-800 text-gray-500 font-bold py-6 px-4 rounded-2xl text-xl flex items-center justify-center opacity-50";
+        }
+      });
+
+      mcqNextContainer.classList.remove('hidden');
+    }
+
+    mcqNextBtn.addEventListener('click', nextMCQ);
+
+
+    // ==========================================
+    // FREE RESPONSE LOGIC (Now includes Ask Formula mode)
+    // ==========================================
+    let frqQueue = [];
+    let currentFRQ = null;
+    let frqAnswered = false;
+    let currentFRQType = 0; // 0 = Give Formula ask Name, 1 = Give Name ask Formula
+
+    const frqPromptLabel = document.getElementById('frq-prompt-label');
+    const frqPrompt = document.getElementById('frq-prompt');
+    const frqInput = document.getElementById('frq-input');
+    const frqFeedback = document.getElementById('frq-feedback');
+    const frqForm = document.getElementById('frq-form');
+    const frqHelpText = document.getElementById('frq-help-text');
+    const frqLivePreviewContainer = document.getElementById('frq-live-preview-container');
+    const frqLivePreview = document.getElementById('frq-live-preview');
+    
+    const frqSkipBtn = document.getElementById('frq-skip');
+    const frqSubmitBtn = document.getElementById('frq-submit');
+    const frqNextBtn = document.getElementById('frq-next');
+
+    function initFRQ() {
+      frqQueue = shuffleArray(ionData);
+      nextFRQ();
+    }
+
+    function nextFRQ() {
+      frqAnswered = false;
+      frqFeedback.classList.add('hidden');
+      frqInput.value = '';
+      frqInput.disabled = false;
+      frqLivePreviewContainer.classList.add('hidden');
+      frqLivePreview.innerHTML = '';
+      
+      // Reset input styles
+      frqInput.className = "w-full bg-gray-950 text-white rounded-xl px-6 py-4 border-2 border-gray-700 focus:outline-none focus:border-purple-500 text-lg input-glow transition-all";
+
+      frqSubmitBtn.classList.remove('hidden');
+      frqSkipBtn.classList.remove('hidden');
+      frqNextBtn.classList.add('hidden');
+
+      if (frqQueue.length === 0) {
+        frqQueue = shuffleArray(ionData);
+      }
+
+      currentFRQ = frqQueue.shift();
+
+      // Alternating quiz styles (0 = Ask Name from Formula, 1 = Ask Formula from Name)
+      currentFRQType = Math.random() > 0.5 ? 0 : 1;
+
+      if (currentFRQType === 0) {
+        frqPromptLabel.textContent = "Identify the Ion Name:";
+        frqPrompt.innerHTML = currentFRQ.html;
+        frqInput.placeholder = "Type the full name of the ion...";
+        frqHelpText.classList.add('hidden');
+      } else {
+        frqPromptLabel.textContent = "Type the Formula & Charge:";
+        frqPrompt.innerHTML = `<span class="text-indigo-400 font-extrabold text-4xl">${currentFRQ.display}</span>`;
+        frqInput.placeholder = "e.g. SO_4^2-";
+        frqHelpText.classList.remove('hidden');
+      }
+      
+      // Auto focus layout allowance
+      setTimeout(() => frqInput.focus(), 100);
+    }
+
+    // Input listener to display live formula formatting preview as user types
+    frqInput.addEventListener('input', () => {
+      if (currentFRQType === 1) { // Only show formula preview when typing a formula
+        const value = frqInput.value.trim();
+        if (value) {
+          frqLivePreviewContainer.classList.remove('hidden');
+          frqLivePreview.innerHTML = formatChemicalFormula(value);
+        } else {
+          frqLivePreviewContainer.classList.add('hidden');
+          frqLivePreview.innerHTML = '';
+        }
+      }
+    });
+
+    frqForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      if (frqAnswered) {
+        nextFRQ(); 
+        return;
+      }
+
+      const inputVal = frqInput.value.trim();
+      if (!inputVal) return;
+
+      frqAnswered = true;
+      let isCorrect = false;
+
+      if (currentFRQType === 0) {
+        // Checking Name
+        isCorrect = currentFRQ.names.includes(inputVal.toLowerCase());
+      } else {
+        // Checking Formula (case-insensitive structure comparison for friendly grading)
+        isCorrect = inputVal.toLowerCase() === currentFRQ.formula.toLowerCase();
+      }
+      
+      updateStats(isCorrect);
+      frqInput.disabled = true;
+      frqLivePreviewContainer.classList.add('hidden'); // Hide preview once graded
+
+      if (isCorrect) {
+        frqInput.className = "w-full bg-green-500/10 text-green-300 rounded-xl px-6 py-4 border-2 border-green-500 focus:outline-none text-lg transition-all";
+        frqFeedback.textContent = "✓ Correct!";
+        frqFeedback.className = "mt-2 text-sm font-bold text-green-400";
+      } else {
+        frqInput.className = "w-full bg-red-500/10 text-red-300 rounded-xl px-6 py-4 border-2 border-red-500 focus:outline-none text-lg transition-all";
+        
+        if (currentFRQType === 0) {
+          frqFeedback.innerHTML = `✗ Incorrect. The correct answer was <b>${currentFRQ.display}</b>.`;
+        } else {
+          frqFeedback.innerHTML = `✗ Incorrect. The correct formula was <code class="bg-gray-950 px-1.5 py-0.5 rounded text-indigo-300 border border-gray-800">${currentFRQ.formula}</code> (${currentFRQ.html})`;
+        }
+        
+        frqFeedback.className = "mt-2 text-sm font-bold text-red-400";
+      }
+
+      frqFeedback.classList.remove('hidden');
+      frqSubmitBtn.classList.add('hidden');
+      frqSkipBtn.classList.add('hidden');
+      frqNextBtn.classList.remove('hidden');
+      
+      frqNextBtn.focus();
+    });
+
+    frqSkipBtn.addEventListener('click', () => {
+      if (frqAnswered) return;
+      frqAnswered = true;
+      updateStats(false); // counts as miss for streak
+
+      frqInput.disabled = true;
+      frqLivePreviewContainer.classList.add('hidden');
+      frqInput.className = "w-full bg-red-500/10 text-red-300 rounded-xl px-6 py-4 border-2 border-red-500 opacity-70 focus:outline-none text-lg transition-all";
+      
+      if (currentFRQType === 0) {
+        frqFeedback.innerHTML = `Skipped. The correct answer was <b>${currentFRQ.display}</b>.`;
+      } else {
+        frqFeedback.innerHTML = `Skipped. The correct formula was <code class="bg-gray-950 px-1.5 py-0.5 rounded text-indigo-300 border border-gray-800">${currentFRQ.formula}</code> (${currentFRQ.html})`;
+      }
+      
+      frqFeedback.className = "mt-2 text-sm font-bold text-red-400";
+      
+      frqFeedback.classList.remove('hidden');
+      frqSubmitBtn.classList.add('hidden');
+      frqSkipBtn.classList.add('hidden');
+      frqNextBtn.classList.remove('hidden');
+      
+      frqNextBtn.focus();
+    });
+
+    frqNextBtn.addEventListener('click', nextFRQ);
+
+
+    // ==========================================
+    // TAB NAVIGATION
+    // ==========================================
+    function switchMode(mode) {
+      if (currentMode === mode) return;
+      currentMode = mode;
+      
+      // Style Tabs
+      const tabs = [
+        { id: 'tab-flashcards', m: 'flashcards' },
+        { id: 'tab-mcq', m: 'mcq' },
+        { id: 'tab-frq', m: 'frq' }
+      ];
+
+      tabs.forEach(t => {
+        const el = document.getElementById(t.id);
+        if (t.m === mode) {
+          el.className = "mode-tab px-4 py-1.5 text-sm font-bold rounded-lg transition-all bg-indigo-600 text-white shadow-md";
+        } else {
+          el.className = "mode-tab px-4 py-1.5 text-sm font-bold rounded-lg transition-all text-gray-400 hover:text-white hover:bg-gray-800";
+        }
+      });
+
+      // Hide all views first
+      viewFlashcards.classList.add('hidden');
+      viewFlashcards.classList.remove('opacity-100');
+      
+      viewMCQ.classList.add('hidden');
+      viewMCQ.classList.remove('opacity-100');
+      
+      viewFRQ.classList.add('hidden');
+      viewFRQ.classList.remove('opacity-100');
+
+      // Manage Stats Header visibility
+      if (mode === 'flashcards') {
+        statsContainer.classList.remove('opacity-100');
+        setTimeout(() => statsContainer.classList.add('hidden'), 300);
+      } else {
+        resetStats();
+        statsContainer.classList.remove('hidden');
+        setTimeout(() => statsContainer.classList.add('opacity-100'), 10);
+      }
+
+      // Show selected view and init logic
+      setTimeout(() => {
+        if (mode === 'flashcards') {
+          viewFlashcards.classList.remove('hidden');
+          setTimeout(() => viewFlashcards.classList.add('opacity-100'), 10);
+          initFlashcards();
+        } 
+        else if (mode === 'mcq') {
+          viewMCQ.classList.remove('hidden');
+          setTimeout(() => viewMCQ.classList.add('opacity-100'), 10);
+          initMCQ();
+        } 
+        else if (mode === 'frq') {
+          viewFRQ.classList.remove('hidden');
+          setTimeout(() => viewFRQ.classList.add('opacity-100'), 10);
+          initFRQ();
+        }
+      }, 50);
+    }
+
+    tabFlashcards.addEventListener('click', () => switchMode('flashcards'));
+    tabMCQ.addEventListener('click', () => switchMode('mcq'));
+    tabFRQ.addEventListener('click', () => switchMode('frq'));
+
+    // Boot App
+    initFlashcards();
+
+  </script>
+</body>
+</html>
