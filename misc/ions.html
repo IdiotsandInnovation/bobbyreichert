@@ -177,6 +177,15 @@
     <div id="view-frq" class="w-full max-w-2xl hidden flex flex-col gap-6 opacity-0 transition-opacity duration-500">
       
       <div class="bg-gray-900 border border-gray-800 rounded-3xl p-6 md:p-8 shadow-2xl">
+        
+        <!-- Direction Selector Toggle -->
+        <div class="flex items-center justify-center gap-2 mb-6 bg-gray-950 p-1.5 rounded-2xl border border-gray-800/80 max-w-md mx-auto">
+          <span class="text-xs text-gray-400 font-bold px-2">Quiz:</span>
+          <button id="frq-dir-both" type="button" class="frq-dir-btn px-3 py-1.5 text-xs font-bold rounded-xl transition-all bg-purple-600 text-white shadow-md">Both</button>
+          <button id="frq-dir-name" type="button" class="frq-dir-btn px-3 py-1.5 text-xs font-bold rounded-xl transition-all text-gray-400 hover:text-white hover:bg-gray-800">Formula → Name</button>
+          <button id="frq-dir-formula" type="button" class="frq-dir-btn px-3 py-1.5 text-xs font-bold rounded-xl transition-all text-gray-400 hover:text-white hover:bg-gray-800">Name → Formula</button>
+        </div>
+
         <div class="text-center mb-8">
           <div class="inline-block bg-purple-500/10 text-purple-400 px-3 py-1 rounded-full text-xs font-bold mb-4 border border-purple-500/20">
             Free Response 
@@ -246,31 +255,31 @@
     // DATA: POLYATOMIC IONS (Exact list of 25)
     // ==========================================
     const ionData = [
-      { names: ["ammonium"], display: "Ammonium", html: "NH<sub>4</sub><sup>+</sup>", formula: "NH_4^+" },
-      { names: ["nitrate"], display: "Nitrate", html: "NO<sub>3</sub><sup>-</sup>", formula: "NO_3^-" },
-      { names: ["nitrite"], display: "Nitrite", html: "NO<sub>2</sub><sup>-</sup>", formula: "NO_2^-" },
-      { names: ["sulfate"], display: "Sulfate", html: "SO<sub>4</sub><sup>2-</sup>", formula: "SO_4^2-" },
-      { names: ["sulfite"], display: "Sulfite", html: "SO<sub>3</sub><sup>2-</sup>", formula: "SO_3^2-" },
-      { names: ["phosphate"], display: "Phosphate", html: "PO<sub>4</sub><sup>3-</sup>", formula: "PO_4^3-" },
-      { names: ["phosphite"], display: "Phosphite", html: "PO<sub>3</sub><sup>3-</sup>", formula: "PO_3^3-" },
-      { names: ["hydroxide"], display: "Hydroxide", html: "OH<sup>-</sup>", formula: "OH^-" },
-      { names: ["carbonate"], display: "Carbonate", html: "CO<sub>3</sub><sup>2-</sup>", formula: "CO_3^2-" },
-      { names: ["hydronium"], display: "Hydronium", html: "H<sub>3</sub>O<sup>+</sup>", formula: "H_3O^+" },
-      { names: ["hydrogen carbonate", "bicarbonate"], display: "Hydrogen Carbonate / Bicarbonate", html: "HCO<sub>3</sub><sup>-</sup>", formula: "HCO_3^-" },
-      { names: ["hydrogen sulfate", "bisulfate"], display: "Hydrogen Sulfate / Bisulfate", html: "HSO<sub>4</sub><sup>-</sup>", formula: "HSO_4^-" },
-      { names: ["peroxide"], display: "Peroxide", html: "O<sub>2</sub><sup>2-</sup>", formula: "O_2^2-" },
-      { names: ["chromate"], display: "Chromate", html: "CrO<sub>4</sub><sup>2-</sup>", formula: "CrO_4^2-" },
-      { names: ["dichromate"], display: "Dichromate", html: "Cr<sub>2</sub>O<sub>7</sub><sup>2-</sup>", formula: "Cr_2O_7^2-" },
-      { names: ["permanganate"], display: "Permanganate", html: "MnO<sub>4</sub><sup>-</sup>", formula: "MnO_4^-" },
-      { names: ["hypochlorite"], display: "Hypochlorite", html: "ClO<sup>-</sup>", formula: "ClO^-" },
-      { names: ["chlorite"], display: "Chlorite", html: "ClO<sub>2</sub><sup>-</sup>", formula: "ClO_2^-" },
-      { names: ["chlorate"], display: "Chlorate", html: "ClO<sub>3</sub><sup>-</sup>", formula: "ClO_3^-" },
-      { names: ["perchlorate"], display: "Perchlorate", html: "ClO<sub>4</sub><sup>-</sup>", formula: "ClO_4^-" },
-      { names: ["cyanide"], display: "Cyanide", html: "CN<sup>-</sup>", formula: "CN^-" },
-      { names: ["azide"], display: "Azide", html: "N<sub>3</sub><sup>-</sup>", formula: "N_3^-" },
-      { names: ["acetate"], display: "Acetate", html: "C<sub>2</sub>H<sub>3</sub>O<sub>2</sub><sup>-</sup>", formula: "C_2H_3O_2^-" },
-      { names: ["mercury", "mercury(i)", "mercurous", "mercury i"], display: "Mercury(I) / Mercurous", html: "Hg<sub>2</sub><sup>2+</sup>", formula: "Hg_2^2+" },
-      { names: ["oxalate"], display: "Oxalate", html: "C<sub>2</sub>O<sub>4</sub><sup>2-</sup>", formula: "C_2O_4^2-" }
+      { names: ["ammonium"], display: "Chemical Name: Ammonium", html: "NH<sub>4</sub><sup>+</sup>", formula: "NH_4^+" },
+      { names: ["nitrate"], display: "Chemical Name: Nitrate", html: "NO<sub>3</sub><sup>-</sup>", formula: "NO_3^-" },
+      { names: ["nitrite"], display: "Chemical Name: Nitrite", html: "NO<sub>2</sub><sup>-</sup>", formula: "NO_2^-" },
+      { names: ["sulfate"], display: "Chemical Name: Sulfate", html: "SO<sub>4</sub><sup>2-</sup>", formula: "SO_4^2-" },
+      { names: ["sulfite"], display: "Chemical Name: Sulfite", html: "SO<sub>3</sub><sup>2-</sup>", formula: "SO_3^2-" },
+      { names: ["phosphate"], display: "Chemical Name: Phosphate", html: "PO<sub>4</sub><sup>3-</sup>", formula: "PO_4^3-" },
+      { names: ["phosphite"], display: "Chemical Name: Phosphite", html: "PO<sub>3</sub><sup>3-</sup>", formula: "PO_3^3-" },
+      { names: ["hydroxide"], display: "Chemical Name: Hydroxide", html: "OH<sup>-</sup>", formula: "OH^-" },
+      { names: ["carbonate"], display: "Chemical Name: Carbonate", html: "CO<sub>3</sub><sup>2-</sup>", formula: "CO_3^2-" },
+      { names: ["hydronium"], display: "Chemical Name: Hydronium", html: "H<sub>3</sub>O<sup>+</sup>", formula: "H_3O^+" },
+      { names: ["hydrogen carbonate", "bicarbonate"], display: "Chemical Name: Hydrogen Carbonate / Bicarbonate", html: "HCO<sub>3</sub><sup>-</sup>", formula: "HCO_3^-" },
+      { names: ["hydrogen sulfate", "bisulfate"], display: "Chemical Name: Hydrogen Sulfate / Bisulfate", html: "HSO<sub>4</sub><sup>-</sup>", formula: "HSO_4^-" },
+      { names: ["peroxide"], display: "Chemical Name: Peroxide", html: "O<sub>2</sub><sup>2-</sup>", formula: "O_2^2-" },
+      { names: ["chromate"], display: "Chemical Name: Chromate", html: "CrO<sub>4</sub><sup>2-</sup>", formula: "CrO_4^2-" },
+      { names: ["dichromate"], display: "Chemical Name: Dichromate", html: "Cr<sub>2</sub>O<sub>7</sub><sup>2-</sup>", formula: "Cr_2O_7^2-" },
+      { names: ["permanganate"], display: "Chemical Name: Permanganate", html: "MnO<sub>4</sub><sup>-</sup>", formula: "MnO_4^-" },
+      { names: ["hypochlorite"], display: "Chemical Name: Hypochlorite", html: "ClO<sup>-</sup>", formula: "ClO^-" },
+      { names: ["chlorite"], display: "Chemical Name: Chlorite", html: "ClO<sub>2</sub><sup>-</sup>", formula: "ClO_2^-" },
+      { names: ["chlorate"], display: "Chemical Name: Chlorate", html: "ClO<sub>3</sub><sup>-</sup>", formula: "ClO_3^-" },
+      { names: ["perchlorate"], display: "Chemical Name: Perchlorate", html: "ClO<sub>4</sub><sup>-</sup>", formula: "ClO_4^-" },
+      { names: ["cyanide"], display: "Chemical Name: Cyanide", html: "CN<sup>-</sup>", formula: "CN^-" },
+      { names: ["azide"], display: "Chemical Name: Azide", html: "N<sub>3</sub><sup>-</sup>", formula: "N_3^-" },
+      { names: ["acetate"], display: "Chemical Name: Acetate", html: "C<sub>2</sub>H<sub>3</sub>O<sub>2</sub><sup>-</sup>", formula: "C_2H_3O_2^-" },
+      { names: ["mercury", "mercury(i)", "mercurous", "mercury i"], display: "Chemical Name: Mercury(I) / Mercurous", html: "Hg<sub>2</sub><sup>2+</sup>", formula: "Hg_2^2+" },
+      { names: ["oxalate"], display: "Chemical Name: Oxalate", html: "C<sub>2</sub>O<sub>4</sub><sup>2-</sup>", formula: "C_2O_4^2-" }
     ];
 
     // ==========================================
@@ -501,12 +510,13 @@
 
 
     // ==========================================
-    // FREE RESPONSE LOGIC (Now includes Ask Formula mode)
+    // FREE RESPONSE LOGIC
     // ==========================================
     let frqQueue = [];
     let currentFRQ = null;
     let frqAnswered = false;
     let currentFRQType = 0; // 0 = Give Formula ask Name, 1 = Give Name ask Formula
+    let frqDirection = 'both'; // 'both', 'name' (Formula -> Name), 'formula' (Name -> Formula)
 
     const frqPromptLabel = document.getElementById('frq-prompt-label');
     const frqPrompt = document.getElementById('frq-prompt');
@@ -520,6 +530,11 @@
     const frqSkipBtn = document.getElementById('frq-skip');
     const frqSubmitBtn = document.getElementById('frq-submit');
     const frqNextBtn = document.getElementById('frq-next');
+
+    // Direction Select Buttons
+    const frqDirBoth = document.getElementById('frq-dir-both');
+    const frqDirName = document.getElementById('frq-dir-name');
+    const frqDirFormula = document.getElementById('frq-dir-formula');
 
     function initFRQ() {
       frqQueue = shuffleArray(ionData);
@@ -547,8 +562,14 @@
 
       currentFRQ = frqQueue.shift();
 
-      // Alternating quiz styles (0 = Ask Name from Formula, 1 = Ask Formula from Name)
-      currentFRQType = Math.random() > 0.5 ? 0 : 1;
+      // Set current FRQ direction style based on user settings
+      if (frqDirection === 'name') {
+        currentFRQType = 0;
+      } else if (frqDirection === 'formula') {
+        currentFRQType = 1;
+      } else {
+        currentFRQType = Math.random() > 0.5 ? 0 : 1;
+      }
 
       if (currentFRQType === 0) {
         frqPromptLabel.textContent = "Identify the Ion Name:";
@@ -565,6 +586,39 @@
       // Auto focus layout allowance
       setTimeout(() => frqInput.focus(), 100);
     }
+
+    // Helper to toggle active button styles for the FRQ direction bar
+    function updateFrqDirStyles() {
+      const btns = [
+        { el: frqDirBoth, val: 'both' },
+        { el: frqDirName, val: 'name' },
+        { el: frqDirFormula, val: 'formula' }
+      ];
+      btns.forEach(b => {
+        if (frqDirection === b.val) {
+          b.el.className = "frq-dir-btn px-3 py-1.5 text-xs font-bold rounded-xl transition-all bg-purple-600 text-white shadow-md";
+        } else {
+          b.el.className = "frq-dir-btn px-3 py-1.5 text-xs font-bold rounded-xl transition-all text-gray-400 hover:text-white hover:bg-gray-800";
+        }
+      });
+    }
+
+    // Listeners for Direction selector
+    frqDirBoth.addEventListener('click', () => {
+      frqDirection = 'both';
+      updateFrqDirStyles();
+      nextFRQ();
+    });
+    frqDirName.addEventListener('click', () => {
+      frqDirection = 'name';
+      updateFrqDirStyles();
+      nextFRQ();
+    });
+    frqDirFormula.addEventListener('click', () => {
+      frqDirection = 'formula';
+      updateFrqDirStyles();
+      nextFRQ();
+    });
 
     // Input listener to display live formula formatting preview as user types
     frqInput.addEventListener('input', () => {
@@ -594,8 +648,9 @@
       let isCorrect = false;
 
       if (currentFRQType === 0) {
-        // Checking Name
-        isCorrect = currentFRQ.names.includes(inputVal.toLowerCase());
+        // Checking Name (matching lowercase name variations)
+        const simplifiedNames = currentFRQ.names.map(name => name.replace("chemical name: ", "").toLowerCase());
+        isCorrect = simplifiedNames.includes(inputVal.toLowerCase());
       } else {
         // Checking Formula (case-insensitive structure comparison for friendly grading)
         isCorrect = inputVal.toLowerCase() === currentFRQ.formula.toLowerCase();
@@ -613,7 +668,7 @@
         frqInput.className = "w-full bg-red-500/10 text-red-300 rounded-xl px-6 py-4 border-2 border-red-500 focus:outline-none text-lg transition-all";
         
         if (currentFRQType === 0) {
-          frqFeedback.innerHTML = `✗ Incorrect. The correct answer was <b>${currentFRQ.display}</b>.`;
+          frqFeedback.innerHTML = `✗ Incorrect. The correct answer was <b>${currentFRQ.display.replace("Chemical Name: ", "")}</b>.`;
         } else {
           frqFeedback.innerHTML = `✗ Incorrect. The correct formula was <code class="bg-gray-950 px-1.5 py-0.5 rounded text-indigo-300 border border-gray-800">${currentFRQ.formula}</code> (${currentFRQ.html})`;
         }
@@ -639,7 +694,7 @@
       frqInput.className = "w-full bg-red-500/10 text-red-300 rounded-xl px-6 py-4 border-2 border-red-500 opacity-70 focus:outline-none text-lg transition-all";
       
       if (currentFRQType === 0) {
-        frqFeedback.innerHTML = `Skipped. The correct answer was <b>${currentFRQ.display}</b>.`;
+        frqFeedback.innerHTML = `Skipped. The correct answer was <b>${currentFRQ.display.replace("Chemical Name: ", "")}</b>.`;
       } else {
         frqFeedback.innerHTML = `Skipped. The correct formula was <code class="bg-gray-950 px-1.5 py-0.5 rounded text-indigo-300 border border-gray-800">${currentFRQ.formula}</code> (${currentFRQ.html})`;
       }
