@@ -143,6 +143,17 @@
         const loginSec = document.getElementById('login-section');
         const dashSec = document.getElementById('admin-dashboard');
 
+        // Safely escapes raw HTML so it renders text in the UI without breaking layout
+        function escapeHTML(str) {
+            if (str == null) return "";
+            return String(str)
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
         // Elegant Toast System (Replacing browser Alerts)
         function showToast(message, type = 'error') {
             const container = document.getElementById('toast-container');
@@ -276,25 +287,38 @@
                 posts.sort((a,b) => (b.timestamp?.seconds || 0) - (a.timestamp?.seconds || 0));
 
                 posts.forEach(p => {
-                    const cleanTitle = (p.title || "").replace(/'/g, "\\'");
-                    const cleanContent = (p.content || "").replace(/`/g, "\\`").replace(/'/g, "\\'");
-                    
                     const el = document.createElement('div');
                     el.className = "bg-white p-4 rounded-xl shadow-sm border flex justify-between items-center gap-4";
+                    
+                    // Secure display parsing
+                    const safeTitle = escapeHTML(p.title || "Untitled");
+                    const safeContent = escapeHTML(p.content || "");
+                    
                     // Note: content-wrapper class handles the text overflow
                     el.innerHTML = `
                         <div class="flex-1 content-wrapper">
                             <div class="flex items-center gap-2 mb-1 flex-wrap">
-                                <span class="bg-gray-100 text-gray-700 text-xs font-mono font-bold px-2 py-0.5 rounded">ID: ${p.id}</span>
-                                <p class="font-bold text-gray-800">${p.title || "Untitled"}</p>
+                                <span class="bg-gray-100 text-gray-700 text-xs font-mono font-bold px-2 py-0.5 rounded">ID: ${escapeHTML(p.id)}</span>
+                                <p class="font-bold text-gray-800">${safeTitle}</p>
                             </div>
-                            <p class="text-sm text-gray-500 whitespace-pre-wrap">${p.content || ""}</p>
+                            <p class="text-sm text-gray-500 whitespace-pre-wrap">${safeContent}</p>
                         </div>
                         <div class="flex flex-col sm:flex-row gap-2 shrink-0">
-                            <button onclick="editPost('${p.id}', '${cleanTitle}', \`${cleanContent}\`)" class="text-blue-600 font-bold hover:underline">Edit</button>
-                            <button type="button" onclick="deleteEntry('blog_posts', '${p.id}')" class="text-red-600 font-bold hover:underline">Delete</button>
+                            <!-- Using classes instead of inline onclicks to attach complex events cleanly -->
+                            <button type="button" class="edit-btn text-blue-600 font-bold hover:underline">Edit</button>
+                            <button type="button" class="delete-btn text-red-600 font-bold hover:underline">Delete</button>
                         </div>
                     `;
+                    
+                    // Event Listeners ensure raw quotes, backticks, and HTML don't break string boundaries
+                    el.querySelector('.edit-btn').addEventListener('click', () => {
+                        window.editPost(p.id, p.title || "", p.content || "");
+                    });
+                    
+                    el.querySelector('.delete-btn').addEventListener('click', () => {
+                        window.deleteEntry('blog_posts', p.id);
+                    });
+                    
                     list.appendChild(el);
                 });
             });
@@ -307,24 +331,35 @@
                 lyrics.sort((a,b) => (b.date || "").localeCompare(a.date || ""));
 
                 lyrics.forEach(l => {
-                    const cleanSong = (l.song || "").replace(/'/g, "\\'");
-                    const cleanLyric = (l.lyric || "").replace(/`/g, "\\`").replace(/'/g, "\\'");
-                    
                     const el = document.createElement('div');
                     el.className = "bg-white p-4 rounded-xl shadow-sm border flex justify-between items-center gap-4";
+                    
+                    // Secure display parsing
+                    const safeSong = escapeHTML(l.song || "Unknown");
+                    const safeLyric = escapeHTML(l.lyric || "");
+
                     el.innerHTML = `
                         <div class="flex-1 content-wrapper">
                             <div class="flex items-center gap-2 mb-1 flex-wrap">
-                                <span class="bg-indigo-100 text-indigo-700 text-xs font-bold px-2 py-0.5 rounded">${l.date}</span>
-                                <span class="font-bold text-gray-800">${l.song || "Unknown"}</span>
+                                <span class="bg-indigo-100 text-indigo-700 text-xs font-bold px-2 py-0.5 rounded">${escapeHTML(l.date || "")}</span>
+                                <span class="font-bold text-gray-800">${safeSong}</span>
                             </div>
-                            <p class="text-sm text-gray-600 italic">"${l.lyric || ""}"</p>
+                            <p class="text-sm text-gray-600 italic">"${safeLyric}"</p>
                         </div>
                         <div class="flex flex-col sm:flex-row gap-2 shrink-0">
-                            <button onclick="editLyric('${l.id}', '${l.date}', '${cleanSong}', \`${cleanLyric}\`)" class="text-blue-600 font-bold hover:underline">Edit</button>
-                            <button type="button" onclick="deleteEntry('lyric_of_the_day', '${l.id}')" class="text-red-600 font-bold hover:underline">Delete</button>
+                            <button type="button" class="edit-btn text-blue-600 font-bold hover:underline">Edit</button>
+                            <button type="button" class="delete-btn text-red-600 font-bold hover:underline">Delete</button>
                         </div>
                     `;
+                    
+                    el.querySelector('.edit-btn').addEventListener('click', () => {
+                        window.editLyric(l.id, l.date || "", l.song || "", l.lyric || "");
+                    });
+                    
+                    el.querySelector('.delete-btn').addEventListener('click', () => {
+                        window.deleteEntry('lyric_of_the_day', l.id);
+                    });
+                    
                     list.appendChild(el);
                 });
             });
@@ -340,14 +375,24 @@
                 comments.forEach(c => {
                     const el = document.createElement('div');
                     el.className = "bg-white p-4 rounded-xl shadow-sm border flex justify-between items-start gap-4";
+                    
+                    const safeName = escapeHTML(c.name || "Anonymous");
+                    const safeText = escapeHTML(c.text || "");
+                    const dateStr = c.timestamp ? escapeHTML(c.timestamp.toDate().toLocaleDateString()) : 'Just now';
+
                     el.innerHTML = `
                         <div class="flex-1 content-wrapper">
-                            <span class="font-bold text-gray-800 text-sm">${c.name || "Anonymous"}:</span>
-                            <span class="text-gray-600 text-sm whitespace-pre-wrap">${c.text || ""}</span>
-                            <div class="text-xs text-gray-400 mt-1">${c.timestamp ? c.timestamp.toDate().toLocaleDateString() : 'Just now'}</div>
+                            <span class="font-bold text-gray-800 text-sm">${safeName}:</span>
+                            <span class="text-gray-600 text-sm whitespace-pre-wrap">${safeText}</span>
+                            <div class="text-xs text-gray-400 mt-1">${dateStr}</div>
                         </div>
-                        <button type="button" onclick="deleteEntry('blog_comments', '${c.id}')" class="text-red-500 font-bold hover:underline shrink-0">Delete</button>
+                        <button type="button" class="delete-btn text-red-500 font-bold hover:underline shrink-0">Delete</button>
                     `;
+                    
+                    el.querySelector('.delete-btn').addEventListener('click', () => {
+                        window.deleteEntry('blog_comments', c.id);
+                    });
+
                     list.appendChild(el);
                 });
             });

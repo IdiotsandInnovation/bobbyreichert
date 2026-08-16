@@ -12,6 +12,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bobby Reichert | Blog</title>
+    
     <!-- Load Tailwind CSS from CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Configure Tailwind - Dark mode ENABLED -->
@@ -31,6 +32,7 @@
             }
         }
     </script>
+    
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
         body { font-family: 'Inter', sans-serif; }
@@ -152,12 +154,6 @@
                     </form>
                     
                     <div id="login-error" class="mt-4 text-red-500 font-medium text-sm hidden bg-red-50 dark:bg-red-900/30 p-3 rounded-lg border border-red-200 dark:border-red-800"></div>
-<!--
-                    <div class="mt-6 text-sm">
-                        <span id="toggle-msg" class="text-gray-600 dark:text-gray-400">Don't have an account?</span>
-                        <button id="auth-toggle-btn" class="text-primary dark:text-primary-dark font-semibold ml-1 underline hover:opacity-80">Sign Up</button>
-                    </div>
-                    -->
                 </div>
             </div>
 
@@ -281,34 +277,85 @@
     const COMMENTS_COLLECTION = 'blog_comments';
     const BLOG_POSTS_COLLECTION = 'blog_posts';
 
-    // --- ENHANCED PARSER (Checks for HTML and Parses Links / Code Blocks) ---
-    function parseAndSanitizeText(rawText) {
+    // --- ENHANCED PARSER (Safely Handles HTML, Links, and Code Blocks) ---
+    function parseAndSanitizeText(rawText, allowHTML = false) {
       if (!rawText) return '';
 
-      // 1. Force escape all raw HTML elements to prevent arbitrary HTML execution (Anti-XSS Security Guard)
-      let text = rawText
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
+      // Normalize line breaks
+      let text = rawText.replace(/\r\n/g, '\n');
 
-      // 2. Parse Markdown-style Multi-line Code Blocks: ```code```
+      // 1. Initial sanitization / escaping
+      if (!allowHTML) {
+        // Strict Mode (Comments): Escape all raw HTML elements to prevent arbitrary execution
+        text = text
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#039;");
+      } else {
+        // Relaxed Mode (Blog Posts): Strip out dangerous tags but allow visual HTML
+        text = text.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
+        // Strip inline events (onclick, onload, etc.) and javascript: protocols
+        text = text.replace(/ on\w+="[^"]*"/gi, '');
+        text = text.replace(/ on\w+='[^']*'/gi, '');
+        text = text.replace(/ on\w+=\S+/gi, '');
+        text = text.replace(/javascript:/gi, 'about:blank');
+      }
+
+      // 2. Extract and protect Markdown-style code blocks BEFORE linking URLs or fixing newlines
+      const codeBlocks = [];
+      const timestamp = Date.now();
+
+      // Multi-line Code Blocks: ```code```
       text = text.replace(/```([\s\S]+?)```/g, function(match, codeBody) {
-        return `<pre class="bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200 p-3 my-3 rounded-lg overflow-x-auto border border-gray-200 dark:border-gray-700 font-mono text-sm leading-relaxed"><code>${codeBody.trim()}</code></pre>`;
+        const placeholder = `__CODE_BLOCK_${timestamp}_${codeBlocks.length}__`;
+        // If HTML is allowed globally, we still must escape it inside code blocks to display the raw tags
+        let safeCode = allowHTML ? codeBody.replace(/</g, "&lt;").replace(/>/g, "&gt;") : codeBody;
+        codeBlocks.push(`<pre class="bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200 p-3 my-3 rounded-lg overflow-x-auto border border-gray-200 dark:border-gray-700 font-mono text-sm leading-relaxed"><code>${safeCode.trim()}</code></pre>`);
+        return placeholder;
       });
 
-      // 3. Parse Markdown-style Inline Code Tags: `code`
-      text = text.replace(/`([^`\n]+?)`/g, '<code class="bg-gray-100 dark:bg-gray-900 text-pink-600 dark:text-pink-400 px-1.5 py-0.5 rounded font-mono text-sm border border-gray-200 dark:border-gray-700">$1</code>');
+      // Inline Code Tags: `code`
+      text = text.replace(/`([^`\n]+?)`/g, function(match, codeBody) {
+        const placeholder = `__CODE_BLOCK_${timestamp}_${codeBlocks.length}__`;
+        let safeCode = allowHTML ? codeBody.replace(/</g, "&lt;").replace(/>/g, "&gt;") : codeBody;
+        codeBlocks.push(`<code class="bg-gray-100 dark:bg-gray-900 text-pink-600 dark:text-pink-400 px-1.5 py-0.5 rounded font-mono text-sm border border-gray-200 dark:border-gray-700">${safeCode}</code>`);
+        return placeholder;
+      });
 
-      // 4. Auto-parse Safe Clickable Links (http/https links)
+      // 3. Auto-parse Safe Clickable Links (http/https links)
+      // To avoid corrupting existing HTML (like `<a href="https://...">`), we isolate tags from text.
+      let parts = text.split(/(<\/?[^>]+>)/g);
       const urlRegex = /(\b(https?):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig;
-      text = text.replace(urlRegex, function(url) {
-        return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-primary dark:text-primary-dark underline hover:opacity-80 break-all">${url}</a>`;
-      });
+      
+      let inAnchor = false;
+      for (let i = 0; i < parts.length; i++) {
+        if (i % 2 !== 0) { 
+          // Odd indices are HTML tags
+          if (/^<a\b/i.test(parts[i])) inAnchor = true;
+          else if (/^<\/a>/i.test(parts[i])) inAnchor = false;
+        } else if (!inAnchor) {
+          // Even indices are text nodes. Only link if not inside an anchor tag
+          parts[i] = parts[i].replace(urlRegex, function(url) {
+            return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-primary dark:text-primary-dark underline hover:opacity-80 break-all">${url}</a>`;
+          });
+        }
+      }
+      text = parts.join('');
 
-      // 5. Convert leftover raw carriage returns to standard HTML line breaks
+      // 4. Convert leftover raw carriage returns to standard HTML line breaks
       text = text.replace(/\n/g, '<br>');
+      if (allowHTML) {
+         // Cleanup: Prevent double spacing created by <br> being placed right next to block elements
+         text = text.replace(/(<\/?(?:div|p|h[1-6]|ul|ol|li|section|article|header|footer|table|tbody|tr|td|blockquote)[^>]*>)<br>/gi, '$1');
+         text = text.replace(/<br>(<\/?(?:div|p|h[1-6]|ul|ol|li|section|article|header|footer|table|tbody|tr|td|blockquote)[^>]*>)/gi, '$1');
+      }
+
+      // 5. Restore protected code blocks
+      codeBlocks.forEach((block, index) => {
+        text = text.replace(`__CODE_BLOCK_${timestamp}_${index}__`, block);
+      });
 
       return text;
     }
@@ -359,9 +406,9 @@
                 const section = document.createElement('section');
                 section.className = "mt-8 p-6 bg-gray-50 dark:bg-gray-700 rounded-lg border border-solid border-gray-200 dark:border-gray-600 shadow-sm transition-all hover:shadow-md";
                 
-                // Title and Post Content run securely through our robust new Parser & Sanitizer
-                const cleanTitle = parseAndSanitizeText(post.title || 'Untitled');
-                const parsedContent = parseAndSanitizeText(post.content || '');
+                // Allow HTML (true) for admin-authored blog posts to render embedded formatting correctly
+                const cleanTitle = parseAndSanitizeText(post.title || 'Untitled', true);
+                const parsedContent = parseAndSanitizeText(post.content || '', true);
 
                 section.innerHTML = `
                     <h2 class="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">${cleanTitle}</h2>
@@ -403,9 +450,9 @@
       comments.forEach(comment => {
         const dateString = formatTimestamp(comment.timestamp);
         
-        // Pass user comments through the new parser to render links and format code snippets securely
-        const userName = parseAndSanitizeText(comment.name || 'Anonymous');
-        const commentText = parseAndSanitizeText(comment.text || '');
+        // Pass user comments through strict mode (false) to prevent any script injections / HTML 
+        const userName = parseAndSanitizeText(comment.name || 'Anonymous', false);
+        const commentText = parseAndSanitizeText(comment.text || '', false);
 
         const el = document.createElement('div');
         el.className = 'p-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm transition duration-150 hover:shadow-md';
@@ -435,7 +482,8 @@
             
             const userIdentifier = user.email || 'Verified User';
             if (userIdDisplay) {
-                userIdDisplay.innerHTML = `✅ Signed in as: <span class="font-bold break-all">${parseAndSanitizeText(userIdentifier)}</span>`;
+                // Strict mode (false) on user identifiers to avoid rendering injected usernames
+                userIdDisplay.innerHTML = `✅ Signed in as: <span class="font-bold break-all">${parseAndSanitizeText(userIdentifier, false)}</span>`;
             }
             
             if (submitButton) {
