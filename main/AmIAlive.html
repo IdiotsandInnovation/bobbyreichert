@@ -6,12 +6,10 @@
     <title>Am I Alive?</title>
     <style>
         :root {
-            --bg-color: #f4f4f9;
-            --card-bg: #ffffff;
-            --text-main: #333333;
-            --text-sub: #666666;
+            --bg-color: #ffffff;
+            --text-main: #000000;
+            --text-sub: #000000;
             --text-muted: #888888;
-            --shadow: 0 10px 25px rgba(0,0,0,0.08);
         }
 
         * {
@@ -22,56 +20,44 @@
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             display: flex;
             flex-direction: column;
-            align-items: center;
-            justify-content: center;
+            align-items: flex-start;
+            justify-content: flex-start;
             min-height: 100vh;
             margin: 0;
-            padding: 1.5rem;
+            padding: clamp(2rem, 5vw, 5rem);
             background-color: var(--bg-color);
             color: var(--text-main);
             width: 100vw;
             overflow-x: hidden;
         }
 
-        .card {
-            background: var(--card-bg);
-            width: 100%;
-            max-width: 650px;
-            padding: clamp(1.5rem, 5vw, 3.5rem);
-            border-radius: 16px;
-            box-shadow: var(--shadow);
-            text-align: center;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-
-        .card:hover {
-            box-shadow: 0 15px 35px rgba(0,0,0,0.12);
-        }
-
         h1 {
             margin-top: 0;
-            font-size: clamp(1.2rem, 3vw, 1.8rem);
+            margin-bottom: 1.5rem;
+            font-size: clamp(1.75rem, 4vw, 3rem);
             color: var(--text-sub);
             letter-spacing: -0.02em;
+            text-align: left;
         }
 
         #status {
-            font-size: clamp(1.25rem, 3.5vw, 2.25rem);
+            font-size: clamp(2rem, 5vw, 4.5rem);
             font-weight: 700;
-            margin: 1.25rem 0;
-            padding: 0.75rem 1.25rem;
+            margin-bottom: 1rem;
+            padding: 1rem 2rem;
             border-radius: 8px;
             display: inline-block;
             word-break: break-word;
             max-width: 100%;
             line-height: 1.3;
+            text-align: left;
         }
 
         #details {
-            font-size: clamp(0.85rem, 2vw, 1rem);
+            font-size: clamp(1rem, 2.5vw, 1.75rem);
             color: var(--text-muted);
-            margin-top: 0.5rem;
             word-break: break-word;
+            text-align: left;
         }
         
         /* Status Colors */
@@ -84,11 +70,9 @@
 </head>
 <body>
 
-    <div class="card">
-        <h1>Am I Alive?</h1>
-        <div id="status" class="gray">Checking...</div>
-        <div id="details">Connecting to database...</div>
-    </div>
+    <h1>Am I Alive?</h1>
+    <div id="status" class="gray">Checking...</div>
+    <div id="details">Connecting to database...</div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
