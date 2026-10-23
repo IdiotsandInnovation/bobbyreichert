@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-black text-slate-100" id="html-root">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BRMP3 Metadata Editor</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- jsmediatags for client-side ID3 reading -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jsmediatags/3.9.5/jsmediatags.min.js"></script>
+  <!-- browser-id3-writer for embedding ID3v2 tags into MP3 files -->
+  <script src="https://cdn.jsdelivr.net/npm/browser-id3-writer@4.4.0/dist/browser-id3-writer.min.js"></script>
+  <style>
+    /* Custom Scrollbar Styling */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: inherit;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(128, 128, 128, 0.4);
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(128, 128, 128, 0.7);
+    }
+    .user-select-none {
+      user-select: none;
+    }
+  </style>
+</head>
+<body class="h-full flex flex-col font-sans antialiased overflow-hidden select-none bg-black text-slate-100" id="body-root">
+
+  <!-- Top Navigation Header -->
+  <header id="app-header" class="bg-black border-b border-white/35 px-4 py-2.5 flex items-center justify-between shrink-0 transition-colors duration-200 text-white">
+    <div class="flex items-center gap-3">
+      <div>
+        <h1 id="app-title" class="font-bold tracking-tight text-white text-sm transition-colors duration-200">BRMP3</h1>
+      </div>
+    </div>
+
+    <!-- Action Bar / Quick Tools -->
+    <div class="flex items-center gap-2">
+      <label id="lbl-add-files" for="file-input" class="cursor-pointer bg-transparent hover:opacity-80 text-white text-xs px-3 py-1.5 rounded font-medium transition flex items-center gap-1.5 border-0">
+        <i class="fa-solid fa-folder-open text-emerald-400"></i> Add Files
+      </label>
+      <input type="file" id="file-input" class="hidden" multiple accept="audio/*,.mp3,.flac,.m4a,.ogg,.wav">
+
+      <label id="lbl-open-folder" for="folder-input" class="cursor-pointer bg-transparent hover:opacity-80 text-white text-xs px-3 py-1.5 rounded font-medium transition flex items-center gap-1.5 border-0">
+        <i class="fa-solid fa-folder-tree text-indigo-400"></i> Open Folder
+      </label>
+      <input type="file" id="folder-input" class="hidden" webkitdirectory directory multiple>
+
+      <div id="div-line-1" class="h-5 w-[1px] bg-white/35 mx-1"></div>
+
+      <button id="btn-save" class="bg-white hover:bg-neutral-200 text-black text-xs px-3 py-1.5 rounded font-semibold transition flex items-center gap-1.5 shadow-sm">
+        <i class="fa-solid fa-download"></i> Save & Export
+      </button>
+
+      <div id="div-line-2" class="h-5 w-[1px] bg-white/35 mx-1"></div>
+
+      <button id="btn-autonumber" class="tool-btn bg-black hover:opacity-80 border border-white/35 text-white text-xs px-2.5 py-1.5 rounded transition" title="Auto Numbering Wizard">
+        <i class="fa-solid fa-list-ol"></i>
+      </button>
+      <button id="btn-case" class="tool-btn bg-black hover:opacity-80 border border-white/35 text-white text-xs px-2.5 py-1.5 rounded transition" title="Case Conversion">
+        <i class="fa-solid fa-font"></i>
+      </button>
+      <button id="btn-theme-toggle" class="tool-btn bg-black hover:opacity-80 border border-white/35 text-white text-xs px-2.5 py-1.5 rounded transition" title="Toggle Light/Dark Theme">
+        <i id="theme-icon" class="fa-solid fa-sun"></i>
+      </button>
+      <button id="btn-clear-all" class="tool-btn bg-black hover:opacity-80 border border-white/35 text-rose-400 text-xs px-2.5 py-1.5 rounded transition" title="Clear All Tracks">
+        <i class="fa-solid fa-trash-can"></i>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Workspace (Sidebar + Table) -->
+  <div class="flex-1 flex overflow-hidden">
+
+    <!-- Left Sidebar Tag Panel -->
+    <aside id="app-sidebar" class="w-80 bg-black border-r border-white/35 flex flex-col shrink-0 overflow-y-auto p-4 gap-4 transition-colors duration-200 text-white">
+
+      <!-- Cover Art Section -->
+      <div class="flex flex-col items-center">
+        <div id="cover-art-container" class="relative group w-36 h-36 bg-black border-2 border-dashed border-white/35 rounded flex flex-col items-center justify-center overflow-hidden cursor-pointer hover:border-white transition shadow-inner">
+          <img id="cover-art-img" class="w-full h-full object-cover hidden" alt="Album Cover">
+          <div id="cover-art-placeholder" class="flex flex-col items-center text-neutral-400 gap-1 p-2 text-center">
+            <i class="fa fa-plus" aria-hidden="true"></i>
+            <span class="text-[10px]">Click or Drag Cover Art</span>
+          </div>
+          <input type="file" id="cover-input" class="hidden" accept="image/*">
+        </div>
+      </div>
+
+      <!-- Fields Form -->
+      <div class="flex flex-col gap-2.5 text-xs">
+        <div>
+          <label class="text-neutral-400 text-[11px] font-medium block mb-1">Title</label>
+          <input type="text" id="tag-title" class="tag-input w-full bg-black border border-white/35 text-white rounded px-2.5 py-1.5 outline-none transition" placeholder="&lt;keep&gt;">
+        </div>
+
+        <div>
+          <label class="text-neutral-400 text-[11px] font-medium block mb-1">Artist</label>
+          <input type="text" id="tag-artist" class="tag-input w-full bg-black border border-white/35 text-white rounded px-2.5 py-1.5 outline-none transition" placeholder="&lt;keep&gt;">
+        </div>
+
+        <div>
+          <label class="text-neutral-400 text-[11px] font-medium block mb-1">Album</label>
+          <input type="text" id="tag-album" class="tag-input w-full bg-black border border-white/35 text-white rounded px-2.5 py-1.5 outline-none transition" placeholder="&lt;keep&gt;">
+        </div>
+
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="text-neutral-400 text-[11px] font-medium block mb-1">Track #</label>
+            <input type="text" id="tag-track" class="tag-input w-full bg-black border border-white/35 text-white rounded px-2.5 py-1.5 outline-none transition" placeholder="&lt;keep&gt;">
+          </div>
+          <div>
+            <label class="text-neutral-400 text-[11px] font-medium block mb-1">Year</label>
+            <input type="text" id="tag-year" class="tag-input w-full bg-black border border-white/35 text-white rounded px-2.5 py-1.5 outline-none transition" placeholder="&lt;keep&gt;">
+          </div>
+        </div>
+
+        <div>
+          <label class="text-neutral-400 text-[11px] font-medium block mb-1">Genre</label>
+          <input type="text" id="tag-genre" class="tag-input w-full bg-black border border-white/35 text-white rounded px-2.5 py-1.5 outline-none transition" placeholder="&lt;keep&gt;">
+        </div>
+
+        <div>
+          <label class="text-neutral-400 text-[11px] font-medium block mb-1">Comment</label>
+          <textarea id="tag-comment" rows="2" class="tag-input w-full bg-black border border-white/35 text-white rounded px-2.5 py-1.5 outline-none transition resize-none" placeholder="&lt;keep&gt;"></textarea>
+        </div>
+
+        <button id="btn-apply-tags" class="mt-2 w-full bg-neutral-900 hover:bg-neutral-800 border border-white/35 text-white font-semibold py-2 rounded transition flex items-center justify-center gap-2 shadow">
+          <i class="fa-solid fa-check"></i> Apply Tags to Selection
+        </button>
+      </div>
+    </aside>
+
+    <!-- Right File List Area -->
+    <main id="app-main" class="flex-1 flex flex-col bg-black overflow-hidden relative transition-colors duration-200 text-white">
+      <!-- Search & Filter Bar -->
+      <div id="search-bar-container" class="bg-black border-b border-white/35 px-4 py-2 flex items-center justify-between gap-4 transition-colors duration-200">
+        <div class="relative flex-1 max-w-md">
+          <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-neutral-400 text-xs"></i>
+          <input type="text" id="search-input" placeholder="Filter files by name, artist, album..." class="w-full bg-black border border-white/35 text-xs rounded-full pl-8 pr-4 py-1.5 text-white outline-none">
+        </div>
+
+        <div class="text-xs text-neutral-400 flex items-center gap-3 font-mono">
+          <span id="stats-total">0 files loaded</span>
+          <span class="opacity-30">|</span>
+          <span id="stats-modified" class="text-amber-400">0 unsaved</span>
+        </div>
+      </div>
+
+      <!-- Main File Table -->
+      <div class="flex-1 overflow-auto relative">
+        <table class="w-full text-left text-xs border-collapse">
+          <thead id="table-head" class="sticky top-0 bg-black border-b border-white/35 font-semibold z-10 select-none transition-colors duration-200 text-white">
+            <tr>
+              <th class="p-2.5 w-10 text-center border-r border-white/35">
+                <input type="checkbox" id="select-all" class="rounded bg-black border-white/35 text-white focus:ring-0 cursor-pointer">
+              </th>
+              <th class="p-2.5 w-12 text-center border-r border-white/35">#</th>
+              <th class="p-2.5 cursor-pointer hover:opacity-80 border-r border-white/35" data-sort="title">Title <i class="fa-solid fa-sort text-[10px] opacity-60"></i></th>
+              <th class="p-2.5 cursor-pointer hover:opacity-80 border-r border-white/35" data-sort="artist">Artist <i class="fa-solid fa-sort text-[10px] opacity-60"></i></th>
+              <th class="p-2.5 cursor-pointer hover:opacity-80 border-r border-white/35" data-sort="album">Album <i class="fa-solid fa-sort text-[10px] opacity-60"></i></th>
+              <th class="p-2.5 cursor-pointer hover:opacity-80 border-r border-white/35 w-16" data-sort="track">Track <i class="fa-solid fa-sort text-[10px] opacity-60"></i></th>
+              <th class="p-2.5 cursor-pointer hover:opacity-80 border-r border-white/35 w-16" data-sort="year">Year <i class="fa-solid fa-sort text-[10px] opacity-60"></i></th>
+              <th class="p-2.5 cursor-pointer hover:opacity-80 border-r border-white/35" data-sort="genre">Genre <i class="fa-solid fa-sort text-[10px] opacity-60"></i></th>
+              <th class="p-2.5 cursor-pointer hover:opacity-80" data-sort="filename">File Path / Name <i class="fa-solid fa-sort text-[10px] opacity-60"></i></th>
+            </tr>
+          </thead>
+          <tbody id="track-list" class="divide-y divide-white/35 font-normal">
+            <!-- Dynamic Track Rows -->
+          </tbody>
+        </table>
+
+        <!-- Empty State Container -->
+        <div id="empty-state" class="absolute inset-0 flex flex-col items-center justify-center text-neutral-500 p-6 pointer-events-none">
+          <div class="w-16 h-16 rounded-full bg-black border border-white/35 flex items-center justify-center text-2xl mb-3">
+            <i class="fa-solid fa-music"></i>
+          </div>
+          <p class="text-sm font-semibold mb-1 empty-title">No audio files loaded</p>
+          <p class="text-xs text-neutral-400 text-center max-w-sm">Drag and drop audio files or folders here, or click <span class="font-semibold underline">Add Files</span> above to start editing tags.</p>
+        </div>
+      </div>
+
+      <!-- Bottom Audio Player Preview Bar -->
+      <div id="player-bar" class="bg-black border-t border-white/35 px-4 py-2.5 flex items-center justify-between gap-4 shrink-0 transition-colors duration-200 text-white">
+        <div class="flex items-center gap-3 w-1/4">
+          <button id="btn-play-pause" class="w-9 h-9 bg-white text-black hover:bg-neutral-200 rounded flex items-center justify-center text-sm shadow transition">
+            <i class="fa-solid fa-play"></i>
+          </button>
+          <div class="truncate">
+            <p id="player-title" class="text-xs font-semibold truncate">No track selected</p>
+            <p id="player-artist" class="text-[11px] text-neutral-400 truncate">Select a track to preview</p>
+          </div>
+        </div>
+
+        <div class="flex-1 flex items-center gap-3 max-w-xl">
+          <span id="player-current-time" class="text-[11px] font-mono text-neutral-400 w-10 text-right">0:00</span>
+          <input type="range" id="player-seek" min="0" max="100" value="0" class="flex-1 h-1 bg-neutral-800 rounded appearance-none cursor-pointer accent-white">
+          <span id="player-duration" class="text-[11px] font-mono text-neutral-400 w-10">0:00</span>
+        </div>
+
+        <div class="flex items-center gap-2 text-neutral-400 w-1/5 justify-end">
+          <i class="fa-solid fa-volume-high text-xs"></i>
+          <input type="range" id="player-volume" min="0" max="1" step="0.05" value="0.8" class="w-20 h-1 bg-neutral-800 rounded appearance-none cursor-pointer accent-white">
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Audio Element for Preview -->
+  <audio id="audio-preview" class="hidden"></audio>
+
+  <!-- Notification Toast -->
+  <div id="toast" class="fixed bottom-14 right-4 bg-black border border-white/35 text-xs px-4 py-2.5 rounded shadow-2xl transform translate-y-20 opacity-0 transition-all duration-300 flex items-center gap-2 z-50 text-white">
+    <i id="toast-icon" class="fa-solid fa-circle-info text-emerald-400"></i>
+    <span id="toast-message">Notification</span>
+  </div>
+
+  <script>
+    // Application State
+    let tracks = [];
+    let selectedTrackIds = new Set();
+    let currentPlayingTrackId = null;
+    let sortColumn = 'filename';
+    let sortAscending = true;
+    let isDarkMode = true;
+
+    // DOM Elements
+    let bodyRoot, appHeader, appTitle, appSidebar, appMain, searchBarContainer, tableHead, playerBar, btnThemeToggle, themeIcon, emptyState, searchInput, trackList, statsTotal, statsModified, tagTitle, tagArtist, tagAlbum, tagTrack, tagYear, tagGenre, tagComment, coverArtImg, coverArtPlaceholder, playerTitle, playerArtist, audioPlayer, playerSeek, playerCurrentTime, playerDuration, playerVolume, btnPlayPause, divLine1, divLine2, coverArtContainer, lblAddFiles, lblOpenFolder;
+
+    // Initialize Application
+    window.addEventListener('DOMContentLoaded', () => {
+      bodyRoot = document.getElementById('body-root');
+      appHeader = document.getElementById('app-header');
+      appTitle = document.getElementById('app-title');
+      appSidebar = document.getElementById('app-sidebar');
+      appMain = document.getElementById('app-main');
+      searchBarContainer = document.getElementById('search-bar-container');
+      tableHead = document.getElementById('table-head');
+      playerBar = document.getElementById('player-bar');
+      btnThemeToggle = document.getElementById('btn-theme-toggle');
+      themeIcon = document.getElementById('theme-icon');
+      emptyState = document.getElementById('empty-state');
+      searchInput = document.getElementById('search-input');
+      trackList = document.getElementById('track-list');
+      statsTotal = document.getElementById('stats-total');
+      statsModified = document.getElementById('stats-modified');
+      tagTitle = document.getElementById('tag-title');
+      tagArtist = document.getElementById('tag-artist');
+      tagAlbum = document.getElementById('tag-album');
+      tagTrack = document.getElementById('tag-track');
+      tagYear = document.getElementById('tag-year');
+      tagGenre = document.getElementById('tag-genre');
+      tagComment = document.getElementById('tag-comment');
+      coverArtImg = document.getElementById('cover-art-img');
+      coverArtPlaceholder = document.getElementById('cover-art-placeholder');
+      playerTitle = document.getElementById('player-title');
+      playerArtist = document.getElementById('player-artist');
+      audioPlayer = document.getElementById('audio-preview');
+      playerSeek = document.getElementById('player-seek');
+      playerCurrentTime = document.getElementById('player-current-time');
+      playerDuration = document.getElementById('player-duration');
+      playerVolume = document.getElementById('player-volume');
+      btnPlayPause = document.getElementById('btn-play-pause');
+      divLine1 = document.getElementById('div-line-1');
+      divLine2 = document.getElementById('div-line-2');
+      coverArtContainer = document.getElementById('cover-art-container');
+      lblAddFiles = document.getElementById('lbl-add-files');
+      lblOpenFolder = document.getElementById('lbl-open-folder');
+
+      setupEventListeners();
+      applyTheme();
+      updateUI();
+    });
+
+    function setupEventListeners() {
+      const fileInput = document.getElementById('file-input');
+      const folderInput = document.getElementById('folder-input');
+      const selectAllCheckbox = document.getElementById('select-all');
+      const btnApplyTags = document.getElementById('btn-apply-tags');
+      const coverInput = document.getElementById('cover-input');
+
+      fileInput.addEventListener('change', handleFileSelect);
+      folderInput.addEventListener('change', handleFileSelect);
+      document.body.addEventListener('dragover', (e) => e.preventDefault());
+      document.body.addEventListener('drop', handleDropFiles);
+      if (searchInput) searchInput.addEventListener('input', updateTable);
+
+      document.getElementById('btn-save').addEventListener('click', exportAndSaveFiles);
+      document.getElementById('btn-autonumber').addEventListener('click', runAutoNumbering);
+      document.getElementById('btn-case').addEventListener('click', runCaseConversion);
+      document.getElementById('btn-clear-all').addEventListener('click', clearAllTracks);
+      btnThemeToggle.addEventListener('click', toggleTheme);
+
+      selectAllCheckbox.addEventListener('change', (e) => {
+        selectedTrackIds.clear();
+        if (e.target.checked) {
+          getFilteredTracks().forEach(t => selectedTrackIds.add(t.id));
+        }
+        updateTable();
+        updateSidebarForm();
+      });
+
+      btnApplyTags.addEventListener('click', saveSidebarTags);
+
+      if (coverArtContainer) coverArtContainer.addEventListener('click', () => coverInput.click());
+      coverInput.addEventListener('change', handleCoverUpload);
+
+      btnPlayPause.addEventListener('click', togglePlayPause);
+      audioPlayer.addEventListener('timeupdate', updatePlayerProgress);
+      audioPlayer.addEventListener('loadedmetadata', updatePlayerProgress);
+      playerSeek.addEventListener('input', () => {
+        if (audioPlayer.duration) {
+          audioPlayer.currentTime = (playerSeek.value / 100) * audioPlayer.duration;
+        }
+      });
+      playerVolume.addEventListener('input', () => {
+        audioPlayer.volume = playerVolume.value;
+      });
+
+      document.querySelectorAll('th[data-sort]').forEach(th => {
+        th.addEventListener('click', () => {
+          const col = th.getAttribute('data-sort');
+          if (sortColumn === col) {
+            sortAscending = !sortAscending;
+          } else {
+            sortColumn = col;
+            sortAscending = true;
+          }
+          updateTable();
+        });
+      });
+    }
+
+    function toggleTheme() {
+      isDarkMode = !isDarkMode;
+      applyTheme();
+      updateTable();
+    }
+
+    function applyTheme() {
+      if (isDarkMode) {
+        if (bodyRoot) bodyRoot.className = "h-full flex flex-col font-sans antialiased overflow-hidden select-none bg-black text-slate-100";
+        if (appHeader) appHeader.className = "bg-black border-b border-white/35 px-4 py-2.5 flex items-center justify-between shrink-0 transition-colors duration-200 text-white";
+        if (appTitle) appTitle.className = "font-bold tracking-tight text-white text-sm transition-colors duration-200";
+        if (appSidebar) appSidebar.className = "w-80 bg-black border-r border-white/35 flex flex-col shrink-0 overflow-y-auto p-4 gap-4 transition-colors duration-200 text-white";
+        if (appMain) appMain.className = "flex-1 flex flex-col bg-black overflow-hidden relative transition-colors duration-200 text-white";
+        if (searchBarContainer) searchBarContainer.className = "bg-black border-b border-white/35 px-4 py-2 flex items-center justify-between gap-4 transition-colors duration-200 text-white";
+        if (searchInput) searchInput.className = "w-full bg-black border border-white/35 text-xs rounded-full pl-8 pr-4 py-1.5 text-white outline-none";
+        if (tableHead) tableHead.className = "sticky top-0 bg-black border-b border-white/35 font-semibold z-10 select-none transition-colors duration-200 text-white";
+        if (playerBar) playerBar.className = "bg-black border-t border-white/35 px-4 py-2.5 flex items-center justify-between gap-4 shrink-0 transition-colors duration-200 text-white";
+        if (divLine1) divLine1.className = "h-5 w-[1px] bg-white/35 mx-1";
+        if (divLine2) divLine2.className = "h-5 w-[1px] bg-white/35 mx-1";
+        if (coverArtContainer) coverArtContainer.className = "relative group w-36 h-36 bg-black border-2 border-dashed border-white/35 rounded flex flex-col items-center justify-center overflow-hidden cursor-pointer hover:border-white transition shadow-inner";
+        if (lblAddFiles) lblAddFiles.className = "cursor-pointer bg-transparent hover:opacity-80 text-white text-xs px-3 py-1.5 rounded font-medium transition flex items-center gap-1.5 border-0";
+        if (lblOpenFolder) lblOpenFolder.className = "cursor-pointer bg-transparent hover:opacity-80 text-white text-xs px-3 py-1.5 rounded font-medium transition flex items-center gap-1.5 border-0";
+
+        document.querySelectorAll('.tag-input').forEach(el => {
+          el.className = "tag-input w-full bg-black border border-white/35 text-white rounded px-2.5 py-1.5 outline-none transition";
+        });
+        document.querySelectorAll('.tool-btn').forEach(el => {
+          el.className = "tool-btn bg-black hover:opacity-80 border border-white/35 text-white text-xs px-2.5 py-1.5 rounded transition";
+        });
+        if (themeIcon) themeIcon.className = "fa-solid fa-sun";
+      } else {
+        if (bodyRoot) bodyRoot.className = "h-full flex flex-col font-sans antialiased overflow-hidden select-none bg-white text-slate-900";
+        if (appHeader) appHeader.className = "bg-white border-b border-neutral-300 px-4 py-2.5 flex items-center justify-between shrink-0 transition-colors duration-200 text-neutral-900";
+        if (appTitle) appTitle.className = "font-bold tracking-tight text-neutral-900 text-sm transition-colors duration-200";
+        if (appSidebar) appSidebar.className = "w-80 bg-white border-r border-neutral-300 flex flex-col shrink-0 overflow-y-auto p-4 gap-4 transition-colors duration-200 text-neutral-900";
+        if (appMain) appMain.className = "flex-1 flex flex-col bg-white overflow-hidden relative transition-colors duration-200 text-neutral-900";
+        if (searchBarContainer) searchBarContainer.className = "bg-white border-b border-neutral-300 px-4 py-2 flex items-center justify-between gap-4 transition-colors duration-200 text-neutral-900";
+        if (searchInput) searchInput.className = "w-full bg-white border border-neutral-300 text-xs rounded-full pl-8 pr-4 py-1.5 text-neutral-900 outline-none";
+        if (tableHead) tableHead.className = "sticky top-0 bg-white border-b border-neutral-300 font-semibold z-10 select-none transition-colors duration-200 text-neutral-900";
+        if (playerBar) playerBar.className = "bg-white border-t border-neutral-300 px-4 py-2.5 flex items-center justify-between gap-4 shrink-0 transition-colors duration-200 text-neutral-900";
+        if (divLine1) divLine1.className = "h-5 w-[1px] bg-neutral-300 mx-1";
+        if (divLine2) divLine2.className = "h-5 w-[1px] bg-neutral-300 mx-1";
+        if (coverArtContainer) coverArtContainer.className = "relative group w-36 h-36 bg-white border-2 border-dashed border-neutral-300 rounded flex flex-col items-center justify-center overflow-hidden cursor-pointer hover:border-neutral-900 transition shadow-inner";
+        if (lblAddFiles) lblAddFiles.className = "cursor-pointer bg-transparent hover:bg-neutral-100 text-neutral-900 text-xs px-3 py-1.5 rounded font-medium transition flex items-center gap-1.5 border-0";
+        if (lblOpenFolder) lblOpenFolder.className = "cursor-pointer bg-transparent hover:bg-neutral-100 text-neutral-900 text-xs px-3 py-1.5 rounded font-medium transition flex items-center gap-1.5 border-0";
+
+        document.querySelectorAll('.tag-input').forEach(el => {
+          el.className = "tag-input w-full bg-white border border-neutral-300 text-neutral-900 rounded px-2.5 py-1.5 outline-none transition";
+        });
+        document.querySelectorAll('.tool-btn').forEach(el => {
+          el.className = "tool-btn bg-white hover:bg-neutral-100 border border-neutral-300 text-neutral-800 text-xs px-2.5 py-1.5 rounded transition";
+        });
+        if (themeIcon) themeIcon.className = "fa-solid fa-moon";
+      }
+    }
+
+    function handleFileSelect(e) {
+      const files = Array.from(e.target.files);
+      processFileList(files);
+      e.target.value = '';
+    }
+
+    function handleDropFiles(e) {
+      e.preventDefault();
+      const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('audio/') || /\.(mp3|flac|m4a|ogg|wav)$/i.test(f.name));
+      if (files.length > 0) processFileList(files);
+    }
+
+    function processFileList(files) {
+      files.forEach(file => {
+        const track = {
+          id: 'track_' + Math.random().toString(36).substr(2, 9),
+          file: file,
+          filename: file.name,
+          title: file.name.replace(/\.[^/.]+$/, ''),
+          artist: 'Unknown Artist',
+          album: 'Unknown Album',
+          track: '',
+          year: '',
+          genre: '',
+          comment: '',
+          coverArt: null,
+          isModified: false
+        };
+        tracks.push(track);
+      });
+      updateUI();
+      showToast(`Added ${files.length} audio track(s).`, 'success');
+    }
+
+    function getFilteredTracks() {
+      const query = searchInput && searchInput.value ? searchInput.value.toLowerCase().trim() : '';
+      let filtered = tracks.filter(t => 
+        t.title.toLowerCase().includes(query) ||
+        t.artist.toLowerCase().includes(query) ||
+        t.album.toLowerCase().includes(query) ||
+        t.filename.toLowerCase().includes(query)
+      );
+
+      filtered.sort((a, b) => {
+        let valA = a[sortColumn] || '';
+        let valB = b[sortColumn] || '';
+        if (typeof valA === 'string') valA = valA.toLowerCase();
+        if (typeof valB === 'string') valB = valB.toLowerCase();
+        if (valA < valB) return sortAscending ? -1 : 1;
+        if (valA > valB) return sortAscending ? 1 : -1;
+        return 0;
+      });
+
+      return filtered;
+    }
+
+    function updateTable() {
+      const visibleTracks = getFilteredTracks();
+      if (!trackList) return;
+      trackList.innerHTML = '';
+
+      if (tracks.length === 0) {
+        if (emptyState) emptyState.classList.remove('hidden');
+      } else {
+        if (emptyState) emptyState.classList.add('hidden');
+      }
+
+      visibleTracks.forEach((t, index) => {
+        const isSelected = selectedTrackIds.has(t.id);
+        const isPlaying = currentPlayingTrackId === t.id;
+
+        const tr = document.createElement('tr');
+        const borderColor = isDarkMode ? 'border-white/35' : 'border-neutral-300';
+        const rowBg = isSelected 
+          ? (isDarkMode ? 'bg-neutral-900 text-white font-medium' : 'bg-neutral-200 text-neutral-900 font-medium')
+          : (isDarkMode ? 'hover:bg-neutral-900 text-neutral-300' : 'hover:bg-neutral-100 text-neutral-800');
+
+        tr.className = `border-b ${borderColor} cursor-pointer transition ${rowBg}`;
+        
+        tr.innerHTML = `
+          <td class="p-2.5 text-center border-r ${borderColor}">
+            <input type="checkbox" class="track-select rounded bg-transparent border-current text-current focus:ring-0 cursor-pointer" ${isSelected ? 'checked' : ''}>
+          </td>
+          <td class="p-2.5 text-center font-mono opacity-60 border-r ${borderColor}">${index + 1}</td>
+          <td class="p-2.5 font-medium truncate max-w-[180px] flex items-center gap-2 border-r ${borderColor}">
+            ${isPlaying ? '<i class="fa-solid fa-volume-high text-emerald-400 text-xs animate-pulse"></i>' : ''}
+            <span class="truncate">${t.title}</span>
+            ${t.isModified ? '<span class="w-1.5 h-1.5 rounded-full bg-amber-400" title="Modified"></span>' : ''}
+          </td>
+          <td class="p-2.5 truncate max-w-[140px] border-r ${borderColor}">${t.artist}</td>
+          <td class="p-2.5 truncate max-w-[140px] border-r ${borderColor}">${t.album}</td>
+          <td class="p-2.5 font-mono border-r ${borderColor}">${t.track}</td>
+          <td class="p-2.5 font-mono border-r ${borderColor}">${t.year}</td>
+          <td class="p-2.5 truncate max-w-[100px] border-r ${borderColor}">${t.genre}</td>
+          <td class="p-2.5 font-mono opacity-70 truncate max-w-[200px]">${t.filename}</td>
+        `;
+
+        tr.addEventListener('click', (e) => {
+          if (e.target.classList.contains('track-select')) return;
+          if (e.ctrlKey || e.metaKey) {
+            if (selectedTrackIds.has(t.id)) selectedTrackIds.delete(t.id);
+            else selectedTrackIds.add(t.id);
+          } else {
+            selectedTrackIds.clear();
+            selectedTrackIds.add(t.id);
+          }
+          updateTable();
+          updateSidebarForm();
+        });
+
+        const checkbox = tr.querySelector('.track-select');
+        checkbox.addEventListener('change', (e) => {
+          e.stopPropagation();
+          if (checkbox.checked) selectedTrackIds.add(t.id);
+          else selectedTrackIds.delete(t.id);
+          updateSidebarForm();
+        });
+
+        tr.addEventListener('dblclick', () => playTrack(t));
+        trackList.appendChild(tr);
+      });
+
+      updateStats();
+    }
+
+    function saveSidebarTags() {
+      if (selectedTrackIds.size === 0) return;
+      const getVal = (elem) => elem ? elem.value : '';
+
+      tracks.forEach(t => {
+        if (selectedTrackIds.has(t.id)) {
+          if (getVal(tagTitle) !== '<keep>') t.title = getVal(tagTitle);
+          if (getVal(tagArtist) !== '<keep>') t.artist = getVal(tagArtist);
+          if (getVal(tagAlbum) !== '<keep>') t.album = getVal(tagAlbum);
+          if (getVal(tagTrack) !== '<keep>') t.track = getVal(tagTrack);
+          if (getVal(tagYear) !== '<keep>') t.year = getVal(tagYear);
+          if (getVal(tagGenre) !== '<keep>') t.genre = getVal(tagGenre);
+          if (getVal(tagComment) !== '<keep>') t.comment = getVal(tagComment);
+          t.isModified = true;
+        }
+      });
+
+      updateTable();
+      updateStats();
+      showToast(`Updated tags for ${selectedTrackIds.size} track(s).`, 'info');
+    }
+
+    async function exportAndSaveFiles() {
+      const modifiedOrSelected = tracks.filter(t => t.isModified || selectedTrackIds.has(t.id));
+      const targetTracks = modifiedOrSelected.length > 0 ? modifiedOrSelected : tracks;
+
+      if (targetTracks.length === 0) {
+        showToast('No tracks available to save or download.', 'error');
+        return;
+      }
+
+      showToast(`Processing and exporting ${targetTracks.length} file(s)...`, 'info');
+
+      for (const track of targetTracks) {
+        try {
+          if (track.file && track.filename.toLowerCase().endsWith('.mp3') && window.ID3Writer) {
+            const arrayBuffer = await track.file.arrayBuffer();
+            const writer = new window.ID3Writer(arrayBuffer);
+
+            if (track.title) writer.setFrame('TIT2', track.title);
+            if (track.artist) writer.setFrame('TPE1', [track.artist]);
+            if (track.album) writer.setFrame('TALB', track.album);
+            if (track.track) writer.setFrame('TRCK', String(track.track));
+            if (track.year) writer.setFrame('TYER', parseInt(track.year, 10) || track.year);
+            if (track.genre) writer.setFrame('TCON', [track.genre]);
+
+            writer.addTag();
+            const taggedBlob = writer.getBlob();
+            downloadBlob(taggedBlob, track.filename);
+          } else if (track.file) {
+            downloadBlob(track.file, track.filename);
+          }
+          track.isModified = false;
+        } catch (err) {
+          console.error(`Error saving ${track.filename}:`, err);
+        }
+      }
+      updateUI();
+      showToast('Finished downloading audio files!', 'success');
+    }
+
+    function downloadBlob(blob, filename) {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    }
+
+    function handleCoverUpload(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        const coverDataUrl = evt.target.result;
+        selectedTrackIds.forEach(id => {
+          const track = tracks.find(t => t.id === id);
+          if (track) {
+            track.coverArt = coverDataUrl;
+            track.isModified = true;
+          }
+        });
+        updateSidebarForm();
+        updateTable();
+        showToast('Updated cover artwork', 'success');
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function updateSidebarForm() {
+      if (selectedTrackIds.size === 0) {
+        if (tagTitle) tagTitle.value = '';
+        if (tagArtist) tagArtist.value = '';
+        if (tagAlbum) tagAlbum.value = '';
+        if (tagTrack) tagTrack.value = '';
+        if (tagYear) tagYear.value = '';
+        if (tagGenre) tagGenre.value = '';
+        if (tagComment) tagComment.value = '';
+        if (coverArtImg) coverArtImg.classList.add('hidden');
+        if (coverArtPlaceholder) coverArtPlaceholder.classList.remove('hidden');
+        return;
+      }
+
+      const selected = tracks.filter(t => selectedTrackIds.has(t.id));
+      const setField = (elem, prop) => {
+        if (!elem) return;
+        const firstVal = selected[0][prop];
+        const allSame = selected.every(t => t[prop] === firstVal);
+        elem.value = allSame ? (firstVal || '') : '<keep>';
+      };
+
+      setField(tagTitle, 'title');
+      setField(tagArtist, 'artist');
+      setField(tagAlbum, 'album');
+      setField(tagTrack, 'track');
+      setField(tagYear, 'year');
+      setField(tagGenre, 'genre');
+      setField(tagComment, 'comment');
+
+      const firstCover = selected[0].coverArt;
+      if (selected.every(t => t.coverArt === firstCover) && firstCover) {
+        if (coverArtImg) {
+          coverArtImg.src = firstCover;
+          coverArtImg.classList.remove('hidden');
+        }
+        if (coverArtPlaceholder) coverArtPlaceholder.classList.add('hidden');
+      } else {
+        if (coverArtImg) coverArtImg.classList.add('hidden');
+        if (coverArtPlaceholder) coverArtPlaceholder.classList.remove('hidden');
+      }
+    }
+
+    function playTrack(track) {
+      currentPlayingTrackId = track.id;
+      if (playerTitle) playerTitle.innerText = track.title || track.filename;
+      if (playerArtist) playerArtist.innerText = track.artist || 'Unknown Artist';
+
+      if (track.file && audioPlayer) {
+        audioPlayer.src = URL.createObjectURL(track.file);
+        audioPlayer.play().then(() => {
+          if (btnPlayPause) btnPlayPause.innerHTML = '<i class="fa-solid fa-pause"></i>';
+        }).catch(err => console.warn(err));
+      }
+      updateTable();
+    }
+
+    function togglePlayPause() {
+      if (!audioPlayer || !audioPlayer.src) return;
+      if (audioPlayer.paused) {
+        audioPlayer.play();
+        if (btnPlayPause) btnPlayPause.innerHTML = '<i class="fa-solid fa-pause"></i>';
+      } else {
+        audioPlayer.pause();
+        if (btnPlayPause) btnPlayPause.innerHTML = '<i class="fa-solid fa-play"></i>';
+      }
+    }
+
+    function updatePlayerProgress() {
+      if (!audioPlayer || !audioPlayer.duration) return;
+      const progress = (audioPlayer.currentTime / audioPlayer.duration) * 100;
+      if (playerSeek) playerSeek.value = progress;
+      if (playerCurrentTime) playerCurrentTime.innerText = formatTime(audioPlayer.currentTime);
+      if (playerDuration) playerDuration.innerText = formatTime(audioPlayer.duration);
+    }
+
+    function formatTime(seconds) {
+      if (isNaN(seconds)) return '0:00';
+      const mins = Math.floor(seconds / 60);
+      const secs = Math.floor(seconds % 60);
+      return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+    }
+
+    function runAutoNumbering() {
+      if (tracks.length === 0) return;
+      const startStr = prompt('Enter starting track number:', '1');
+      if (startStr === null) return;
+      let start = parseInt(startStr, 10) || 1;
+
+      const targetList = selectedTrackIds.size > 0 ? tracks.filter(t => selectedTrackIds.has(t.id)) : tracks;
+      targetList.forEach((t, i) => {
+        t.track = String(start + i).padStart(2, '0');
+        t.isModified = true;
+      });
+
+      updateTable();
+      updateSidebarForm();
+      showToast('Auto-numbered track fields.', 'success');
+    }
+
+    function runCaseConversion() {
+      if (tracks.length === 0) return;
+      const targetList = selectedTrackIds.size > 0 ? tracks.filter(t => selectedTrackIds.has(t.id)) : tracks;
+      const toTitleCase = (str) => str.replace(/\w\S*/g, (txt) => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase());
+
+      targetList.forEach(t => {
+        if (t.title) t.title = toTitleCase(t.title);
+        if (t.artist) t.artist = toTitleCase(t.artist);
+        if (t.album) t.album = toTitleCase(t.album);
+        t.isModified = true;
+      });
+
+      updateTable();
+      updateSidebarForm();
+      showToast('Converted tags to Title Case.', 'success');
+    }
+
+    function clearAllTracks() {
+      if (tracks.length === 0) return;
+      tracks = [];
+      selectedTrackIds.clear();
+      currentPlayingTrackId = null;
+      if (audioPlayer) {
+        audioPlayer.pause();
+        audioPlayer.src = '';
+      }
+      if (btnPlayPause) btnPlayPause.innerHTML = '<i class="fa-solid fa-play"></i>';
+      if (playerTitle) playerTitle.innerText = 'No track selected';
+      if (playerArtist) playerArtist.innerText = 'Select a track to preview';
+      updateUI();
+      showToast('Cleared all tracks.', 'info');
+    }
+
+    function updateStats() {
+      if (statsTotal) statsTotal.innerText = `${tracks.length} file(s) loaded`;
+      const modifiedCount = tracks.filter(t => t.isModified).length;
+      if (statsModified) statsModified.innerText = `${modifiedCount} unsaved`;
+    }
+
+    function updateUI() {
+      updateTable();
+      updateSidebarForm();
+    }
+
+    function showToast(message, type = 'info') {
+      const toast = document.getElementById('toast');
+      const toastMsg = document.getElementById('toast-message');
+      const toastIcon = document.getElementById('toast-icon');
+      if (!toast || !toastMsg || !toastIcon) return;
+
+      toastMsg.innerText = message;
+      if (isDarkMode) {
+        toast.className = "fixed bottom-14 right-4 bg-black border border-white/35 text-white text-xs px-4 py-2.5 rounded shadow-2xl transform translate-y-20 opacity-0 transition-all duration-300 flex items-center gap-2 z-50";
+      } else {
+        toast.className = "fixed bottom-14 right-4 bg-white border border-neutral-300 text-neutral-900 text-xs px-4 py-2.5 rounded shadow-2xl transform translate-y-20 opacity-0 transition-all duration-300 flex items-center gap-2 z-50";
+      }
+
+      if (type === 'success') toastIcon.className = 'fa-solid fa-circle-check text-emerald-400';
+      else if (type === 'error') toastIcon.className = 'fa-solid fa-circle-xmark text-rose-400';
+      else toastIcon.className = 'fa-solid fa-circle-info text-sky-400';
+
+      toast.classList.remove('translate-y-20', 'opacity-0');
+      setTimeout(() => {
+        toast.classList.add('translate-y-20', 'opacity-0');
+      }, 3000);
+    }
+  </script>
+</body>
+</html>
