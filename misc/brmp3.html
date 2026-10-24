@@ -424,6 +424,43 @@
           coverArt: null,
           isModified: false
         };
+
+        // Read ID3 metadata using jsmediatags if available
+        if (window.jsmediatags && file) {
+          try {
+            window.jsmediatags.read(file, {
+              onSuccess: function(tag) {
+                const tags = tag.tags;
+                if (tags.title) track.title = tags.title;
+                if (tags.artist) track.artist = tags.artist;
+                if (tags.album) track.album = tags.album;
+                if (tags.track) track.track = String(tags.track);
+                if (tags.year) track.year = String(tags.year);
+                if (tags.genre) track.genre = tags.genre;
+                if (tags.comment && tags.comment.text) track.comment = tags.comment.text;
+
+                // Handle embedded cover art
+                if (tags.picture) {
+                  const data = tags.picture.data;
+                  const format = tags.picture.format;
+                  let base64String = "";
+                  for (let i = 0; i < data.length; i++) {
+                    base64String += String.fromCharCode(data[i]);
+                  }
+                  track.coverArt = `data:${format};base64,${window.btoa(base64String)}`;
+                }
+
+                updateUI();
+              },
+              onError: function(error) {
+                console.log('Error reading tags for file:', file.name, error);
+              }
+            });
+          } catch (e) {
+            console.error('jsmediatags execution error:', e);
+          }
+        }
+
         tracks.push(track);
       });
       updateUI();
