@@ -604,6 +604,28 @@
             if (track.year) writer.setFrame('TYER', parseInt(track.year, 10) || track.year);
             if (track.genre) writer.setFrame('TCON', [track.genre]);
 
+            // Embed cover art into ID3 APIC frame
+            if (track.coverArt && track.coverArt.startsWith('data:')) {
+              try {
+                const parts = track.coverArt.split(',');
+                const mimeMatch = parts[0].match(/:(.*?);/);
+                const mimeType = mimeMatch ? mimeMatch[1] : 'image/jpeg';
+                const binaryStr = atob(parts[1]);
+                const imgBuffer = new Uint8Array(binaryStr.length);
+                for (let i = 0; i < binaryStr.length; i++) {
+                  imgBuffer[i] = binaryStr.charCodeAt(i);
+                }
+                writer.setFrame('APIC', {
+                  type: 3, // Front cover
+                  data: imgBuffer.buffer,
+                  description: 'Cover',
+                  mimeType: mimeType
+                });
+              } catch (imgErr) {
+                console.error('Error embedding cover art:', imgErr);
+              }
+            }
+
             writer.addTag();
             const taggedBlob = writer.getBlob();
             downloadBlob(taggedBlob, track.filename);
