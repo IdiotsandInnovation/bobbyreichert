@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>PiNAS File Explorer</title>
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+</head>
+<body class="bg-gray-900 text-gray-100 min-h-screen p-6">
+  <div id="auth-screen" class="max-w-md mx-auto mt-20 p-8 bg-gray-800 rounded-xl shadow-lg text-center">
+    <h1 class="text-2xl font-bold mb-4">PiNAS Login</h1>
+    <input id="email" type="email" placeholder="Email" class="w-full p-2 mb-3 bg-gray-700 rounded border border-gray-600"><br>
+    <input id="password" type="password" placeholder="Password" class="w-full p-2 mb-4 bg-gray-700 rounded border border-gray-600"><br>
+    <button onclick="login()" class="w-full bg-blue-600 hover:bg-blue-500 p-2 rounded font-semibold">Sign In</button>
+  </div>
+
+  <div id="app-screen" class="hidden max-w-4xl mx-auto">
+    <div class="flex justify-between items-center mb-6">
+      <h1 class="text-xl font-bold">📂 PiNAS Explorer</h1>
+      <button onclick="logout()" class="bg-red-600 hover:bg-red-500 px-4 py-2 rounded text-sm">Sign Out</button>
+    </div>
+    <div id="file-list" class="bg-gray-800 rounded-xl p-4 shadow-lg divide-y divide-gray-700"></div>
+  </div>
+
+  <!-- Firebase App SDKs -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+    // Replace with your Firebase project config web keys
+    const firebaseConfig = {
+      apiKey: "YOUR_FIREBASE_API_KEY",
+      authDomain: "YOUR_PROJECT.firebaseapp.com",
+      projectId: "YOUR_PROJECT_ID",
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const API_URL = "https://nas-api.bobbyreichert.pages.dev";
+
+    window.login = async () => {
+      const email = document.getElementById('email').value;
+      const pass = document.getElementById('password').value;
+      try {
+        await signInWithEmailAndPassword(auth, email, pass);
+      } catch (err) {
+        alert("Login failed: " + err.message);
+      }
+    };
+
+    window.logout = () => signOut(auth);
+
+    onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        document.getElementById('auth-screen').classList.add('hidden');
+        document.getElementById('app-screen').classList.remove('hidden');
+        loadFiles('');
+      } else {
+        document.getElementById('auth-screen').classList.remove('hidden');
+        document.getElementById('app-screen').classList.add('hidden');
+      }
+    });
+
+    async function loadFiles(subpath) {
+      const user = auth.currentUser;
+      if (!user) return;
+      const token = await user.getIdToken();
+
+      const res = await fetch(`${API_URL}/api/files?path=${encodeURIComponent(subpath)}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const data = await res.json();
+      
+      const listContainer = document.getElementById('file-list');
+      listContainer.innerHTML = '';
+
+      data.files.forEach(file => {
+        const row = document.createElement('div');
+        row.className = "py-3 flex justify-between items-center";
+        
+        const nameSpan = document.createElement('span');
+        nameSpan.textContent = (file.isDirectory ? "📁 " : "📄 ") + file.name;
+        
+        if (file.isDirectory) {
+          nameSpan.className += " cursor-pointer text-blue-400 hover:underline";
+          nameSpan.onclick = () => loadFiles(file.path);
+        }
+        
+        row.appendChild(nameSpan);
+
+        if (!file.isDirectory) {
+          const dlBtn = document.createElement('button');
+          dlBtn.textContent = "Download";
+          dlBtn.className = "bg-green-600 hover:bg-green-500 px-3 py-1 rounded text-xs";
+          dlBtn.onclick = async () => {
+            const downloadUrl = `${API_URL}/api/download?path=${encodeURIComponent(file.path)}`;
+            const response = await fetch(downloadUrl, {
+              headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = file.name;
+            a.click();
+          };
+          row.appendChild(dlBtn);
+        }
+
+        listContainer.appendChild(row);
+      });
+    }
+  </script>
+</body>
+</html>
