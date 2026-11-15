@@ -239,18 +239,23 @@
                 <!-- Changed space-y-2 to space-y-3 to accommodate the new item gracefully -->
                 <div class="space-y-3 text-lg">
                     
-                    <!-- NEW YEAR'S COUNTDOWN (Precise) -->
-                    <!--
+                    <!-- NEW YEAR'S COUNTDOWN -->
+                    <
                     <p class="countdown-item">
                         To New Year's Day: <span id="new-year-countdown" class="font-extrabold text-primary dark:text-primary-dark transition-all duration-300">--</span>
                     </p>
-                    -->
+                    
                     <!-- HOLIDAY COUNTDOWNS -->
                    <!-- <p class="countdown-item">
                         To July 4th: <span id="july4-countdown" class="font-bold text-primary dark:text-primary-dark">--</span> days
                     </p> -->
+                    <!--
                     <p class="countdown-item">
                         To Halloween: <span id="halloween-countdown" class="font-bold text-primary dark:text-primary-dark">--</span> days
+                    </p>
+                    -->
+                    <p class="countdown-item">
+                        To Thanksgiving & Black Friday: <span id="thxg-countdown" class="font-bold text-primary dark:text-primary-dark">--</span> days
                     </p>
                     <p class="countdown-item">
                         To Christmas: <span id="christmas-countdown" class="font-bold text-primary dark:text-primary-dark">--</span> days
@@ -550,6 +555,9 @@
             const schoolEl = document.getElementById('school-countdown');
             if (schoolEl) schoolEl.textContent = getDaysUntil(6, 17); // Feb 14
 
+            const thxgEl = document.getElementById('thxg-countdown');
+            if (thxgEl) thxgEl.textContent = getDaysUntil(11, 28); // Nov 28
+            
             const july4El = document.getElementById('july4-countdown');
             if (july4El) july4El.textContent = getDaysUntil(7, 4); 
             
