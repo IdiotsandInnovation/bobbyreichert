@@ -68,6 +68,10 @@
             scroll-snap-align: start;
             scroll-snap-stop: always;
             position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem 1.25rem;
             overflow: hidden;
         }
 
@@ -139,7 +143,7 @@
         <!-- =========================================================
              SLIDE 1: DIGITAL CLOCK VIEW
              ========================================================= -->
-        <section class="slide flex flex-col items-center justify-center p-4 sm:p-8 compact-pad" data-index="0">
+        <section class="slide" data-index="0">
             <div class="w-full max-w-3xl flex flex-col items-center justify-center text-center">
                 <!-- Subtle Top Pill -->
                 <div class="mb-2 sm:mb-4 px-3 py-0.5 rounded-full bg-indigo-50 border border-indigo-200 text-indigo-600 text-[11px] sm:text-xs font-semibold tracking-widest uppercase">
@@ -165,11 +169,11 @@
         <!-- =========================================================
              SLIDE 2: COUNTDOWNS VIEW (Bobby's home.html Style)
              ========================================================= -->
-        <section class="slide flex flex-col items-center justify-center p-3 sm:p-8 compact-pad" data-index="1">
-            <div class="w-full max-w-3xl bg-white shadow-xl rounded-2xl p-6 sm:p-12 text-center border border-slate-200">
-                <h3 class="text-3xl sm:text-4xl font-bold text-slate-900 mb-6">Countdowns</h3>
+        <section class="slide" data-index="1">
+            <div class="w-full max-w-3xl bg-white shadow-xl rounded-2xl p-5 sm:p-12 text-center border border-slate-200">
+                <h3 class="text-2xl sm:text-4xl font-bold text-slate-900 mb-4 sm:mb-6">Countdowns</h3>
                 
-                <div class="space-y-4 sm:space-y-6 text-lg sm:text-xl text-slate-700">
+                <div class="space-y-3 sm:space-y-6 text-base sm:text-xl text-slate-700">
                     <p class="countdown-item">
                         To New Year's Day: <span id="new-year-countdown" class="font-extrabold text-indigo-600 transition-all duration-300">--</span>
                     </p>
@@ -192,7 +196,7 @@
         <!-- =========================================================
              SLIDE 3: 5-DAY GOOGLE WEATHER GUI VIEW (Light Theme)
              ========================================================= -->
-        <section class="slide flex flex-col items-center justify-center p-3 sm:p-8 compact-pad" data-index="2">
+        <section class="slide" data-index="2">
             <div class="w-full max-w-2xl bg-gradient-to-br from-white via-slate-50 to-indigo-50/40 rounded-2xl border border-slate-200 p-3.5 sm:p-6 shadow-xl flex flex-col justify-between">
                 
                 <!-- Top Current Weather Header -->
