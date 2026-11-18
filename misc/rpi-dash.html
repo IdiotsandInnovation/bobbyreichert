@@ -84,15 +84,21 @@
 
         @media (max-height: 360px) {
             .countdown-title {
-                font-size: 1.125rem !important;
-                margin-bottom: 0.25rem !important;
+                font-size: 1.5rem !important;
+                margin-bottom: 0.5rem !important;
             }
             .countdown-list {
-                font-size: 0.75rem !important;
-                line-height: 1.25 !important;
+                font-size: 1.125rem !important;
+                line-height: 1.3 !important;
             }
             .countdown-list > * + * {
                 margin-top: 0.35rem !important;
+            }
+            .countdown-value {
+                font-size: 1.5rem !important;
+            }
+            .countdown-value.text-5xl {
+                font-size: 1.75rem !important;
             }
             .weather-current-icon {
                 width: 2rem !important;
@@ -196,23 +202,23 @@
              ========================================================= -->
         <section class="slide dashboard-section">
             <div class="w-full max-w-3xl text-center">
-                <h3 class="countdown-title text-2xl sm:text-4xl font-bold text-slate-900 mb-4 sm:mb-6">Countdowns</h3>
+                <h3 class="countdown-title text-5xl sm:text-7xl font-bold text-slate-900 mb-4 sm:mb-6">Countdowns</h3>
                 
-                <div class="countdown-list space-y-3 sm:space-y-6 text-base sm:text-xl text-slate-700">
+                <div class="countdown-list space-y-3 sm:space-y-6 text-2xl sm:text-4xl text-slate-700">
                     <p class="countdown-item">
-                        To New Year's Day: <span id="new-year-countdown" class="font-extrabold text-indigo-600 transition-all duration-300">--</span>
+                        To New Year's Day: <span id="new-year-countdown" class="countdown-value text-4xl sm:text-6xl font-extrabold text-indigo-600 transition-all duration-300">--</span>
                     </p>
                     
                     <p class="countdown-item">
-                        To Thanksgiving &amp; Black Friday: <span id="thxg-countdown" class="font-bold text-indigo-600">--</span> days
+                        To Thanksgiving &amp; Black Friday: <span id="thxg-countdown" class="countdown-value text-4xl sm:text-6xl font-bold text-indigo-600">--</span> days
                     </p>
                     
                     <p class="countdown-item">
-                        To Christmas: <span id="christmas-countdown" class="font-bold text-indigo-600">--</span> days
+                        To Christmas: <span id="christmas-countdown" class="countdown-value text-4xl sm:text-6xl font-bold text-indigo-600">--</span> days
                     </p>
 
                     <p class="countdown-item">
-                        Since June 19th, 2025: <span id="june-countup" class="font-bold text-indigo-600">--</span> days
+                        Since June 19th, 2025: <span id="june-countup" class="countdown-value text-4xl sm:text-6xl font-bold text-indigo-600">--</span> days
                     </p>
                 </div>
             </div>
@@ -425,7 +431,7 @@
                 const seconds = Math.floor(remaining / MS_PER_SECOND);
                 const pad = (num) => String(num).padStart(2, '0');
 
-                newYearCountdownEl.classList.remove('text-amber-600', 'text-red-600', 'text-4xl', 'text-5xl');
+                newYearCountdownEl.classList.remove('text-amber-600', 'text-red-600', 'text-5xl');
 
                 if (timeDifference < tenMinutesInMs) {
                     if (timeDifference < oneMinuteInMs) {
