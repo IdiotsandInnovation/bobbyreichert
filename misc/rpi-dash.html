@@ -43,7 +43,6 @@
             font-family: 'Inter', sans-serif;
         }
 
-        /* Horizontal Scroll Snap Container */
         #carousel-track {
             display: flex;
             width: 100vw;
@@ -52,27 +51,59 @@
             overflow-y: hidden;
             scroll-snap-type: x mandatory;
             scroll-behavior: smooth;
-            scrollbar-width: none; /* Firefox */
-            -ms-overflow-style: none;  /* IE and Edge */
+            scrollbar-width: none;
+            -ms-overflow-style: none;
         }
 
         #carousel-track::-webkit-scrollbar {
-            display: none; /* Chrome, Safari, Opera */
+            display: none;
         }
 
-        /* Individual Full-Viewport Slide */
         .slide {
             flex: 0 0 100vw;
             width: 100vw;
             height: 100vh;
             scroll-snap-align: start;
             scroll-snap-stop: always;
-            position: relative;
+            padding: 1rem 1.25rem;
+            overflow: hidden;
+        }
+
+        .slide,
+        .dashboard-section {
+            min-width: 0;
+            min-height: 0;
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 1rem 1.25rem;
-            overflow: hidden;
+        }
+
+        .countdown-item {
+            line-height: 1.35;
+        }
+
+        @media (max-height: 360px) {
+            .countdown-title {
+                font-size: 1.125rem !important;
+                margin-bottom: 0.25rem !important;
+            }
+            .countdown-list {
+                font-size: 0.75rem !important;
+                line-height: 1.25 !important;
+            }
+            .countdown-list > * + * {
+                margin-top: 0.35rem !important;
+            }
+            .weather-current-icon {
+                width: 2rem !important;
+                height: 2rem !important;
+            }
+            .weather-current-temp {
+                font-size: 1.75rem !important;
+            }
+            .weather-panel {
+                width: 100%;
+            }
         }
 
         /* Subtle ambient radial glow for light theme */
@@ -85,7 +116,6 @@
             font-variant-numeric: tabular-nums;
         }
 
-        /* Progress Bar Animation */
         @keyframes progressFill {
             from { width: 0%; }
             to { width: 100%; }
@@ -116,20 +146,16 @@
 </head>
 <body class="ambient-bg text-slate-900">
 
-    <!-- Top Floating Controls (Pause/Play & Slide Indicators) -->
     <header class="fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-3 py-2 sm:px-6 sm:py-4 pointer-events-none">
-        <!-- Slide Dots -->
         <div class="flex items-center space-x-2 bg-white/80 backdrop-blur-md px-3 py-1.5 rounded-full border border-slate-200 pointer-events-auto shadow-sm">
-            <button onclick="goToSlide(0)" id="dot-0" aria-label="Clock Slide" class="w-2.5 h-2.5 rounded-full bg-indigo-600 transition-all duration-300"></button>
-            <button onclick="goToSlide(1)" id="dot-1" aria-label="Countdowns Slide" class="w-2 h-2 rounded-full bg-slate-300 hover:bg-slate-400 transition-all duration-300"></button>
-            <button onclick="goToSlide(2)" id="dot-2" aria-label="Weather Slide" class="w-2 h-2 rounded-full bg-slate-300 hover:bg-slate-400 transition-all duration-300"></button>
+            <button onclick="goToSlide(0)" id="dot-0" aria-label="Clock" class="w-2.5 h-2.5 rounded-full bg-indigo-600 transition-all duration-300"></button>
+            <button onclick="goToSlide(1)" id="dot-1" aria-label="Countdowns" class="w-2 h-2 rounded-full bg-slate-300 hover:bg-slate-400 transition-all duration-300"></button>
+            <button onclick="goToSlide(2)" id="dot-2" aria-label="Weather" class="w-2 h-2 rounded-full bg-slate-300 hover:bg-slate-400 transition-all duration-300"></button>
         </div>
 
-        <!-- Auto-Scroll Pause / Resume Toggle Button -->
         <button id="toggle-autoplay" onclick="toggleAutoPlay()" class="pointer-events-auto flex items-center space-x-1.5 bg-white/80 hover:bg-white active:scale-95 backdrop-blur-md px-3 py-1.5 rounded-full border border-slate-200 text-xs font-medium text-slate-700 transition shadow-sm">
             <span id="autoplay-icon">
-                <!-- Pause Icon -->
-                <svg class="w-3.5 h-3.5 text-indigo-600" fill="currentColor" viewBox="0 0 20 20">
+                <svg class="w-3.5 h-3.5 text-indigo-600" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
                     <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zM7 8a1 1 0 012 0v4a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
                 </svg>
             </span>
@@ -137,13 +163,12 @@
         </button>
     </header>
 
-    <!-- Main Horizontal Carousel Track -->
     <main id="carousel-track">
 
         <!-- =========================================================
-             SLIDE 1: DIGITAL CLOCK VIEW
+             CLOCK
              ========================================================= -->
-        <section class="slide" data-index="0">
+        <section class="slide dashboard-section">
             <div class="w-full max-w-3xl flex flex-col items-center justify-center text-center">
                 <!-- Subtle Top Pill -->
                 <div class="mb-2 sm:mb-4 px-3 py-0.5 rounded-full bg-indigo-50 border border-indigo-200 text-indigo-600 text-[11px] sm:text-xs font-semibold tracking-widest uppercase">
@@ -167,13 +192,13 @@
         </section>
 
         <!-- =========================================================
-             SLIDE 2: COUNTDOWNS VIEW (Bobby's home.html Style)
+             COUNTDOWNS
              ========================================================= -->
-        <section class="slide" data-index="1">
-            <div class="w-full max-w-3xl bg-white shadow-xl rounded-2xl p-5 sm:p-12 text-center border border-slate-200">
-                <h3 class="text-2xl sm:text-4xl font-bold text-slate-900 mb-4 sm:mb-6">Countdowns</h3>
+        <section class="slide dashboard-section">
+            <div class="w-full max-w-3xl text-center">
+                <h3 class="countdown-title text-2xl sm:text-4xl font-bold text-slate-900 mb-4 sm:mb-6">Countdowns</h3>
                 
-                <div class="space-y-3 sm:space-y-6 text-base sm:text-xl text-slate-700">
+                <div class="countdown-list space-y-3 sm:space-y-6 text-base sm:text-xl text-slate-700">
                     <p class="countdown-item">
                         To New Year's Day: <span id="new-year-countdown" class="font-extrabold text-indigo-600 transition-all duration-300">--</span>
                     </p>
@@ -194,20 +219,20 @@
         </section>
 
         <!-- =========================================================
-             SLIDE 3: 5-DAY GOOGLE WEATHER GUI VIEW (Light Theme)
+             5-DAY WEATHER
              ========================================================= -->
-        <section class="slide" data-index="2">
-            <div class="w-full max-w-2xl bg-gradient-to-br from-white via-slate-50 to-indigo-50/40 rounded-2xl border border-slate-200 p-3.5 sm:p-6 shadow-xl flex flex-col justify-between">
+        <section class="slide dashboard-section">
+            <div class="weather-panel w-full max-w-2xl flex flex-col justify-between">
                 
                 <!-- Top Current Weather Header -->
                 <div class="flex items-center justify-between mb-2.5 sm:mb-5">
                     <div class="flex items-center space-x-3 sm:space-x-4">
-                        <div id="weather-current-icon" class="w-12 h-12 sm:w-16 sm:h-16 flex-shrink-0">
+                        <div id="weather-current-icon" class="weather-current-icon w-12 h-12 sm:w-16 sm:h-16 flex-shrink-0">
                             <!-- Injected via JS -->
                         </div>
                         <div>
                             <div class="flex items-start">
-                                <span id="weather-current-temp" class="text-4xl sm:text-6xl font-bold tracking-tight text-slate-900 tabular-nums">--</span>
+                                <span id="weather-current-temp" class="weather-current-temp text-4xl sm:text-6xl font-bold tracking-tight text-slate-900 tabular-nums">--</span>
                                 <span class="text-lg sm:text-2xl font-medium text-slate-500 mt-0.5">°F</span>
                             </div>
                             <p id="weather-current-desc" class="text-xs sm:text-base font-medium text-indigo-600">Loading forecast...</p>
@@ -246,15 +271,11 @@
 
     </main>
 
-    <!-- Bottom 5-Second Auto-Scroll Progress Indicator -->
     <div class="fixed bottom-0 left-0 right-0 h-1 bg-slate-200 z-40">
         <div id="slide-progress-bar" class="h-full bg-gradient-to-r from-indigo-500 via-sky-400 to-indigo-600 w-0"></div>
     </div>
 
     <script>
-        /* =========================================================
-           1. CAROUSEL & AUTO-SCROLL LOGIC (5 SECONDS)
-           ========================================================= */
         const track = document.getElementById('carousel-track');
         const progressBar = document.getElementById('slide-progress-bar');
         const totalSlides = 3;
@@ -267,11 +288,9 @@
             for (let i = 0; i < totalSlides; i++) {
                 const dot = document.getElementById(`dot-${i}`);
                 if (!dot) continue;
-                if (i === index) {
-                    dot.className = 'w-5 h-2 rounded-full bg-indigo-600 transition-all duration-300';
-                } else {
-                    dot.className = 'w-2 h-2 rounded-full bg-slate-300 hover:bg-slate-400 transition-all duration-300';
-                }
+                dot.className = i === index
+                    ? 'w-5 h-2 rounded-full bg-indigo-600 transition-all duration-300'
+                    : 'w-2 h-2 rounded-full bg-slate-300 hover:bg-slate-400 transition-all duration-300';
             }
         }
 
@@ -287,11 +306,7 @@
 
         function goToSlide(index) {
             currentSlide = (index + totalSlides) % totalSlides;
-            const targetX = currentSlide * window.innerWidth;
-            track.scrollTo({
-                left: targetX,
-                behavior: 'smooth'
-            });
+            track.scrollTo({ left: currentSlide * window.innerWidth, behavior: 'smooth' });
             updateIndicators(currentSlide);
             restartAutoScrollTimer();
         }
@@ -315,11 +330,11 @@
 
             if (isAutoPlaying) {
                 label.textContent = 'Auto 5s';
-                icon.innerHTML = `<svg class="w-3.5 h-3.5 text-indigo-600" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zM7 8a1 1 0 012 0v4a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" /></svg>`;
+                icon.innerHTML = '<svg class="w-3.5 h-3.5 text-indigo-600" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zM7 8a1 1 0 012 0v4a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" /></svg>';
                 restartAutoScrollTimer();
             } else {
                 label.textContent = 'Paused';
-                icon.innerHTML = `<svg class="w-3.5 h-3.5 text-amber-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd" /></svg>`;
+                icon.innerHTML = '<svg class="w-3.5 h-3.5 text-amber-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd" /></svg>';
                 clearInterval(autoScrollTimer);
                 progressBar.classList.remove('progress-animating');
                 progressBar.style.width = '0%';
@@ -340,15 +355,11 @@
         });
 
         window.addEventListener('resize', () => {
-            track.scrollTo({
-                left: currentSlide * window.innerWidth,
-                behavior: 'auto'
-            });
+            track.scrollTo({ left: currentSlide * window.innerWidth, behavior: 'auto' });
         });
 
-
         /* =========================================================
-           2. LIVE DIGITAL CLOCK LOGIC
+           1. LIVE DIGITAL CLOCK LOGIC
            ========================================================= */
         function updateClock() {
             const now = new Date();
@@ -371,7 +382,7 @@
 
 
         /* =========================================================
-           3. COUNTDOWNS LOGIC
+           2. COUNTDOWNS LOGIC
            ========================================================= */
         function updateCountdowns() {
             const now = new Date();
@@ -446,7 +457,7 @@
 
 
         /* =========================================================
-           4. 5-DAY GOOGLE WEATHER GUI
+           3. 5-DAY GOOGLE WEATHER GUI
            ========================================================= */
         function getWeatherSvg(code) {
             if (code === 0) {
@@ -551,10 +562,10 @@
                 const widthPct = Math.max(Math.round(((hi - lo) / tempSpan) * 100), 18);
 
                 const card = document.createElement('div');
-                card.className = `flex flex-col items-center justify-between rounded-xl p-1.5 sm:p-3 border transition ${
+                card.className = `flex flex-col items-center justify-between p-1.5 sm:p-3 transition ${
                     i === 0 
-                    ? 'bg-indigo-50 border-indigo-200' 
-                    : 'bg-white border-slate-200 shadow-sm'
+                    ? 'text-indigo-600' 
+                    : 'text-slate-700'
                 }`;
 
                 card.innerHTML = `
@@ -604,7 +615,7 @@
 
 
         /* =========================================================
-           5. INITIALIZATION
+           4. INITIALIZATION
            ========================================================= */
         document.addEventListener('DOMContentLoaded', () => {
             updateClock();
